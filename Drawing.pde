@@ -32,11 +32,16 @@ class Drawing {
   //Add a point to the current stroke
   void addPoint(float t, float x, float y, float z) {
     if( currentStroke != null ) {
-       currentStroke.add( new Point(t, x, y, z) );
+      currentStroke.add( new Point(t, x, y, z) );
+    } else {
+      //Should this be an exception?
+      //Should it just initiate a new stroke and then add?
+      println("Error: No current stroke. Call startStroke before adding new point.");  
     }
   }
   
   //Creates or recreates a mesh from the stroke data
+  //Is it efficient to just recreate or remove and readd individual strokes
   void createMesh() {
     
   }

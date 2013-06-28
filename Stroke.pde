@@ -16,6 +16,7 @@ class Stroke {
     points = new LinkedList<Point>();
   }
   
+  //Create a new stroke from a GML <stroke> node
   Stroke( XML stroke ) {
     points = new LinkedList<Point>();
     for( XML point : stroke.getChildren("pt") ) {
