@@ -5,6 +5,10 @@ class Point {
   float pressure;
   float rotation;
   
+  Point( float t, float x, float y, float z ) {
+    this( t, x, y, z, 0, 0, 0, 1, 0 );
+  }
+  
   Point( float t, float lx, float ly, float lz, float dx, float dy, float dz, float p, float r ) {
     time = t;
     location = new PVector( lx, ly, lz );
@@ -13,19 +17,26 @@ class Point {
     rotation = r;
   }
   
-  Point( float t, float x, float y, float z ) {
-    this( t, x, y, z, 0, 0, 0, 1, 0 );
+  //Create a point from a GML <pt> node
+  Point( XML pt ) {
+    this.loadXML(pt);
   }
   
-  //Read a point from a GML object
-  Point( XML pt ) {
-    //Not scaled hmmmm....
-    float lx = pt.getChild("x").getFloatContent;
-    float ly = pt.getChild("y").getFloatContent;
-    float lz = pt.getChild("z").getFloatContent;
-    float t = pt.getChild("t").getFloatContent;
-    this( lx, ly, lz, t );
+  //Load a point from a GML <pt> node
+  void loadXML( XML pt ) {
+    float t = pt.getChild("t").getFloatContent();
+    float lx = pt.getChild("x").getFloatContent();
+    float ly = pt.getChild("y").getFloatContent();
+    float lz = pt.getChild("z").getFloatContent();
+    
+    time = t;
+    location = new PVector( lx, ly, lz );
+    direction = new PVector();
+    pressure = 0;
+    rotation = 0;
   }
+  
+
   
   int Compare( Point a, Point b ) {
     if(a.time < b.time) {

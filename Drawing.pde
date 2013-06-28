@@ -21,7 +21,7 @@ class Drawing {
   //Start recording a new stroke
   void startStroke() {
     currentStroke = new Stroke();
-    strokes.add( newStroke );
+    strokes.add( currentStroke );
   }
   
   //End the current stroke
@@ -32,7 +32,7 @@ class Drawing {
   //Add a point to the current stroke
   void addPoint(float t, float x, float y, float z) {
     if( currentStroke != null ) {
-       currentStroke ( new Point(t, x, y, z) );
+       currentStroke.add( new Point(t, x, y, z) );
     }
   }
   
