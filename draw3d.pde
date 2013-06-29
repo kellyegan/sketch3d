@@ -6,9 +6,28 @@ Drawing d;
 
 void setup() {
   size(640, 480, OPENGL);
-  d = new Drawing();
-}
+  
+  File path = new File(sketchPath + "/data");  
 
-void draw() {
+  for( File file : path.listFiles() ) {
+    if( file.toString().endsWith(".gml") ) {
+      d = new Drawing(file.toString() );
+//      d.list();
+    }
+  }
+  
   
 }
+
+//void draw() {
+//  
+//}
+
+
+
+
+
+
+
+
+
