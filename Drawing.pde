@@ -1,12 +1,26 @@
-
+/**
+ * A Drawing is a object that contains 3D drawing data.
+ * The Drawing consists of a list of Strokes which consists of a series of 3D points
+ * @author Kelly Egan
+ * @version 0.1
+ */
 class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
   
+  /**
+   * Creates an empty Drawing.
+   * The currentStroke is set to null until drawing begins
+   */
   Drawing() {
     strokes = new ArrayList<Stroke>();
+    currentStroke = null;
   }
-  
+
+  /**
+   * Creates a Drawing from a GML file.
+   * @param filename The name of the GML(Graffiti Markup Language) file to load.
+   */  
   Drawing( String filename ) {
     this();
     
@@ -35,7 +49,7 @@ class Drawing {
           if(t != null) {
             time = t.getFloatContent();
           } else {
-            System.err.println("ERROR: Couldn't find <t> or <time> node in \"" + filename + "\". Setting time to 0.0.");
+            System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
           }
         }
                  
@@ -43,38 +57,48 @@ class Drawing {
         pointCount++;
           
         } catch( Exception e ) {
-          System.err.println("ERROR: Location data missing from <pt> node in \"" + filename + "\". Couldn't create point."); 
+          System.err.println("ERROR: Location data missing from <pt> element in \"" + filename + "\". Couldn't create point."); 
         }
       }          
-      strokes.add( stroke );
-      strokeCount++;
+      
+      //Check and see if there are actually points in stroke
+      //If not don't bother adding to stroke
+      if( stroke.points.size() > 0 ) {
+        strokes.add( stroke );
+        strokeCount++;
+      } else {
+        System.err.println("ERROR: No <pt> elements found in <stroke> element in \"" + filename + "\". Stroke not created.");
+      }
     }
     
     println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points.");
   }
   
-/********************************************************************************
-
-    points = new LinkedList<Point>();
-    
-
-  
-********************************************************************************/
-
-  
-  //Start recording a new stroke
+  /**
+   * Start recording a new stroke
+   * Creates a new Stroke and assigns it to currentStroke
+   */
   void startStroke() {
     currentStroke = new Stroke();
     strokes.add( currentStroke );
   }
   
-  //End the current stroke
+  /** 
+   * End the current stroke
+   * Sets currentStroke to null
+   */ 
   void endStroke() {
     currentStroke = null;
   }
   
-  //Add a point to the current stroke
-  void addPoint(float t, float x, float y, float z) {
+  /**
+   * Add a point to the current stroke
+   * @param t Time value for new Point (probably current time)
+   * @param lx X coordinate of points location.
+   * @param ly Y coordinate of points location.
+   * @param lz Z coordinate of points location.
+   */
+  void addPoint(float t, float lx, float ly, float lz) {
     if( currentStroke != null ) {
       currentStroke.add( new Point(t, x, y, z) );
     } else {
@@ -84,12 +108,16 @@ class Drawing {
     }
   }
   
-  //Creates or recreates a mesh from the stroke data
-  //Is it efficient to just recreate or remove and readd individual strokes
+  /**
+   * Creates or recreates a mesh from the stroke data
+   */
   void createMesh() {
     
   }
   
+  /** 
+   * List strokes ( and points ) of the current drawing
+   */
   void list() {
     for( Stroke stroke : strokes ) {
       stroke.list();
@@ -97,17 +125,27 @@ class Drawing {
   }
   
   //Display the mesh
+  /** 
+   * Display the mesh
+   * Possibly add ability to display a simple path as well
+   */
   void display() {
     
   }
-  
-  //Save the drawing
-  void save() {
+
+  /** 
+   * Save the drawing in GML format
+   * @param filename Name of the GML file to save
+   */  
+  void save(String filename) {
     
   }
-  
-  //Export an STL file of the mesh
-  void export() {
+
+  /** 
+   * Export an STL file of the mesh
+   * @param filename Name of the STL file to export to
+   */   
+  void export(String filename) {
     
   }
   
