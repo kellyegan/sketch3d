@@ -7,6 +7,7 @@
 class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
+  PVector scale;
   
   /**
    * Creates an empty Drawing.
@@ -15,6 +16,7 @@ class Drawing {
   Drawing() {
     strokes = new ArrayList<Stroke>();
     currentStroke = null;
+    scale = new PVector(1,1,1);
   }
 
   /**
@@ -30,6 +32,18 @@ class Drawing {
     XML gml = loadXML( filename );
     XML drawing = gml.getChild("tag/drawing"); 
     
+    XML screenBounds = gml.getChild("tag/environment/screenBounds");
+    
+    
+    try {
+      float x = screenBounds.getChild("x").getFloatContent();
+      float y = screenBounds.getChild("y").getFloatContent();
+      float z = screenBounds.getChild("z").getFloatContent();
+      scale.set( x, y, z );
+    } catch( Exception e ) {
+      System.err.println("ERROR: Could not load scale data from \"" + filename + "\". Points will not scale correctly.");
+    }
+    
     XML [] strokeNodes = drawing.getChildren("stroke");
     for( XML s : strokeNodes ) {
       Stroke stroke = new Stroke();
@@ -37,9 +51,9 @@ class Drawing {
     
       for( XML pt : ptNodes ) { 
         try {     
-          float lx = pt.getChild("x").getFloatContent();
-          float ly = pt.getChild("y").getFloatContent();
-          float lz = pt.getChild("z").getFloatContent(); 
+          float lx = pt.getChild("x").getFloatContent() * scale.x;
+          float ly = pt.getChild("y").getFloatContent() * scale.y;
+          float lz = pt.getChild("z").getFloatContent() * scale.z; 
 
         //Look for <t> node if it doesn't exist look for <time> node if it doesn't exist set time to 0
         XML t = pt.getChild("t");
@@ -71,7 +85,7 @@ class Drawing {
       }
     }
     
-    println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points.");
+    println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points. Scale: " + scale);
   }
   
   /**

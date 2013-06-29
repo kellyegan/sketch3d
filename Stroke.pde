@@ -28,6 +28,9 @@ class Stroke {
     points.add(p);
   }
   
+  /** Create a mesh for the given stroke
+   *  Not sure if this is needed or should just be implemented for the drawing class
+   */
   void createMesh() {
     
   }
