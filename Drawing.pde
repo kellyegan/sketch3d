@@ -100,7 +100,7 @@ class Drawing {
    */
   void addPoint(float t, float lx, float ly, float lz) {
     if( currentStroke != null ) {
-      currentStroke.add( new Point(t, x, y, z) );
+      currentStroke.add( new Point(t, lx, ly, lz) );
     } else {
       //Should this be an exception?
       //Should it just initiate a new stroke and then add?
