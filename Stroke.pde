@@ -11,11 +11,19 @@ class Stroke {
   List<Point> points;
   color strokeColor;
   float strokeWeight;
-    
+  
+  /**
+   * Create an empty Stroke;
+   */
+  
   Stroke() {
     points = new LinkedList<Point>();
   }
   
+  /**
+   * Add a point to the Stroke.
+   * @param Point to add
+   */
   void add(Point p) {
     points.add(p);
   }
@@ -24,9 +32,16 @@ class Stroke {
     
   }
   
+  /**
+   * Display the stroke
+   */
   void display() {
     
   }
+  
+  /**
+   * List the points within the Stroke
+   */
   void list() {
     for( Point point : points ) {
       point.list();

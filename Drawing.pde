@@ -102,9 +102,8 @@ class Drawing {
     if( currentStroke != null ) {
       currentStroke.add( new Point(t, lx, ly, lz) );
     } else {
-      //Should this be an exception?
-      //Should it just initiate a new stroke and then add?
-      println("Error: No current stroke. Call startStroke before adding new point.");  
+      //Instead of an error message should it just initiate a new stroke and then add it?
+      System.err.println("ERROR: No current stroke. Call startStroke before adding new point.");  
     }
   }
   
