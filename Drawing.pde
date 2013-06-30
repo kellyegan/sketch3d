@@ -146,12 +146,7 @@ class Drawing {
    * @param location Vector representing the location of the point
    */
   void addPoint(float t, PVector location) {
-    if( currentStroke != null ) {
-      currentStroke.add( new Point(t, location.x, location.y, location.z) );
-    } else {
-      //Instead of an error message should it just initiate a new stroke and then add it?
-      System.err.println("ERROR: No current stroke. Call startStroke before adding new point.");  
-    }
+    addPoint( t, location.x, location.y, location.z );
   }
   
   /**
