@@ -4,9 +4,13 @@
 
 Drawing d;
 int strokeVal = 175;
+
+int count = 0;
+boolean drawing = false;
+
 void setup() {
   size(640, 480, OPENGL);
-  Drawing blank = new Drawing();
+  
   
   File path = new File(sketchPath + "/data");  
 
@@ -14,17 +18,45 @@ void setup() {
     if( file.toString().endsWith(".gml") ) {
       background(255);
       d = new Drawing(file.toString() );
-      d.display();
     }
-    
   }
- 
-  d.save("banana.gml"); 
+  
+  d = new Drawing("banana.gml");
 }
 
-//void draw() {
-//  
-//}
+void draw() {
+  d.display();
+}
+
+void mousePresssed() {
+    println("PRESSED!");
+}
+
+void mouseDragged() {
+  if( !drawing ) {
+    drawing = true;
+    d.startStroke();
+  }
+  d.addPoint( (float)millis() / 1000.0, mouseX, mouseY, 0.0);
+}
+
+void mouseReleased() {
+  drawing = false;
+  d.endStroke();
+}
+
+void keyPressed() {
+  switch(key) {
+    case 's':
+    case 'S':
+      d.save("banana.gml");
+    default:
+  }
+}
+
+
+
+
 
 
 

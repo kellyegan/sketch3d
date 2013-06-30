@@ -16,12 +16,14 @@ class Stroke {
   List<Point> points;
   color strokeColor;
   float strokeWeight;
+  Point lastPoint;
   
   /**
    * Create an empty Stroke;
    */  
   Stroke() {
     points = new LinkedList<Point>();
+    lastPoint = null;
   }
   
   /**
@@ -30,6 +32,7 @@ class Stroke {
    */
   void add(Point p) {
     points.add(p);
+    lastPoint = p;
   }
   
   /** Create a mesh for the given stroke
@@ -62,6 +65,18 @@ class Stroke {
       point.list();
     }
     println();
+  }
+  
+  Point getLastPoint() {
+    return lastPoint; 
+  }
+  
+  float distanceToLast( float x, float y, float z ) {
+    if( lastPoint != null ) {
+      return dist( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, x, y, z );
+    } else {
+      return -1;
+    }
   }
    
 }

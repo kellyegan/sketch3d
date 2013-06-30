@@ -8,6 +8,8 @@ class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
   
+  float minimumDistance;
+  
   PVector screenBounds; 
   PVector up;
   PVector realScale;
@@ -27,6 +29,7 @@ class Drawing {
    */  
   Drawing( String filepath ) {
     strokes = new ArrayList<Stroke>();
+    minimumDistance = 10;
     load( filepath );
   }
   
@@ -80,7 +83,7 @@ class Drawing {
           } else {
             System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
           }  
-          addPoint( time, location );
+          addPoint( time, location, true );   //Ignore minimum distance and just reads in points as they are stored.
           pointCount++;
         } else {
           System.err.println("ERROR: <pt> element coordinates not valid in \"" + filename + "\". Couldn't create point.");
@@ -157,10 +160,15 @@ class Drawing {
    * @param lx X coordinate of points location.
    * @param ly Y coordinate of points location.
    * @param lz Z coordinate of points location.
+   * @param ignoreMinimumDistance If set will record new point even if under minimum distance from last point
    */
-  void addPoint(float t, float lx, float ly, float lz) {
+  void addPoint(float t, float lx, float ly, float lz, boolean ignoreMinimumDistance) {
     if( currentStroke != null ) {
-      currentStroke.add( new Point(t, lx, ly, lz) );
+      float distance = currentStroke.distanceToLast(lx, ly, lz);
+      //Make sure new points are a minimum distance from other points
+      if( ignoreMinimumDistance || distance > minimumDistance || distance < 0) {
+        currentStroke.add( new Point(t, lx, ly, lz) );
+      }
     } else {
       //Instead of an error message should it just initiate a new stroke and then add it?
       System.err.println("ERROR: No current stroke. Call startStroke before adding new point.");  
@@ -170,10 +178,30 @@ class Drawing {
   /**
    * Add a point to the current stroke
    * @param t Time value for new Point
+   * @param lx X coordinate of points location.
+   * @param ly Y coordinate of points location.
+   * @param lz Z coordinate of points location.
+   */ 
+  void addPoint(float t, float lx, float ly, float lz) {
+     addPoint( t, lx, ly, lz, false);
+  }
+  
+  /**
+   * Add a point to the current stroke
+   * @param t Time value for new Point
    * @param location Vector representing the location of the point
    */
   void addPoint(float t, PVector location) {
     addPoint( t, location.x, location.y, location.z );
+  }
+  
+  /**
+   * Add a point to the current stroke
+   * @param t Time value for new Point
+   * @param location Vector representing the location of the point
+   */
+  void addPoint(float t, PVector location, boolean ignoreMinimumDistance) {
+    addPoint( t, location.x, location.y, location.z, ignoreMinimumDistance );
   }
   
   /**
