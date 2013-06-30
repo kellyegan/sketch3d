@@ -71,6 +71,7 @@ class Drawing {
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
         if( location != null ) {
+          location = convertToScreen( location );
           float time = 0.0;
           if( ptElement.getChild("t") != null ) {
             time = ptElement.getChild("t").getFloatContent();

@@ -3,7 +3,7 @@
 */
 
 Drawing d;
-
+int strokeVal = 175;
 void setup() {
   size(640, 480, OPENGL);
   Drawing blank = new Drawing();
@@ -12,8 +12,11 @@ void setup() {
 
   for( File file : path.listFiles() ) {
     if( file.toString().endsWith(".gml") ) {
+      background(255);
       d = new Drawing(file.toString() );
+      d.display();
     }
+    
   } 
 }
 
