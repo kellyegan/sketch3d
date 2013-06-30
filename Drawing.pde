@@ -9,22 +9,90 @@ class Drawing {
   Stroke currentStroke;
   
   PVector screenBounds; 
-  PVector realScale;
   PVector up;
+  PVector realScale;
   
   /**
-   * Creates an empty Drawing.
+   * Creates an empty Drawing from the "template.gml" file
    * The currentStroke is set to null until drawing begins
+   * And there is no Stroke or Point data
    */
   Drawing() {
     this("template.gml");
   }
 
   /**
-   * Creates a Drawing from a GML file.
-   * @param filepath The name of the GML(Graffiti Markup Language) file to load.
+   * Creates a Drawing from a GML (Graffiti Markup Language) file.
+   * @param filepath Path to the GML file.
    */  
   Drawing( String filepath ) {
+    strokes = new ArrayList<Stroke>();
+    loadGML( filepath );
+  }
+  
+  /** 
+   * Loads an GML (Graffiti Markup Language) file into the Drawing object
+   * @param filepath Path to the GML file.
+   */
+  void loadGML(String filepath) {
+    String filename = new File(filepath).getName();
+    println("Loading " + filename + "...");
+    
+    int pointCount = 0;
+    int strokeCount = 0;
+    
+    XML gml = loadXML( filepath );
+    XML drawing = gml.getChild("tag/drawing");
+    
+    //Set up environmental data (screenBounds, up and realScale)
+    if( gml.getChild("tag/header/environment/screenBounds") != null ) {
+      screenBounds = xmlToVector( gml.getChild("tag/header/environment/screenBounds") );
+    } else {
+      screenBounds = new PVector(width, height, max(width, height) );
+    }
+    
+    if( gml.getChild("tag/header/environment/up") != null ) {
+      up = xmlToVector( gml.getChild("tag/header/environment/up") );
+    } else {
+      up = new PVector(0, -1, 0);
+    }
+    
+    if( gml.getChild("tag/header/environment/realScale") != null ) {
+      realScale = xmlToVector( gml.getChild("tag/header/environment/realScale") );
+    } else {
+      realScale = new PVector(200, 200, 200);
+    }
+    
+    //Load strokes
+    for( XML strokeElement : drawing.getChildren("stroke") ) {
+      startStroke();
+      
+      //Load points
+      for( XML ptElement : strokeElement.getChildren("pt") ) {
+        PVector location = xmlToVector( ptElement );
+        if( location != null ) {
+          float time = 0.0;
+          if( ptElement.getChild("t") != null ) {
+            time = ptElement.getChild("t").getFloatContent();
+          } else if( ptElement.getChild("time") != null ) {
+            time = ptElement.getChild("time").getFloatContent();
+          } else {
+            System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
+          }  
+          addPoint( time, location );
+          pointCount++;
+        } else {
+          System.err.println("ERROR: <pt> element coordinates not valid in \"" + filename + "\". Couldn't create point.");
+        }
+      
+      }
+      
+      endStroke();
+      strokeCount++;
+    }
+    
+    println("Loaded " + pointCount + " points and " + strokeCount + " strokes.");
+    println("screenBounds: " + screenBounds + "  up: " + up + "  realScale: " + realScale);
   }
   
   /**
@@ -32,8 +100,12 @@ class Drawing {
    * Creates a new Stroke and assigns it to currentStroke
    */
   void startStroke() {
-    currentStroke = new Stroke();
-    strokes.add( currentStroke );
+    if( currentStroke == null ) {
+      currentStroke = new Stroke();
+      strokes.add( currentStroke );
+    } else {
+      System.err.println("Already started stroke. Please endStroke before beginning new one");
+    }
   }
   
   /** 
@@ -46,7 +118,7 @@ class Drawing {
   
   /**
    * Add a point to the current stroke
-   * @param t Time value for new Point (probably current time)
+   * @param t Time value for new Point
    * @param lx X coordinate of points location.
    * @param ly Y coordinate of points location.
    * @param lz Z coordinate of points location.
@@ -54,6 +126,20 @@ class Drawing {
   void addPoint(float t, float lx, float ly, float lz) {
     if( currentStroke != null ) {
       currentStroke.add( new Point(t, lx, ly, lz) );
+    } else {
+      //Instead of an error message should it just initiate a new stroke and then add it?
+      System.err.println("ERROR: No current stroke. Call startStroke before adding new point.");  
+    }
+  }
+  
+  /**
+   * Add a point to the current stroke
+   * @param t Time value for new Point
+   * @param location Vector representing the location of the point
+   */
+  void addPoint(float t, PVector location) {
+    if( currentStroke != null ) {
+      currentStroke.add( new Point(t, location.x, location.y, location.z) );
     } else {
       //Instead of an error message should it just initiate a new stroke and then add it?
       System.err.println("ERROR: No current stroke. Call startStroke before adding new point.");  

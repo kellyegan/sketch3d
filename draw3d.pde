@@ -6,6 +6,7 @@ Drawing d;
 
 void setup() {
   size(640, 480, OPENGL);
+  Drawing blank = new Drawing();
   
   File path = new File(sketchPath + "/data");  
 

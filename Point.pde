@@ -9,8 +9,7 @@ class Point {
   float time;
   float pressure;
   float rotation;
-  
-  
+    
   /**
    * Create a point at (0, 0, 0)
    */
