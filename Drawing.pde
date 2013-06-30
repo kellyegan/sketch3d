@@ -7,8 +7,9 @@
 class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
-  PVector screenBounds, 
-  PVector realScale
+  
+  PVector screenBounds; 
+  PVector realScale;
   PVector up;
   
   /**
@@ -16,73 +17,14 @@ class Drawing {
    * The currentStroke is set to null until drawing begins
    */
   Drawing() {
-    strokes = new ArrayList<Stroke>();
-    currentStroke = null;
-    screenBounds = new PVector(768, 768, 768);
-    realScale = new PVector(200, 200, 200);
-    up = new PVector(0, -1, 0);
+    this("template.gml");
   }
 
   /**
    * Creates a Drawing from a GML file.
-   * @param filename The name of the GML(Graffiti Markup Language) file to load.
+   * @param filepath The name of the GML(Graffiti Markup Language) file to load.
    */  
-  Drawing( String filename ) {
-    this();
-    
-    int pointCount = 0;
-    int strokeCount = 0;
-    
-    XML gml = loadXML( filename );
-    XML drawing = gml.getChild("tag/drawing"); 
-    
-    //Get the screenBounds and up vector data
-    screenBounds = vectorFromXML(  gml.getChild("tag/header/environment/screenBounds") );
-    up = vectorFromXML( gml.getChild("tag/header/environment/up") );
-    realScale = vectorFromXML(  gml.getChild("tag/environment/realScale") );
-
-
-    XML [] strokeNodes = drawing.getChildren("stroke");
-    for( XML s : strokeNodes ) {
-      Stroke stroke = new Stroke();
-      XML [] ptNodes = s.getChildren("pt");
-    
-      for( XML pt : ptNodes ) { 
-        PVector location = vectorFromXML( pt );
-        
-        if( location != null ) {
-          location = convertToScreen( location );
-          
-          //Look for <t> node if it doesn't exist look for <time> node if it doesn't exist set time to 0
-          XML t = pt.getChild("t");
-          float time = 0.0;       
-          if( t == null ) {
-            t = pt.getChild("time");
-            if(t != null) {
-              time = t.getFloatContent();
-            } else {
-              System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
-            }
-          }
-                   
-          stroke.add( new Point( time, location.x, location.y, location.z ) );
-          pointCount++;
-        } else {
-          System.err.println("ERROR: <pt> element coordinates not valid in \"" + filename + "\". Couldn't create point.");
-        } 
-      }          
-      
-      //Check and see if there are actually points in stroke
-      //If not don't bother adding to stroke
-      if( stroke.points.size() > 0 ) {
-        strokes.add( stroke );
-        strokeCount++;
-      } else {
-        System.err.println("ERROR: No <pt> elements found in <stroke> element in \"" + filename + "\". Stroke not created.");
-      }
-    }
-    
-    println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points. Bounds: " + screenBounds + "  Up: " + up);
+  Drawing( String filepath ) {
   }
   
   /**
@@ -147,37 +89,70 @@ class Drawing {
 
   /** 
    * Save the drawing in GML format
-   * @param filename Name of the GML file to save
+   * @param filepath Name of the GML file to save
    */  
-  void save(String filename) {
+  void save(String filepath) {
     
   }
 
   /** 
    * Export an STL file of the mesh
-   * @param filename Name of the STL file to export to
+   * @param filepath Name of the STL file to export to
    */   
-  void export(String filename) {
+  void export(String filepath) {
     
   }
   
   /** 
-   * Utility function to convert an XML node with x, y, z components to a PVector
+   * Convert an XML node with x, y, z components to a PVector
    * @param node Node you want to convert
-   * @return PVector with values or null if no vector
+   * @return PVector with values or null if can't find coordinate data
    */
-  PVector vectorFromXML( XML element ) {
+  PVector xmlToVector( XML element ) {
     if( element != null ) {
       XML xElement = element.getChild("x");
       XML yElement = element.getChild("y");
       XML zElement = element.getChild("z");
-      return new PVector();
+      float x, y, z;
+      
+      if( xElement != null && yElement != null ) {
+        x = xElement.getFloatContent();
+        y = yElement.getFloatContent();
+        if( zElement != null ) {
+          z = zElement.getFloatContent();
+        } else {
+          z = 0.0;
+        }
+        return new PVector(x, y, z);
+      } else {
+        System.err.println("ERROR: Element doesn't contain x or y coordinates.");
+        return null; 
+      }
     } else {
-      System.err.println("ERROR: Element doesn't contain coordinates.");
+      System.err.println("ERROR: Element is null.");
       return null;
     }
-
   }
+  
+  /**
+   * Converts a PVector into an XML element with x, y, z components
+   * @param name The name of the new element
+   * @param vector The PVector to convert
+   * @return A new XML element
+   */
+  XML vectorToXml( String name, PVector vector ) {
+    if( vector != null ) {
+      XML newElement =  new XML(name);
+      newElement.addChild("x").setFloatContent(vector.x);
+      newElement.addChild("y").setFloatContent(vector.y);
+      newElement.addChild("z").setFloatContent(vector.z);
+      return newElement;
+    } else {
+      System.err.println("ERROR: PVector is null.");
+      return null;
+    }
+  }
+
   
   /**
    * Convert a GML pt element value to screen coordinates for Processing

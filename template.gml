@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml spec="1.0">
+  <tag>
+    <header>
+      <client>
+        <name>draw3d</name>
+        <version>0.1</version>
+      </client>
+      <environment>
+        <screenBounds>
+          <x>1024.0</x>
+          <y>1024.0</y>
+          <z>1024.0</z>
+        </screenBounds>
+        <up>
+          <x>0.0</x>
+          <y>-1.0</y>
+          <z>0.0</z>
+        </up>
+        <realScale>
+          <x>200.0</x>
+          <y>200.0</y>
+          <z>200.0</z>
+          <unit>mm</unit>
+        </realScale>
+      </environment>
+    </header>
+    <drawing/>
+  </tag>
+</gml>
