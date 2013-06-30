@@ -1,13 +1,15 @@
 /**
- * A Drawing is a object that contains 3D drawing data.
- * The Drawing consists of a list of Strokes which consists of a series of 3D points
+ * A Drawing is a object that contains 3D stroke data.
+ * The Drawing consists of a list of Strokes which consists of a series of Points
  * @author Kelly Egan
  * @version 0.1
  */
 class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
-  PVector scale;
+  PVector screenBounds, 
+  PVector realScale
+  PVector up;
   
   /**
    * Creates an empty Drawing.
@@ -16,7 +18,9 @@ class Drawing {
   Drawing() {
     strokes = new ArrayList<Stroke>();
     currentStroke = null;
-    scale = new PVector(1,1,1);
+    screenBounds = new PVector(768, 768, 768);
+    realScale = new PVector(200, 200, 200);
+    up = new PVector(0, -1, 0);
   }
 
   /**
@@ -32,47 +36,40 @@ class Drawing {
     XML gml = loadXML( filename );
     XML drawing = gml.getChild("tag/drawing"); 
     
-    XML screenBounds = gml.getChild("tag/environment/screenBounds");
-    
-    
-    try {
-      float x = screenBounds.getChild("x").getFloatContent();
-      float y = screenBounds.getChild("y").getFloatContent();
-      float z = screenBounds.getChild("z").getFloatContent();
-      scale.set( x, y, z );
-    } catch( Exception e ) {
-      System.err.println("ERROR: Could not load scale data from \"" + filename + "\". Points will not scale correctly.");
-    }
-    
+    //Get the screenBounds and up vector data
+    screenBounds = vectorFromXML(  gml.getChild("tag/header/environment/screenBounds") );
+    up = vectorFromXML( gml.getChild("tag/header/environment/up") );
+    realScale = vectorFromXML(  gml.getChild("tag/environment/realScale") );
+
+
     XML [] strokeNodes = drawing.getChildren("stroke");
     for( XML s : strokeNodes ) {
       Stroke stroke = new Stroke();
       XML [] ptNodes = s.getChildren("pt");
     
       for( XML pt : ptNodes ) { 
-        try {     
-          float lx = pt.getChild("x").getFloatContent() * scale.x;
-          float ly = pt.getChild("y").getFloatContent() * scale.y;
-          float lz = pt.getChild("z").getFloatContent() * scale.z; 
-
-        //Look for <t> node if it doesn't exist look for <time> node if it doesn't exist set time to 0
-        XML t = pt.getChild("t");
-        float time = 0.0;       
-        if( t == null ) {
-          t = pt.getChild("time");
-          if(t != null) {
-            time = t.getFloatContent();
-          } else {
-            System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
-          }
-        }
-                 
-        stroke.add( new Point( time, lx, ly, lz ) );
-        pointCount++;
+        PVector location = vectorFromXML( pt );
+        
+        if( location != null ) {
+          location = convertToScreen( location );
           
-        } catch( Exception e ) {
-          System.err.println("ERROR: Location data missing from <pt> element in \"" + filename + "\". Couldn't create point."); 
-        }
+          //Look for <t> node if it doesn't exist look for <time> node if it doesn't exist set time to 0
+          XML t = pt.getChild("t");
+          float time = 0.0;       
+          if( t == null ) {
+            t = pt.getChild("time");
+            if(t != null) {
+              time = t.getFloatContent();
+            } else {
+              System.err.println("ERROR: Couldn't find <t> or <time> elements in \"" + filename + "\". Setting time to 0.0.");
+            }
+          }
+                   
+          stroke.add( new Point( time, location.x, location.y, location.z ) );
+          pointCount++;
+        } else {
+          System.err.println("ERROR: <pt> element coordinates not valid in \"" + filename + "\". Couldn't create point.");
+        } 
       }          
       
       //Check and see if there are actually points in stroke
@@ -85,7 +82,7 @@ class Drawing {
       }
     }
     
-    println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points. Scale: " + scale);
+    println("Loaded \"" + filename + "\". " + strokeCount + " strokes and " + pointCount + " points. Bounds: " + screenBounds + "  Up: " + up);
   }
   
   /**
@@ -143,7 +140,9 @@ class Drawing {
    * Possibly add ability to display a simple path as well
    */
   void display() {
-    
+    for( Stroke stroke : strokes ) {
+      stroke.display();
+    }
   }
 
   /** 
@@ -160,6 +159,50 @@ class Drawing {
    */   
   void export(String filename) {
     
+  }
+  
+  /** 
+   * Utility function to convert an XML node with x, y, z components to a PVector
+   * @param node Node you want to convert
+   * @return PVector with values or null if no vector
+   */
+  PVector vectorFromXML( XML element ) {
+    if( element != null ) {
+      XML xElement = element.getChild("x");
+      XML yElement = element.getChild("y");
+      XML zElement = element.getChild("z");
+      return new PVector();
+    } else {
+      System.err.println("ERROR: Element doesn't contain coordinates.");
+      return null;
+    }
+
+  }
+  
+  /**
+   * Convert a GML pt element value to screen coordinates for Processing
+   * PVector to convert
+   */
+  PVector convertToScreen( PVector point ) {
+    PVector convertedPoint = new PVector();
+    //X axis is up 
+    if( abs( up.x ) == 1 ) {
+      convertedPoint.x = point.y * screenBounds.x;
+      convertedPoint.y = screenBounds.y - point.x * screenBounds.y;
+      convertedPoint.z = point.z * screenBounds.z;
+    //Y axis is up
+    } else if( abs( up.y ) == 1 ) {
+      convertedPoint.x = point.x * screenBounds.x;
+      convertedPoint.y = screenBounds.y - point.y * screenBounds.y;
+      convertedPoint.z = point.z * screenBounds.z;
+    //Z axis is up  
+    } else {
+      convertedPoint.x = point.x * screenBounds.x;
+      convertedPoint.y = screenBounds.y - point.z * screenBounds.y;
+      convertedPoint.z = point.y * screenBounds.z;
+    }
+    
+    return convertedPoint;
   }
   
 }

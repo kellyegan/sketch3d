@@ -13,6 +13,10 @@ void setup() {
     if( file.toString().endsWith(".gml") ) {
       d = new Drawing(file.toString() );
 //      d.list();
+      background(200);
+      stroke(0);
+      noFill();
+      d.display();
     }
   }
   

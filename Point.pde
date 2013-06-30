@@ -1,4 +1,9 @@
-
+/**
+ * A Point contains information about a single location in a stroke
+ * In addition to location in also contains, time, pressure, direction of the stroke at that point.
+ * @author Kelly Egan
+ * @version 0.1
+ */
 class Point {
   PVector location, direction;
   float time;

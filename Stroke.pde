@@ -7,6 +7,11 @@ import wblut.*;
 import wblut.hemesh.*;
 import wblut.geom.*;
 
+/**
+ * A Stroke represents a curve in 3D space overtime
+ * @author Kelly Egan
+ * @version 0.1
+ */
 class Stroke {
   List<Point> points;
   color strokeColor;
@@ -14,8 +19,7 @@ class Stroke {
   
   /**
    * Create an empty Stroke;
-   */
-  
+   */  
   Stroke() {
     points = new LinkedList<Point>();
   }
@@ -39,7 +43,15 @@ class Stroke {
    * Display the stroke
    */
   void display() {
-    
+    Point lastPoint = new Point();
+    int pointCount = 0;
+    for( Point point : points ) {
+      if(pointCount > 0 ) {
+        line( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, point.location.x, point.location.y, point.location.z);
+      }
+      lastPoint = point;
+      pointCount++;
+    }
   }
   
   /**
