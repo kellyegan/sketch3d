@@ -96,6 +96,14 @@ class Drawing {
   }
   
   /**
+   * Save Drawing object to GML file
+   * @param filepath Location to save GML file
+   */
+  void saveGML( String filepath ) {
+    
+  }
+  
+  /**
    * Start recording a new stroke
    * Creates a new Stroke and assigns it to currentStroke
    */
