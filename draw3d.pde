@@ -17,7 +17,9 @@ void setup() {
       d.display();
     }
     
-  } 
+  }
+ 
+  d.save("banana.gml"); 
 }
 
 //void draw() {

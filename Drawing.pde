@@ -27,14 +27,14 @@ class Drawing {
    */  
   Drawing( String filepath ) {
     strokes = new ArrayList<Stroke>();
-    loadGML( filepath );
+    load( filepath );
   }
   
   /** 
    * Loads an GML (Graffiti Markup Language) file into the Drawing object
    * @param filepath Path to the GML file.
    */
-  void loadGML(String filepath) {
+  void load(String filepath) {
     String filename = new File(filepath).getName();
     println("Loading " + filename + "...");
     
@@ -71,7 +71,7 @@ class Drawing {
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
         if( location != null ) {
-          location = convertToScreen( location );
+          location = scaleToScreen( location );
           float time = 0.0;
           if( ptElement.getChild("t") != null ) {
             time = ptElement.getChild("t").getFloatContent();
@@ -100,8 +100,34 @@ class Drawing {
    * Save Drawing object to GML file
    * @param filepath Location to save GML file
    */
-  void saveGML( String filepath ) {
+  void save( String filepath ) {
+    XML gml = loadXML("template.gml");
+    XML drawing = gml.getChild("tag/drawing");
     
+    XML screenBoundsElement = gml.getChild("tag/header/environment/screenBounds");
+    screenBoundsElement.getChild("x").setFloatContent( screenBounds.x );
+    screenBoundsElement.getChild("y").setFloatContent( screenBounds.y );
+    screenBoundsElement.getChild("z").setFloatContent( screenBounds.z );
+    
+    //up vector follows processing convention (0, -1, 0)
+    
+    XML realScaleElement = gml.getChild("tag/header/environment/realScale");
+    realScaleElement.getChild("x").setFloatContent( realScale.x );
+    realScaleElement.getChild("y").setFloatContent( realScale.y );
+    realScaleElement.getChild("z").setFloatContent( realScale.z );
+    
+    for( Stroke stroke : strokes ) {
+      if( stroke.points.size() > 0 ) {
+        XML strokeElement = drawing.addChild("stroke");
+        for( Point point : stroke.points ) {
+          XML ptElement = vectorToXml("pt", scaleToGML(point.location));
+          ptElement.addChild("t").setFloatContent(point.time);
+          strokeElement.addChild(ptElement);
+        }
+      }
+    }
+    
+    saveXML( gml, filepath );
   }
   
   /**
@@ -178,14 +204,6 @@ class Drawing {
   }
 
   /** 
-   * Save the drawing in GML format
-   * @param filepath Name of the GML file to save
-   */  
-  void save(String filepath) {
-    
-  }
-
-  /** 
    * Export an STL file of the mesh
    * @param filepath Name of the STL file to export to
    */   
@@ -248,26 +266,48 @@ class Drawing {
    * Convert a GML pt element value to screen coordinates for Processing
    * PVector to convert
    */
-  PVector convertToScreen( PVector point ) {
-    PVector convertedPoint = new PVector();
+  PVector scaleToScreen( PVector vector ) {
+    PVector scaledVector = new PVector();
     //X axis is up 
     if( abs( up.x ) == 1 ) {
-      convertedPoint.x = point.y * screenBounds.x;
-      convertedPoint.y = screenBounds.y - point.x * screenBounds.y;
-      convertedPoint.z = point.z * screenBounds.z;
+      scaledVector.x = vector.y * screenBounds.x;
+      if( up.x > 0 ) {
+        scaledVector.y = screenBounds.y - vector.x * screenBounds.y;
+      } else {
+        scaledVector.y = vector.x * screenBounds.y;
+      }
+      scaledVector.z = vector.z * screenBounds.z;
     //Y axis is up
     } else if( abs( up.y ) == 1 ) {
-      convertedPoint.x = point.x * screenBounds.x;
-      convertedPoint.y = screenBounds.y - point.y * screenBounds.y;
-      convertedPoint.z = point.z * screenBounds.z;
+      scaledVector.x = vector.x * screenBounds.x;
+      if( up.y > 0 ) {
+        scaledVector.y = screenBounds.y - vector.y * screenBounds.y;
+      } else {
+        scaledVector.y = vector.y * screenBounds.y;
+      }
+      scaledVector.z = vector.z * screenBounds.z;
     //Z axis is up  
     } else {
-      convertedPoint.x = point.x * screenBounds.x;
-      convertedPoint.y = screenBounds.y - point.z * screenBounds.y;
-      convertedPoint.z = point.y * screenBounds.z;
+      scaledVector.x = vector.x * screenBounds.x;
+      if( up.z > 0 ) {
+        scaledVector.y = screenBounds.y - vector.z * screenBounds.y;
+      } else {
+        scaledVector.y = vector.z * screenBounds.y;
+      }
+      scaledVector.z = vector.y * screenBounds.z;
     }
     
-    return convertedPoint;
+    return scaledVector;
+  }
+  
+  /**
+   * Scale screen coordinates to GML (0 to 1) based on screenBounds)
+   * @param vector Vector to scale
+   * @return PVector scaled to 1 to 0
+   */
+  PVector scaleToGML( PVector vector ) {
+    PVector scaledVector = new PVector( vector.x / screenBounds.x, vector.y / screenBounds.y, vector.z / screenBounds.z);
+    return scaledVector;
   }
   
 }
