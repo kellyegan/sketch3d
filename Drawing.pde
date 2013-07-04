@@ -14,6 +14,8 @@ class Drawing {
   PVector up;
   PVector realScale;
   
+  
+  
   /**
    * Creates an empty Drawing from the "template.gml" file
    * The currentStroke is set to null until drawing begins
@@ -65,10 +67,7 @@ class Drawing {
     } else {
       realScale = new PVector(200, 200, 200);
     }
-    //TEMp
-    float maxX = 0;
-    float maxY = 0;
-    float maxZ = 0;
+
     //Load strokes
     for( XML strokeElement : drawing.getChildren("stroke") ) {
       startStroke();
@@ -76,10 +75,6 @@ class Drawing {
       //Load points
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
-        //Temp
-        maxX = max( location.x, maxX );
-        maxY = max( location.x, maxY );
-        maxZ = max( location.x, maxZ );
         
         if( location != null ) {
           location = scaleToScreen( location );
@@ -105,7 +100,6 @@ class Drawing {
     
     println("Loaded " + pointCount + " points and " + strokeCount + " strokes.");
     println("screenBounds: " + screenBounds + "  up: " + up + "  realScale: " + realScale);
-    println("Max extents: " + maxX + " " + maxY + " " + maxZ);
   }
   
   /**
@@ -160,6 +154,7 @@ class Drawing {
    * Sets currentStroke to null
    */ 
   void endStroke() {
+    currentStroke.createMesh();
     currentStroke = null;
   }
   

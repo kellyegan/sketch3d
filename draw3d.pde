@@ -11,7 +11,7 @@ boolean drawing = false;
 //View stuff
 float yRotation = 0;
 float xRotation = 0;
-float rotationStep = TWO_PI / 180;
+float rotationStep = TWO_PI / 720;
 PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
@@ -130,14 +130,6 @@ void rotateVectorY( float theta, PVector vector, PVector target ) {
   float z = -sin(theta) * vector.x + 0 * vector.y + cos(theta) * vector.z;
   target.set( x, y, z );
 }
-
-
-void rotateVector( float xAngle, float yAngle, PVector vector, PVector target ) {
-  
- 
- target.set( x, y, z ); 
-}
-
 
 
 
