@@ -65,7 +65,10 @@ class Drawing {
     } else {
       realScale = new PVector(200, 200, 200);
     }
-    
+    //TEMp
+    float maxX = 0;
+    float maxY = 0;
+    float maxZ = 0;
     //Load strokes
     for( XML strokeElement : drawing.getChildren("stroke") ) {
       startStroke();
@@ -73,6 +76,11 @@ class Drawing {
       //Load points
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
+        //Temp
+        maxX = max( location.x, maxX );
+        maxY = max( location.x, maxY );
+        maxZ = max( location.x, maxZ );
+        
         if( location != null ) {
           location = scaleToScreen( location );
           float time = 0.0;
@@ -97,6 +105,7 @@ class Drawing {
     
     println("Loaded " + pointCount + " points and " + strokeCount + " strokes.");
     println("screenBounds: " + screenBounds + "  up: " + up + "  realScale: " + realScale);
+    println("Max extents: " + maxX + " " + maxY + " " + maxZ);
   }
   
   /**
@@ -227,8 +236,46 @@ class Drawing {
    */
   void display() {
     for( Stroke stroke : strokes ) {
-      stroke.display();
+      stroke.display(0, 0, 0);
     }
+  }
+  
+  /** 
+   * Display the mesh
+   * Possibly add ability to display a simple path as well
+   */
+  void display(float x, float y, float z) {
+    for( Stroke stroke : strokes ) {
+      stroke.display(x, y, z);
+    }
+  }
+  
+  /**
+   * Reset the Drawing object to the template file
+   */
+  void reset() {
+    load("template.gml");
+  }
+  
+  /**
+   * Remove all Stroke data from the Drawing object
+   */
+  void clearStrokes() {
+    strokes = new ArrayList<Stroke>(); 
+  }
+  
+  /**
+   * Removes the last stroke from the Drawing object
+   */
+  void undoLastStroke() {
+    strokes.remove(strokes.size() - 1);
+  }
+  
+  /**
+   * Setter for minimum distance variable.
+   */
+  void setMinimumDistance(float distance ){
+    minimumDistance = distance;
   }
 
   /** 
@@ -288,13 +335,14 @@ class Drawing {
       return null;
     }
   }
-
-  
+ 
   /**
    * Convert a GML pt element value to screen coordinates for Processing
    * PVector to convert
    */
   PVector scaleToScreen( PVector vector ) {
+    vector.sub( new PVector( 0.5, 0.5, 0.5 ) );
+
     PVector scaledVector = new PVector();
     //X axis is up 
     if( abs( up.x ) == 1 ) {
@@ -335,6 +383,7 @@ class Drawing {
    */
   PVector scaleToGML( PVector vector ) {
     PVector scaledVector = new PVector( vector.x / screenBounds.x, vector.y / screenBounds.y, vector.z / screenBounds.z);
+    scaledVector.add( new PVector( 0.5, 0.5, 0.5 ) );
     return scaledVector;
   }
   

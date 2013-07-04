@@ -46,16 +46,23 @@ class Stroke {
    * Display the stroke
    */
   void display() {
+    display(0, 0, 0);
+  }
+  
+  /**
+   * 
+   */
+   void display( float x, float y, float z ) {
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {
       if(pointCount > 0 ) {
-        line( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, point.location.x, point.location.y, point.location.z);
+        line( x + lastPoint.location.x, y + lastPoint.location.y, z + lastPoint.location.z, x + point.location.x, y + point.location.y, z + point.location.z);
       }
       lastPoint = point;
       pointCount++;
-    }
-  }
+    }     
+   }
   
   /**
    * List the points within the Stroke
