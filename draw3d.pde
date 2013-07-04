@@ -116,31 +116,12 @@ void keyPressed() {
   }
 }
 
-PVector rotateVectorX( float theta, PVector vector ) {
-  PVector rotated = new PVector();
-  
-  rotated.x = vector.x;
-  rotated.y = cos(theta) * vector.y - sin(theta) * vector.z;
-  rotated.z = sin(theta) * vector.y + cos(theta) * vector.z;
-  
-  return rotated;
-}
 
 void rotateVectorX( float theta, PVector vector, PVector target ) {
   float x = vector.x;
   float y = cos(theta) * vector.y - sin(theta) * vector.z;
   float z = sin(theta) * vector.y + cos(theta) * vector.z;
   target.set( x, y, z );
-}
-
-PVector rotateVectorY( float theta, PVector vector ) {
-  PVector rotated = new PVector();
-  
-  rotated.x =  cos(theta) * vector.x + 0 * vector.y + sin(theta) * vector.z;
-  rotated.y =           0 * vector.x + 1 * vector.y + 0          * vector.z;
-  rotated.z = -sin(theta) * vector.x + 0 * vector.y + cos(theta) * vector.z;
-  
-  return rotated;
 }
 
 void rotateVectorY( float theta, PVector vector, PVector target ) {
@@ -150,6 +131,12 @@ void rotateVectorY( float theta, PVector vector, PVector target ) {
   target.set( x, y, z );
 }
 
+
+void rotateVector( float xAngle, float yAngle, PVector vector, PVector target ) {
+  
+ 
+ target.set( x, y, z ); 
+}
 
 
 

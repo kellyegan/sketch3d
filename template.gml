@@ -7,16 +7,31 @@
         <version>0.1</version>
       </client>
       <environment>
-        <screenBounds>
-          <x>1024.0</x>
-          <y>1024.0</y>
-          <z>1024.0</z>
-        </screenBounds>
+        <offset>
+          <x>-0.5</x>
+          <y>-0.5</y>
+          <z>-0.5</z>
+        </offset>
+        <rotation>
+          <x>0.0</x>
+          <y>0.0</y>
+          <z>0.0</z>
+        </rotation>
         <up>
           <x>0.0</x>
           <y>-1.0</y>
           <z>0.0</z>
         </up>
+        <screenBounds>
+          <x>1024.0</x>
+          <y>1024.0</y>
+          <z>1024.0</z>
+        </screenBounds>
+        <origin>
+          <x>0.0</x>
+          <y>0.0</y>
+          <z>0.0</z>
+        </origin>
         <realScale>
           <x>200.0</x>
           <y>200.0</y>
