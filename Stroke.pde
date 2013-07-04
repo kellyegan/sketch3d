@@ -18,6 +18,8 @@ class Stroke {
   float strokeWeight;
   Point lastPoint;
   
+  HE_Mesh mesh;
+  
   /**
    * Create an empty Stroke;
    */  
@@ -39,30 +41,41 @@ class Stroke {
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
+    WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
+    WB_BSpline spline;
+    HEC_SweepTube tube = new HEC_SweepTube();
+    mesh = new HE_Mesh();
     
+    int index = 0;
+    for( Point point : points ) {
+      wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
+      index++;
+    }
+    
+    spline = new WB_BSpline(wbPoints, 4);
+    tube.setCurve(spline);
+    tube.setRadius( 5 );
+    tube.setSteps( wbPoints.length * 3 );
+    tube.setFacets( 16 );
+    tube.setCap(true, true); // Cap start, cap end?
+    
+    mesh = new HE_Mesh( tube );    
   }
   
   /**
    * Display the stroke
    */
   void display() {
-    display(0, 0, 0);
-  }
-  
-  /**
-   * 
-   */
-   void display( float x, float y, float z ) {
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {
       if(pointCount > 0 ) {
-        line( x + lastPoint.location.x, y + lastPoint.location.y, z + lastPoint.location.z, x + point.location.x, y + point.location.y, z + point.location.z);
+        line( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, point.location.x, point.location.y, point.location.z);
       }
       lastPoint = point;
       pointCount++;
-    }     
-   }
+    }  
+  }
   
   /**
    * List the points within the Stroke

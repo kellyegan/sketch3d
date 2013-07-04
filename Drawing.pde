@@ -231,19 +231,10 @@ class Drawing {
    */
   void display() {
     for( Stroke stroke : strokes ) {
-      stroke.display(0, 0, 0);
+      stroke.display();
     }
   }
   
-  /** 
-   * Display the mesh
-   * Possibly add ability to display a simple path as well
-   */
-  void display(float x, float y, float z) {
-    for( Stroke stroke : strokes ) {
-      stroke.display(x, y, z);
-    }
-  }
   
   /**
    * Reset the Drawing object to the template file
