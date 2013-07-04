@@ -39,17 +39,15 @@ void draw() {
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
+  rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
   
   
   translate(offset.x, offset.y, offset.z);
   rotateX(xRotation);
+  rotateY(yRotation);
 
   stroke(0);
   d.display();
-  stroke(255, 0, 0);
-  for( int i = -5; i < 5; i++) {
-    line( -300, i * 25, 0, 300, i * 25, 0 );
-  }
   
   pushMatrix();
   translate( mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);
@@ -71,6 +69,7 @@ void mouseDragged() {
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
+  rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
   
   println( "Mouse: " + mouseLocation + "  Rotated: " + mouseLocationRotated );
   d.addPoint( (float)millis() / 1000.0, mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);
