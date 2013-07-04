@@ -2,6 +2,9 @@
   draw3d
 */
 
+import processing.core.PApplet;
+
+
 Drawing d;
 int strokeVal = 175;
 
@@ -16,6 +19,7 @@ PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
   size(640, 480, OPENGL);
+  smooth();
   
   mouseLocation = new PVector( mouseX, mouseY, 0);
   mouseLocationRotated = new PVector();
@@ -30,11 +34,14 @@ void setup() {
 //      
 //    }
 //  }
-  
-  d = new Drawing("banana.gml");
+  println(this);
+  d = new Drawing(this, "default.gml");
 }
 
 void draw() {
+  if( mousePressed ) {
+    checkForDrawing();   
+  }
   background(255);
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
@@ -46,7 +53,6 @@ void draw() {
   rotateX(xRotation);
   rotateY(yRotation);
 
-  stroke(0);
   d.display();
   
   pushMatrix();
@@ -60,19 +66,19 @@ void mousePresssed() {
     println("PRESSED!");
 }
 
-void mouseDragged() {
+void checkForDrawing() {
   if( !drawing ) {
     drawing = true;
     d.startStroke();
+    
   }
   
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
   rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
-  
-  println( "Mouse: " + mouseLocation + "  Rotated: " + mouseLocationRotated );
-  d.addPoint( (float)millis() / 1000.0, mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);
+
+  d.addPoint( (float)millis() / 1000.0, mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);  
 }
 
 void mouseReleased() {
@@ -101,7 +107,7 @@ void keyPressed() {
     switch(key) {
       case 's':
       case 'S':
-        d.save("banana.gml");
+        d.save("data/default.gml");
         break;
       case 'c':
       case 'C':
@@ -130,12 +136,3 @@ void rotateVectorY( float theta, PVector vector, PVector target ) {
   float z = -sin(theta) * vector.x + 0 * vector.y + cos(theta) * vector.z;
   target.set( x, y, z );
 }
-
-
-
-
-
-
-
-
-

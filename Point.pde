@@ -4,6 +4,7 @@
  * @author Kelly Egan
  * @version 0.1
  */
+ 
 class Point {
   PVector location, direction;
   float time;

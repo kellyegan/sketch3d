@@ -1,3 +1,9 @@
+/**
+ * A Stroke represents a curve in 3D space overtime
+ * @author Kelly Egan
+ * @version 0.1
+ */
+
 import java.util.*;
 
 import wblut.math.*;
@@ -5,13 +11,8 @@ import wblut.processing.*;
 import wblut.core.*;
 import wblut.*;
 import wblut.hemesh.*;
-import wblut.geom.*;
-
-/**
- * A Stroke represents a curve in 3D space overtime
- * @author Kelly Egan
- * @version 0.1
- */
+import wblut.geom.*; 
+ 
 class Stroke {
   List<Point> points;
   color strokeColor;
@@ -41,31 +42,40 @@ class Stroke {
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
-    WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
-    WB_BSpline spline;
-    HEC_SweepTube tube = new HEC_SweepTube();
-    mesh = new HE_Mesh();
-    
-    int index = 0;
-    for( Point point : points ) {
-      wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
-      index++;
+    if( points != null && points.size() > 1) {
+      println( points.size() );
+      WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
+      WB_BSpline spline;
+      HEC_SweepTube tube = new HEC_SweepTube();
+      mesh = new HE_Mesh();
+      
+      //Convert PVector points to WB_Points3d
+      int index = 0;
+      for( Point point : points ) {
+        wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
+        index++;
+        
+      }
+      println("Stroke has " + index + " points" );
+      
+      //Create the tube spline and tube object
+      spline = new WB_BSpline(wbPoints, 1);
+      tube.setCurve(spline);
+      tube.setRadius( 5 );
+      tube.setSteps( wbPoints.length * 1 );
+      tube.setFacets( 6 );
+      tube.setCap(true, true); // Cap start, cap end?
+      
+      //Create and assign mesh to stroke mesh object
+      mesh = new HE_Mesh( tube );
     }
-    
-    spline = new WB_BSpline(wbPoints, 4);
-    tube.setCurve(spline);
-    tube.setRadius( 5 );
-    tube.setSteps( wbPoints.length * 3 );
-    tube.setFacets( 16 );
-    tube.setCap(true, true); // Cap start, cap end?
-    
-    mesh = new HE_Mesh( tube );    
   }
   
   /**
    * Display the stroke
    */
   void display() {
+    
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {
