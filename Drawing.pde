@@ -82,7 +82,13 @@ class Drawing {
 
     //Load strokes
     for( XML strokeElement : drawing.getChildren("stroke") ) {
-      startStroke();
+      
+      if( gml.getChild("brush") != null ) {
+        startStroke( new Brush() );
+      } else {
+        startStroke( new Brush() );
+      }
+     
       
       //Load points
       for( XML ptElement : strokeElement.getChildren("pt") ) {
@@ -151,14 +157,34 @@ class Drawing {
   /**
    * Start recording a new stroke
    * Creates a new Stroke and assigns it to currentStroke
+   * @param brushStyle Brush to apply to this new stroke
    */
-  void startStroke() {
+  void startStroke(Brush brushStyle) {
     if( currentStroke == null ) {
-      currentStroke = new Stroke();
+      currentStroke = new Stroke( brushStyle );
       strokes.add( currentStroke );
     } else {
       System.err.println("Already started stroke. Please endStroke before beginning new one");
     }
+  }
+
+  /**
+   * Start recording a new stroke
+   * Creates a new Stroke and assigns it to currentStroke
+   * @param name Name of the Brush
+   * @param c Color of the Brush
+   * @param w Weight of the Brush stroke
+   */
+  void startStroke(String n, int c, int w) {
+    startStroke( new Brush( n, c, w ) );
+  }
+  
+  /**
+   * Start recording a new stroke
+   * Creates a new Stroke and assigns it to currentStroke
+   */
+  void startStroke() {
+    startStroke( new Brush() );
   }
   
   /** 
@@ -209,7 +235,7 @@ class Drawing {
    * @param location Vector representing the location of the point
    */
   void addPoint(float t, PVector location) {
-    addPoint( t, location.x, location.y, location.z );
+    addPoint( t, location.x, location.y, location.z, false );
   }
   
   /**
@@ -246,14 +272,7 @@ class Drawing {
    */
   void display() {
     for( Stroke stroke : strokes ) {
-      stroke(0);
       stroke.display();
-      
-      if( stroke.mesh != null ) {
-        noStroke();
-        fill(0);
-        render.drawFaces( stroke.mesh );
-      }
     }
   }
   

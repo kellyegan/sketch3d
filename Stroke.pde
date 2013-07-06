@@ -19,14 +19,35 @@ class Stroke {
   float strokeWeight;
   Point lastPoint;
   
+  Brush brushStyle;
+  
   HE_Mesh mesh;
+
+  /**
+   * Create an empty Stroke with a specific Brush
+   * @param b Brush to attach to this Stroke
+   */
+  Stroke(Brush b) {
+    points = new LinkedList<Point>();
+    brushStyle = b;
+    lastPoint = null;
+  }
   
   /**
-   * Create an empty Stroke;
+   * Create an empty Stroke and a new Brush
+   * @param n Name of the new Brush
+   * @param w Width of the Stroke
+   * @param c Color of the new Stroke
+   */
+  Stroke(String n, int c, int w) {
+    this(new Brush(n, c, w));
+  }
+  
+  /**
+   * Create an empty Stroke with a default Brush
    */  
   Stroke() {
-    points = new LinkedList<Point>();
-    lastPoint = null;
+    this( new Brush() );
   }
   
   /**
@@ -75,6 +96,7 @@ class Stroke {
    * Display the stroke
    */
   void display() { 
+    brushStyle.apply();
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {

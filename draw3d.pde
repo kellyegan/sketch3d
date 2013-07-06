@@ -6,11 +6,15 @@ import processing.core.PApplet;
 
 
 Drawing d;
+
+Brush defaultBrush = new Brush("draw3d_default_00001", 1, color(0, 0, 0, 255));
+Brush currentBrush = new Brush( "", defaultBrush.getColor(), defaultBrush.getWeight() );
+
 int strokeVal = 175;
 
 int count = 0;
 boolean drawing = false;
-
+  
 //View stuff
 float yRotation = 0;
 float xRotation = 0;
@@ -18,7 +22,7 @@ float rotationStep = TWO_PI / 180;
 PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
-  size(640, 480, OPENGL);
+  size(1024, 768, OPENGL);
   smooth();
   
   mouseLocation = new PVector( mouseX, mouseY, 0);
@@ -69,7 +73,7 @@ void mousePresssed() {
 void checkForDrawing() {
   if( !drawing ) {
     drawing = true;
-    d.startStroke();
+    d.startStroke(currentBrush);
     
   }
   
