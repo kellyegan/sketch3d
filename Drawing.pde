@@ -166,7 +166,6 @@ class Drawing {
    * Sets currentStroke to null
    */ 
   void endStroke() {
-    currentStroke.createMesh();
     currentStroke = null;
   }
   
@@ -226,7 +225,9 @@ class Drawing {
    * Creates or recreates a mesh from the stroke data
    */
   void createMesh() {
-    
+    for( Stroke s : strokes ) {
+      s.createMesh();
+    }
   }
   
   /** 
