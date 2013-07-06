@@ -4,6 +4,16 @@
  * @author Kelly Egan
  * @version 0.1
  */
+ 
+import wblut.math.*;
+import wblut.processing.*;
+import wblut.core.*;
+import wblut.*;
+import wblut.hemesh.*;
+import wblut.geom.*;
+
+import processing.core.PApplet;
+ 
 class Drawing {
   List<Stroke> strokes;
   Stroke currentStroke;
@@ -13,7 +23,8 @@ class Drawing {
   PVector screenBounds; 
   PVector up;
   PVector realScale;
-  
+
+  WB_Render render;
   
   
   /**
@@ -21,15 +32,16 @@ class Drawing {
    * The currentStroke is set to null until drawing begins
    * And there is no Stroke or Point data
    */
-  Drawing() {
-    this("template.gml");
+  Drawing(PApplet applet) {
+    this(applet, "template.gml");
   }
 
   /**
    * Creates a Drawing from a GML (Graffiti Markup Language) file.
    * @param filepath Path to the GML file.
    */  
-  Drawing( String filepath ) {
+  Drawing(PApplet applet, String filepath ) {
+    render = new WB_Render(applet);
     strokes = new ArrayList<Stroke>();
     minimumDistance = 10;
     load( filepath );
@@ -154,7 +166,6 @@ class Drawing {
    * Sets currentStroke to null
    */ 
   void endStroke() {
-    currentStroke.createMesh();
     currentStroke = null;
   }
   
@@ -170,7 +181,9 @@ class Drawing {
     if( currentStroke != null ) {
       float distance = currentStroke.distanceToLast(lx, ly, lz);
       //Make sure new points are a minimum distance from other points
-      if( ignoreMinimumDistance || distance > minimumDistance || distance < 0) {
+
+      
+      if( currentStroke.points.size() == 0 || ignoreMinimumDistance || distance > minimumDistance || distance < 0) {
         currentStroke.add( new Point(t, lx, ly, lz) );
       }
     } else {
@@ -187,7 +200,7 @@ class Drawing {
    * @param lz Z coordinate of points location.
    */ 
   void addPoint(float t, float lx, float ly, float lz) {
-     addPoint( t, lx, ly, lz, false);
+    addPoint( t, lx, ly, lz, false);
   }
   
   /**
@@ -212,7 +225,9 @@ class Drawing {
    * Creates or recreates a mesh from the stroke data
    */
   void createMesh() {
-    
+    for( Stroke s : strokes ) {
+      s.createMesh();
+    }
   }
   
   /** 
@@ -231,17 +246,14 @@ class Drawing {
    */
   void display() {
     for( Stroke stroke : strokes ) {
-      stroke.display(0, 0, 0);
-    }
-  }
-  
-  /** 
-   * Display the mesh
-   * Possibly add ability to display a simple path as well
-   */
-  void display(float x, float y, float z) {
-    for( Stroke stroke : strokes ) {
-      stroke.display(x, y, z);
+      stroke(0);
+      stroke.display();
+      
+      if( stroke.mesh != null ) {
+        noStroke();
+        fill(0);
+        render.drawFaces( stroke.mesh );
+      }
     }
   }
   

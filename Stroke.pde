@@ -1,3 +1,9 @@
+/**
+ * A Stroke represents a curve in 3D space overtime
+ * @author Kelly Egan
+ * @version 0.1
+ */
+
 import java.util.*;
 
 import wblut.math.*;
@@ -5,18 +11,15 @@ import wblut.processing.*;
 import wblut.core.*;
 import wblut.*;
 import wblut.hemesh.*;
-import wblut.geom.*;
-
-/**
- * A Stroke represents a curve in 3D space overtime
- * @author Kelly Egan
- * @version 0.1
- */
+import wblut.geom.*; 
+ 
 class Stroke {
   List<Point> points;
   color strokeColor;
   float strokeWeight;
   Point lastPoint;
+  
+  HE_Mesh mesh;
   
   /**
    * Create an empty Stroke;
@@ -39,30 +42,49 @@ class Stroke {
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
-    
+    if( points != null && points.size() > 1) {
+      println( points.size() );
+      WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
+      WB_BSpline spline;
+      HEC_SweepTube tube = new HEC_SweepTube();
+      mesh = new HE_Mesh();
+      
+      //Convert PVector points to WB_Points3d
+      int index = 0;
+      for( Point point : points ) {
+        wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
+        index++;
+        
+      }
+      println("Stroke has " + index + " points" );
+      
+      //Create the tube spline and tube object
+      spline = new WB_BSpline(wbPoints, 1);
+      tube.setCurve(spline);
+      tube.setRadius( 2 );
+      tube.setSteps( wbPoints.length * 2 );
+      tube.setFacets( 5 );
+      tube.setCap(true, true); // Cap start, cap end?
+      
+      //Create and assign mesh to stroke mesh object
+      mesh = new HE_Mesh( tube );
+    }
   }
   
   /**
    * Display the stroke
    */
-  void display() {
-    display(0, 0, 0);
-  }
-  
-  /**
-   * 
-   */
-   void display( float x, float y, float z ) {
+  void display() { 
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {
       if(pointCount > 0 ) {
-        line( x + lastPoint.location.x, y + lastPoint.location.y, z + lastPoint.location.z, x + point.location.x, y + point.location.y, z + point.location.z);
+        line( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, point.location.x, point.location.y, point.location.z);
       }
       lastPoint = point;
       pointCount++;
-    }     
-   }
+    }  
+  }
   
   /**
    * List the points within the Stroke
