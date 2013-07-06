@@ -61,9 +61,9 @@ class Stroke {
       //Create the tube spline and tube object
       spline = new WB_BSpline(wbPoints, 1);
       tube.setCurve(spline);
-      tube.setRadius( 5 );
-      tube.setSteps( wbPoints.length * 1 );
-      tube.setFacets( 6 );
+      tube.setRadius( 2 );
+      tube.setSteps( wbPoints.length * 2 );
+      tube.setFacets( 5 );
       tube.setCap(true, true); // Cap start, cap end?
       
       //Create and assign mesh to stroke mesh object
@@ -74,8 +74,7 @@ class Stroke {
   /**
    * Display the stroke
    */
-  void display() {
-    
+  void display() { 
     Point lastPoint = new Point();
     int pointCount = 0;
     for( Point point : points ) {

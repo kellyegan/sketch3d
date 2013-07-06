@@ -14,7 +14,7 @@ boolean drawing = false;
 //View stuff
 float yRotation = 0;
 float xRotation = 0;
-float rotationStep = TWO_PI / 720;
+float rotationStep = TWO_PI / 180;
 PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
@@ -42,7 +42,7 @@ void draw() {
   if( mousePressed ) {
     checkForDrawing();   
   }
-  background(255);
+  background(200, 200, 190);
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
