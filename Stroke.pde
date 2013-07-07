@@ -97,15 +97,11 @@ class Stroke {
    */
   void display() { 
     brushStyle.apply();
-    Point lastPoint = new Point();
-    int pointCount = 0;
+    beginShape();
     for( Point point : points ) {
-      if(pointCount > 0 ) {
-        line( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, point.location.x, point.location.y, point.location.z);
-      }
-      lastPoint = point;
-      pointCount++;
-    }  
+      vertex( point.location.x, point.location.y, point.location.z );
+    }
+    endShape();
   }
   
   /**
