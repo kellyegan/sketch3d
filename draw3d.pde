@@ -6,7 +6,7 @@ import processing.core.PApplet;
 
 Drawing d;
 
-Brush defaultBrush = new Brush("draw3d_default_00001", 1, color(0, 0, 0, 255));
+Brush defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
 Brush currentBrush = new Brush( "", defaultBrush.getColor(), defaultBrush.getWeight() );
 
 int strokeVal = 175;

@@ -1,7 +1,7 @@
 class Brush {
   String strokeName;
   int strokeColor;
-  int strokeWeight;
+  float strokeWeight;
   
   Brush() {
     strokeName = "";
@@ -9,7 +9,7 @@ class Brush {
     strokeWeight = 1;
   }
   
-  Brush(String n, int c, int w) {
+  Brush(String n, int c, float w) {
    strokeName = n;
    strokeColor = c;
    strokeWeight = w;
@@ -31,11 +31,11 @@ class Brush {
     strokeColor = c;
   }
   
-  int getWeight() {
-    return strokeColor;
+  float getWeight() {
+    return strokeWeight;
   }
    
-  void setWeight( int w ) {
+  void setWeight( float w ) {
     strokeWeight = w;
   }
   

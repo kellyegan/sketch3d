@@ -165,6 +165,16 @@ class Drawing {
     for( Stroke stroke : strokes ) {
       if( stroke.points.size() > 0 ) {
         XML strokeElement = drawing.addChild("stroke");
+        
+        //Add Brush data
+        XML brushElement = strokeElement.addChild("brush");
+        brushElement.addChild("uniqueStyleID").setContent( stroke.brushStyle.getName() );
+        brushElement.addChild("width").setFloatContent( stroke.brushStyle.getWeight() );
+        XML brushColor = brushElement.addChild("color");
+        brushColor.addChild("r").setIntContent( (int)red( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("g").setIntContent( (int)green( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("b").setIntContent( (int)blue( stroke.brushStyle.getColor() ) );
+        
         for( Point point : stroke.points ) {
           XML ptElement = vectorToXml("pt", scaleToGML(point.location));
           ptElement.addChild("t").setFloatContent(point.time);
