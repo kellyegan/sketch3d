@@ -4,7 +4,6 @@
 
 import processing.core.PApplet;
 
-
 Drawing d;
 
 Brush defaultBrush = new Brush("draw3d_default_00001", 1, color(0, 0, 0, 255));
@@ -31,13 +30,13 @@ void setup() {
   
   File path = new File(sketchPath + "/data");  
 
-//  for( File file : path.listFiles() ) {
-//    if( file.toString().endsWith(".gml") ) {
-//      background(255);
-//      d = new Drawing(file.toString() );
-//      
-//    }
-//  }
+  for( File file : path.listFiles() ) {
+    if( file.toString().endsWith(".gml") ) {
+      background(255);
+      d = new Drawing(this, file.toString() );
+      
+    }
+  }
   println(this);
   d = new Drawing(this, "default.gml");
 }

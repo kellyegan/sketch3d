@@ -82,14 +82,36 @@ class Drawing {
 
     //Load strokes
     for( XML strokeElement : drawing.getChildren("stroke") ) {
+      Brush brushStyle = new Brush();
       
-      if( gml.getChild("brush") != null ) {
-        startStroke( new Brush() );
-      } else {
-        startStroke( new Brush() );
+      if( strokeElement.getChild("brush") != null ) {
+        //Check if there is a uniqueStyleID value and if so apply it to Brush
+        try {
+          brushStyle.setName( strokeElement.getChild("brush/uniqueStyleID").getContent() );
+        } catch( Exception e ) {
+          System.err.println("ERROR: uniqueStyleID data not found for Brush.");
+        }
+        
+        //Check if there is a width value and if so apply it to Brush strokeWeight
+        try {
+          brushStyle.setWeight( strokeElement.getChild("brush/width").getIntContent() );
+        } catch( Exception e ) {
+          System.err.println("ERROR: Width data not found for Brush.");
+        }
+        
+        //Check if there are r, g, and b color values and if so apply it to Brush color
+        try {
+          int r = strokeElement.getChild("brush/color/r").getIntContent();
+          int g = strokeElement.getChild("brush/color/g").getIntContent();
+          int b = strokeElement.getChild("brush/color/b").getIntContent();
+          brushStyle.setColor( color(r,g,b) );
+        } catch( Exception e ) {
+          System.err.println("ERROR: Color data not found for Brush.");
+        }       
       }
-     
       
+      startStroke( brushStyle );
+        
       //Load points
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
