@@ -2,12 +2,15 @@
   draw3d
 */
 
+import controlP5.*;
 import processing.core.PApplet;
 
 Drawing d;
+ControlP5 cp5;
 
 Brush defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-Brush currentBrush = new Brush( "", defaultBrush.getColor(), defaultBrush.getWeight() );
+float strokeWeight = 1;
+int brushColor = color(0, 0, 0);
 
 int strokeVal = 175;
 
@@ -23,6 +26,9 @@ PVector mouseLocation, mouseLocationRotated, offset;
 void setup() {
   size(1024, 768, OPENGL);
   smooth();
+  
+  //GUI
+  createControllers();
   
   mouseLocation = new PVector( mouseX, mouseY, 0);
   mouseLocationRotated = new PVector();
@@ -42,16 +48,18 @@ void setup() {
 }
 
 void draw() {
-  if( mousePressed ) {
+  if( mousePressed && !cp5.isMouseOver() ) {
     checkForDrawing();   
-  }
+  } 
   background(200, 200, 190);
+  
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
   rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
   
-  
+  hint(ENABLE_DEPTH_TEST);
+  pushMatrix();
   translate(offset.x, offset.y, offset.z);
   rotateX(xRotation);
   rotateY(yRotation);
@@ -63,6 +71,9 @@ void draw() {
   ellipse(0, 0, 6, 6);
   popMatrix();
   
+  popMatrix();
+  hint(DISABLE_DEPTH_TEST);
+  
 }
 
 void mousePresssed() {
@@ -72,7 +83,7 @@ void mousePresssed() {
 void checkForDrawing() {
   if( !drawing ) {
     drawing = true;
-    d.startStroke(currentBrush);
+    d.startStroke(new Brush( "", brushColor, strokeWeight ) );
     
   }
   
@@ -123,6 +134,32 @@ void keyPressed() {
       default:
     }
   }
+}
+
+void createControllers() {
+   //GUI
+  cp5 = new ControlP5(this);
+  
+  Group brushCtrl = cp5.addGroup("Brush")
+      .setPosition(50, 50)
+      .setBackgroundHeight(100)
+      .setBackgroundColor(color(100,100))
+      .setSize(210,100)
+      ;
+                
+  cp5.addSlider("strokeWeight")
+     .setGroup(brushCtrl)
+     .setRange(1,20)
+     .setPosition(5,20)
+     .setSize(200,20)
+     .setValue(1)
+     .setLabel("Stroke weight");
+     ;
+     
+  // reposition the Label for controller 'slider'
+  cp5.getController("strokeWeight").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+  cp5.getController("strokeWeight").getCaptionLabel().align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+   
 }
 
 
