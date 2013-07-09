@@ -7,6 +7,7 @@ import processing.core.PApplet;
 
 Drawing d;
 ControlP5 cp5;
+ColorPicker cp;
 
 Brush defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
 float strokeWeight = 1;
@@ -83,8 +84,7 @@ void mousePresssed() {
 void checkForDrawing() {
   if( !drawing ) {
     drawing = true;
-    d.startStroke(new Brush( "", brushColor, strokeWeight ) );
-    
+    d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
   }
   
   mouseLocation.set( mouseX, mouseY, 0 );
@@ -144,17 +144,23 @@ void createControllers() {
       .setPosition(50, 50)
       .setBackgroundHeight(100)
       .setBackgroundColor(color(100,100))
-      .setSize(210,100)
+      .setSize(270,125)
       ;
                 
   cp5.addSlider("strokeWeight")
      .setGroup(brushCtrl)
-     .setRange(1,20)
+     .setRange(1,50)
      .setPosition(5,20)
      .setSize(200,20)
      .setValue(1)
      .setLabel("Stroke weight");
      ;
+     
+  cp = cp5.addColorPicker("brushColor")
+      .setPosition(5, 50)
+      .setColorValue(color(0, 0, 0, 255))
+      .setGroup(brushCtrl)
+      ;
      
   // reposition the Label for controller 'slider'
   cp5.getController("strokeWeight").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
