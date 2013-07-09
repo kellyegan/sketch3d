@@ -82,8 +82,36 @@ class Drawing {
 
     //Load strokes
     for( XML strokeElement : drawing.getChildren("stroke") ) {
-      startStroke();
+      Brush brushStyle = new Brush();
       
+      if( strokeElement.getChild("brush") != null ) {
+        //Check if there is a uniqueStyleID value and if so apply it to Brush
+        try {
+          brushStyle.setName( strokeElement.getChild("brush/uniqueStyleID").getContent() );
+        } catch( Exception e ) {
+          System.err.println("ERROR: uniqueStyleID data not found for Brush.");
+        }
+        
+        //Check if there is a width value and if so apply it to Brush strokeWeight
+        try {
+          brushStyle.setWeight( strokeElement.getChild("brush/width").getIntContent() );
+        } catch( Exception e ) {
+          System.err.println("ERROR: Width data not found for Brush.");
+        }
+        
+        //Check if there are r, g, and b color values and if so apply it to Brush color
+        try {
+          int r = strokeElement.getChild("brush/color/r").getIntContent();
+          int g = strokeElement.getChild("brush/color/g").getIntContent();
+          int b = strokeElement.getChild("brush/color/b").getIntContent();
+          brushStyle.setColor( color(r,g,b) );
+        } catch( Exception e ) {
+          System.err.println("ERROR: Color data not found for Brush.");
+        }       
+      }
+      
+      startStroke( brushStyle );
+        
       //Load points
       for( XML ptElement : strokeElement.getChildren("pt") ) {
         PVector location = xmlToVector( ptElement );
@@ -137,6 +165,16 @@ class Drawing {
     for( Stroke stroke : strokes ) {
       if( stroke.points.size() > 0 ) {
         XML strokeElement = drawing.addChild("stroke");
+        
+        //Add Brush data
+        XML brushElement = strokeElement.addChild("brush");
+        brushElement.addChild("uniqueStyleID").setContent( stroke.brushStyle.getName() );
+        brushElement.addChild("width").setFloatContent( stroke.brushStyle.getWeight() );
+        XML brushColor = brushElement.addChild("color");
+        brushColor.addChild("r").setIntContent( (int)red( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("g").setIntContent( (int)green( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("b").setIntContent( (int)blue( stroke.brushStyle.getColor() ) );
+        
         for( Point point : stroke.points ) {
           XML ptElement = vectorToXml("pt", scaleToGML(point.location));
           ptElement.addChild("t").setFloatContent(point.time);
@@ -151,14 +189,34 @@ class Drawing {
   /**
    * Start recording a new stroke
    * Creates a new Stroke and assigns it to currentStroke
+   * @param brushStyle Brush to apply to this new stroke
    */
-  void startStroke() {
+  void startStroke(Brush brushStyle) {
     if( currentStroke == null ) {
-      currentStroke = new Stroke();
+      currentStroke = new Stroke( brushStyle );
       strokes.add( currentStroke );
     } else {
       System.err.println("Already started stroke. Please endStroke before beginning new one");
     }
+  }
+
+  /**
+   * Start recording a new stroke
+   * Creates a new Stroke and assigns it to currentStroke
+   * @param name Name of the Brush
+   * @param c Color of the Brush
+   * @param w Weight of the Brush stroke
+   */
+  void startStroke(String n, int c, int w) {
+    startStroke( new Brush( n, c, w ) );
+  }
+  
+  /**
+   * Start recording a new stroke
+   * Creates a new Stroke and assigns it to currentStroke
+   */
+  void startStroke() {
+    startStroke( new Brush() );
   }
   
   /** 
@@ -209,7 +267,7 @@ class Drawing {
    * @param location Vector representing the location of the point
    */
   void addPoint(float t, PVector location) {
-    addPoint( t, location.x, location.y, location.z );
+    addPoint( t, location.x, location.y, location.z, false );
   }
   
   /**
@@ -246,14 +304,7 @@ class Drawing {
    */
   void display() {
     for( Stroke stroke : strokes ) {
-      stroke(0);
       stroke.display();
-      
-      if( stroke.mesh != null ) {
-        noStroke();
-        fill(0);
-        render.drawFaces( stroke.mesh );
-      }
     }
   }
   

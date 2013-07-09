@@ -2,15 +2,22 @@
   draw3d
 */
 
+import controlP5.*;
 import processing.core.PApplet;
 
-
 Drawing d;
+ControlP5 cp5;
+ColorPicker cp;
+
+Brush defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
+float strokeWeight = 1;
+int brushColor = color(0, 0, 0);
+
 int strokeVal = 175;
 
 int count = 0;
 boolean drawing = false;
-
+  
 //View stuff
 float yRotation = 0;
 float xRotation = 0;
@@ -18,8 +25,11 @@ float rotationStep = TWO_PI / 180;
 PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
-  size(640, 480, OPENGL);
+  size(1024, 768, OPENGL);
   smooth();
+  
+  //GUI
+  createControllers();
   
   mouseLocation = new PVector( mouseX, mouseY, 0);
   mouseLocationRotated = new PVector();
@@ -27,28 +37,30 @@ void setup() {
   
   File path = new File(sketchPath + "/data");  
 
-//  for( File file : path.listFiles() ) {
-//    if( file.toString().endsWith(".gml") ) {
-//      background(255);
-//      d = new Drawing(file.toString() );
-//      
-//    }
-//  }
+  for( File file : path.listFiles() ) {
+    if( file.toString().endsWith(".gml") ) {
+      background(255);
+      d = new Drawing(this, file.toString() );
+      
+    }
+  }
   println(this);
   d = new Drawing(this, "default.gml");
 }
 
 void draw() {
-  if( mousePressed ) {
+  if( mousePressed && !cp5.isMouseOver() ) {
     checkForDrawing();   
-  }
+  } 
   background(200, 200, 190);
+  
   mouseLocation.set( mouseX, mouseY, 0 );
   mouseLocation.sub( offset );
   rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
   rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
   
-  
+  hint(ENABLE_DEPTH_TEST);
+  pushMatrix();
   translate(offset.x, offset.y, offset.z);
   rotateX(xRotation);
   rotateY(yRotation);
@@ -60,6 +72,9 @@ void draw() {
   ellipse(0, 0, 6, 6);
   popMatrix();
   
+  popMatrix();
+  hint(DISABLE_DEPTH_TEST);
+  
 }
 
 void mousePresssed() {
@@ -69,8 +84,7 @@ void mousePresssed() {
 void checkForDrawing() {
   if( !drawing ) {
     drawing = true;
-    d.startStroke();
-    
+    d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
   }
   
   mouseLocation.set( mouseX, mouseY, 0 );
@@ -120,6 +134,38 @@ void keyPressed() {
       default:
     }
   }
+}
+
+void createControllers() {
+   //GUI
+  cp5 = new ControlP5(this);
+  
+  Group brushCtrl = cp5.addGroup("Brush")
+      .setPosition(50, 50)
+      .setBackgroundHeight(100)
+      .setBackgroundColor(color(100,100))
+      .setSize(270,125)
+      ;
+                
+  cp5.addSlider("strokeWeight")
+     .setGroup(brushCtrl)
+     .setRange(1,50)
+     .setPosition(5,20)
+     .setSize(200,20)
+     .setValue(1)
+     .setLabel("Stroke weight");
+     ;
+     
+  cp = cp5.addColorPicker("brushColor")
+      .setPosition(5, 50)
+      .setColorValue(color(0, 0, 0, 255))
+      .setGroup(brushCtrl)
+      ;
+     
+  // reposition the Label for controller 'slider'
+  cp5.getController("strokeWeight").getValueLabel().align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+  cp5.getController("strokeWeight").getCaptionLabel().align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE).setPaddingX(0);
+   
 }
 
 
