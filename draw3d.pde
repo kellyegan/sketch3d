@@ -19,10 +19,13 @@ int count = 0;
 boolean drawing = false;
   
 //View stuff
-float yRotation = 0;
-float xRotation = 0;
+PMatrix3D transformInverse;
+float xRotation, yRotation, zRotation;
+
 float rotationStep = TWO_PI / 180;
-PVector mouseLocation, mouseLocationRotated, offset;
+PVector offset, rotation;
+PVector cursor, cursorTransformed;
+
 
 void setup() {
   size(1024, 768, OPENGL);
@@ -31,8 +34,12 @@ void setup() {
   //GUI
   createControllers();
   
-  mouseLocation = new PVector( mouseX, mouseY, 0);
-  mouseLocationRotated = new PVector();
+  xRotation = 0;
+  yRotation = 0;
+  zRotation = 0;
+  
+  cursor = new PVector( mouseX, mouseY, 0);
+  cursorTransformed = new PVector();
   offset = new PVector( width/2, height/2, 0);
   
   File path = new File(sketchPath + "/data");  
@@ -54,10 +61,10 @@ void draw() {
   } 
   background(200, 200, 190);
   
-  mouseLocation.set( mouseX, mouseY, 0 );
-  mouseLocation.sub( offset );
-  rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
-  rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
+  cursor.set( mouseX, mouseY, 0 );
+  cursor.sub( offset );
+  rotateVectorX(-xRotation, cursor, cursorTransformed);
+  rotateVectorY(-yRotation, cursorTransformed, cursorTransformed);
   
   hint(ENABLE_DEPTH_TEST);
   pushMatrix();
@@ -68,7 +75,7 @@ void draw() {
   d.display();
   
   pushMatrix();
-  translate( mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);
+  translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
   ellipse(0, 0, 6, 6);
   popMatrix();
   
@@ -87,12 +94,12 @@ void checkForDrawing() {
     d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
   }
   
-  mouseLocation.set( mouseX, mouseY, 0 );
-  mouseLocation.sub( offset );
-  rotateVectorX(-xRotation, mouseLocation, mouseLocationRotated);
-  rotateVectorY(-yRotation, mouseLocationRotated, mouseLocationRotated);
+  cursor.set( mouseX, mouseY, 0 );
+  cursor.sub( offset );
+  rotateVectorX(-xRotation, cursor, cursorTransformed);
+  rotateVectorY(-yRotation, cursorTransformed, cursorTransformed);
 
-  d.addPoint( (float)millis() / 1000.0, mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);  
+  d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);  
 }
 
 void mouseReleased() {
