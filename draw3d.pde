@@ -19,7 +19,7 @@ int count = 0;
 boolean drawing = false;
   
 //View stuff
-PMatrix3D transformInverse;
+PMatrix3D inverseTransform;
 float xRotation, yRotation, zRotation;
 
 float rotationStep = TWO_PI / 180;
@@ -37,6 +37,8 @@ void setup() {
   xRotation = 0;
   yRotation = 0;
   zRotation = 0;
+  
+  inverseTransform = new PMatrix3D();
   
   cursor = new PVector( mouseX, mouseY, 0);
   cursorTransformed = new PVector();
@@ -62,9 +64,14 @@ void draw() {
   background(200, 200, 190);
   
   cursor.set( mouseX, mouseY, 0 );
-  cursor.sub( offset );
-  rotateVectorX(-xRotation, cursor, cursorTransformed);
-  rotateVectorY(-yRotation, cursorTransformed, cursorTransformed);
+  cursorTransformed.set( cursor );
+  
+  inverseTransform.reset();
+  inverseTransform.rotateZ( -zRotation );
+  inverseTransform.rotateY( -yRotation );
+  inverseTransform.rotateX( -xRotation );
+  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  inverseTransform.mult( cursor, cursorTransformed );
   
   hint(ENABLE_DEPTH_TEST);
   pushMatrix();
@@ -95,9 +102,14 @@ void checkForDrawing() {
   }
   
   cursor.set( mouseX, mouseY, 0 );
-  cursor.sub( offset );
-  rotateVectorX(-xRotation, cursor, cursorTransformed);
-  rotateVectorY(-yRotation, cursorTransformed, cursorTransformed);
+  cursorTransformed.set( cursor );
+  
+  inverseTransform.reset();
+  inverseTransform.rotateZ( -zRotation );
+  inverseTransform.rotateY( -yRotation );
+  inverseTransform.rotateX( -xRotation );
+  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  inverseTransform.mult( cursor, cursorTransformed );
 
   d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);  
 }
@@ -183,9 +195,4 @@ void rotateVectorX( float theta, PVector vector, PVector target ) {
   target.set( x, y, z );
 }
 
-void rotateVectorY( float theta, PVector vector, PVector target ) {
-  float x =  cos(theta) * vector.x + 0 * vector.y + sin(theta) * vector.z;
-  float y =           0 * vector.x + 1 * vector.y + 0          * vector.z;
-  float z = -sin(theta) * vector.x + 0 * vector.y + cos(theta) * vector.z;
-  target.set( x, y, z );
-}
+
