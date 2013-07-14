@@ -1,9 +1,5 @@
 /*
-  draw3d 0.1
-  Copyright Kelly Egan 2013
-  
-  
-  
+  draw3d
 */
 
 import controlP5.*;
@@ -172,11 +168,7 @@ void createControllers() {
    
 }
 
-/**
-  * Rotate a vector around the origin by a specific angle
-  * @param theta Angle of rotation
-  * @param vector 
-  */
+
 void rotateVectorX( float theta, PVector vector, PVector target ) {
   float x = vector.x;
   float y = cos(theta) * vector.y - sin(theta) * vector.z;
@@ -184,9 +176,6 @@ void rotateVectorX( float theta, PVector vector, PVector target ) {
   target.set( x, y, z );
 }
 
-/**
-  * 
-  */
 void rotateVectorY( float theta, PVector vector, PVector target ) {
   float x =  cos(theta) * vector.x + 0 * vector.y + sin(theta) * vector.z;
   float y =           0 * vector.x + 1 * vector.y + 0          * vector.z;
