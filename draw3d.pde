@@ -3,13 +3,12 @@
   Copyright Kelly Egan 2013
   
   
+  
 */
 
 import controlP5.*;
 import processing.core.PApplet;
-import SimpleOpenNI.*;
 
-/******************* Drawing related *******************/
 Drawing d;
 ControlP5 cp5;
 ColorPicker cp;
@@ -22,53 +21,20 @@ int strokeVal = 175;
 
 int count = 0;
 boolean drawing = false;
-/*******************************************************/
-
-
-/*********************** Kinect ************************/
-
-SimpleOpenNI kinect;       //OpenNI context
-boolean deviceReady;       //True if the Kinect is ready
-Skeleton skeleton;           //Class for containing and drawing skeleton data
-String kinectStatus;       //Reports current status of Kinect, User and Calibration
-
-/*****************************************************/
-
-
-
-/*********************** View ************************/
-PVector offset;
+  
+//View stuff
 float yRotation = 0;
 float xRotation = 0;
-float scale;
-
 float rotationStep = TWO_PI / 180;
-PVector mouseLocation, mouseLocationRotated;
-/*****************************************************/
-
-
-PFont statusFont;
-PVector cursor;
+PVector mouseLocation, mouseLocationRotated, offset;
 
 void setup() {
   size(1024, 768, OPENGL);
   smooth();
   
-  /*********************** GUI *************************/
+  //GUI
   createControllers();
   
-  statusFont = createFont("Helvetica", 30);
-  textFont(statusFont, 30);
-  /*****************************************************/
-  
-  /*********************** View ************************/
-  offset = new PVector(width/2, height/2 , -1000);
-  xRotation = PI;
-  yRotation = PI;
-  scale = 0.5;
-  /*****************************************************/
-  
-  /********************** Drawing **********************/
   mouseLocation = new PVector( mouseX, mouseY, 0);
   mouseLocationRotated = new PVector();
   offset = new PVector( width/2, height/2, 0);
@@ -79,33 +45,11 @@ void setup() {
     if( file.toString().endsWith(".gml") ) {
       background(255);
       d = new Drawing(this, file.toString() );
+      
     }
   }
   println(this);
   d = new Drawing(this, "default.gml");
-  /*****************************************************/
-  
-  
-  /********************** Kinect ***********************/
-  kinect = new SimpleOpenNI(this);
-  kinectStatus = "Looking for Kinect...";
-  
-  //Check if there is a Kinect connected
-  if ( kinect.deviceCount() > 0 ) {
-    deviceReady = true;
-    kinect.enableDepth();
-    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
-    kinectStatus = "Kinect found. Waiting for user...";
-    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
-    cursor = new PVector();
-  } 
-  else {
-    kinectStatus = "No Kinect found. ";
-    deviceReady = false;
-  }
-  
-  /*****************************************************/
-  
 }
 
 void draw() {
@@ -125,17 +69,7 @@ void draw() {
   rotateX(xRotation);
   rotateY(yRotation);
 
-  // Drawing
   d.display();
-  
-  // Origin cross hairs
-  noFill();
-  stroke(200, 0, 0);
-  line( 50, 0, 0, -50, 0, 0 );
-  stroke(0, 200, 0);
-  line( 0, 50, 0, 0, -50, 0 );
-  stroke(0, 0, 200);
-  line( 0, 0, 50, 0, 0, -50 );
   
   pushMatrix();
   translate( mouseLocationRotated.x, mouseLocationRotated.y, mouseLocationRotated.z);
@@ -259,36 +193,3 @@ void rotateVectorY( float theta, PVector vector, PVector target ) {
   float z = -sin(theta) * vector.x + 0 * vector.y + cos(theta) * vector.z;
   target.set( x, y, z );
 }
-
-
-
-/************************************** SimpleOpenNI callbacks **************************************/
-
-void onNewUser(int userId) {
-  kinectStatus = "User found. Please assume Psi pose.";
-  kinect.startPoseDetection("Psi",userId);   
-}
-
-void onLostUser(int userId) {
-  kinectStatus = "User lost.";
-}
-
-void onStartPose(String pose, int userId) {
-  kinectStatus = "Pose detected. Requesting calibration skeleton.";
-
-  kinect.stopPoseDetection(userId); 
-  kinect.requestCalibrationSkeleton(userId, true);
-}
-
-void onEndCalibration(int userId, boolean successfull) {
-  if (successfull) { 
-    kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
-    println("  User calibrated !!!");
-    kinect.startTrackingSkeleton(userId);
-  } 
-  else { 
-    kinectStatus = "Calibration failed starting pose detection.";
-    kinect.startPoseDetection("Psi", userId);
-  }
-}
-
