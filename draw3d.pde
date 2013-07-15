@@ -15,7 +15,7 @@ ColorPicker cp;
 //Kinect
 SimpleOpenNI kinect;
 boolean deviceReady;
-//Skeleton skeleton;
+Skeleton skeleton;
 String kinectStatus;
 
 //Drawing
@@ -47,7 +47,7 @@ void setup() {
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
-//    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
+    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
     cursor = new PVector();
   } 
   else {
@@ -87,7 +87,7 @@ void draw() {
   /*************************************** UPDATE ***************************************/
   if (deviceReady) {
     kinect.update();
-//    skeleton.update( cursor );
+    skeleton.update( cursor );
   }
   
   updateCursor();
