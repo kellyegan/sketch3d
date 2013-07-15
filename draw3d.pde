@@ -1,5 +1,7 @@
 /*
   draw3d
+  Copyright Kelly Egan 2013
+  
  */
 
 import controlP5.*;
@@ -22,7 +24,6 @@ float xRotation, yRotation, zRotation;
 float rotationStep = TWO_PI / 180;
 PVector offset, rotation;
 PVector cursor, cursorTransformed;
-
 
 void setup() {
   size(1024, 768, OPENGL);
@@ -54,15 +55,8 @@ void setup() {
 }
 
 void draw() {
-  /************************** UPDATE **************************/
-  cursor.set( mouseX, mouseY, 0 );
-  cursorTransformed.set( cursor );
-  inverseTransform.reset();
-  inverseTransform.rotateZ( -zRotation );
-  inverseTransform.rotateY( -yRotation );
-  inverseTransform.rotateX( -xRotation );
-  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
-  inverseTransform.mult( cursor, cursorTransformed );
+  /*************************************** UPDATE ***************************************/
+  updateCursor();
 
   if ( mousePressed && !cp5.isMouseOver() ) {
     if ( !drawing ) {
@@ -72,7 +66,7 @@ void draw() {
     d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
   } 
 
-  /************************** DISPLAY *************************/
+  /*************************************** DISPLAY **************************************/
   background(200, 200, 190);
     
   pushMatrix();
@@ -130,6 +124,17 @@ void keyPressed() {
     default:
     }
   }
+}
+
+void updateCursor() {
+  cursor.set( mouseX, mouseY, 0 );
+  cursorTransformed.set( cursor );
+  inverseTransform.reset();
+  inverseTransform.rotateZ( -zRotation );
+  inverseTransform.rotateY( -yRotation );
+  inverseTransform.rotateX( -xRotation );
+  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  inverseTransform.mult( cursor, cursorTransformed );
 }
 
 void createControllers() {
