@@ -6,24 +6,31 @@
 
 import controlP5.*;
 import processing.core.PApplet;
+import SimpleOpenNI.*;
 
-Drawing d;
+
 ControlP5 cp5;
 ColorPicker cp;
 
-Brush defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-float strokeWeight = 1;
-int brushColor = color(0, 0, 0);
+//Kinect
+SimpleOpenNI kinect;
+boolean deviceReady;
+//Skeleton skeleton;
+String kinectStatus;
 
-boolean drawing = false;
+//Drawing
+Drawing d;
+Brush defaultBrush;
+float strokeWeight;
+int brushColor;
+boolean drawing;
 
 //View stuff
 PMatrix3D inverseTransform;
-float xRotation, yRotation, zRotation;
-
-float rotationStep = TWO_PI / 180;
 PVector offset, rotation;
 PVector cursor, cursorTransformed;
+
+float rotationStep = TWO_PI / 180;
 
 void setup() {
   size(1024, 768, OPENGL);
@@ -31,31 +38,58 @@ void setup() {
 
   //GUI
   createControllers();
-
-  xRotation = 0;
-  yRotation = 0;
-  zRotation = 0;
-
-  inverseTransform = new PMatrix3D();
-
-  cursor = new PVector( mouseX, mouseY, 0);
-  cursorTransformed = new PVector();
-  offset = new PVector( width/2, height/2, 0);
-
-  File path = new File(sketchPath + "/data");  
-
-  for ( File file : path.listFiles() ) {
-    if ( file.toString().endsWith(".gml") ) {
-      background(255);
-      d = new Drawing(this, file.toString() );
-    }
+  
+  //Kinect
+  kinect = new SimpleOpenNI(this);
+  kinectStatus = "Looking for Kinect...";
+  if ( kinect.deviceCount() > 0 ) {
+    deviceReady = true;
+    kinect.enableDepth();
+    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
+    kinectStatus = "Kinect found. Waiting for user...";
+//    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
+    cursor = new PVector();
+  } 
+  else {
+    kinectStatus = "No Kinect found. ";
+    deviceReady = false;
   }
-  println(this);
+  
+  //Drawing
   d = new Drawing(this, "default.gml");
+  defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
+  strokeWeight = 1;
+  brushColor = color(0, 0, 0);
+  drawing = false;
+
+  //View
+  inverseTransform = new PMatrix3D();
+  offset = new PVector( width/2, height/2, 0);
+  rotation = new PVector();
+  
+  cursor = new PVector();
+  cursorTransformed = new PVector();
+  
+//
+//  File path = new File(sketchPath + "/data");  
+//
+//  for ( File file : path.listFiles() ) {
+//    if ( file.toString().endsWith(".gml") ) {
+//      background(255);
+//      d = new Drawing(this, file.toString() );
+//    }
+//  }
+//  println(this);
+  
 }
 
 void draw() {
   /*************************************** UPDATE ***************************************/
+  if (deviceReady) {
+    kinect.update();
+//    skeleton.update( cursor );
+  }
+  
   updateCursor();
 
   if ( mousePressed && !cp5.isMouseOver() ) {
@@ -71,8 +105,8 @@ void draw() {
     
   pushMatrix();
   translate(offset.x, offset.y, offset.z);
-  rotateX(xRotation);
-  rotateY(yRotation);
+  rotateX(rotation.x);
+  rotateY(rotation.y);
 
   d.display();
 
@@ -93,16 +127,16 @@ void keyPressed() {
   if ( key == CODED ) {
     switch(keyCode) {
     case UP:
-      xRotation += rotationStep;
+      rotation.x += rotationStep;
       break;
     case DOWN:
-      xRotation -= rotationStep;
+      rotation.x -= rotationStep;
       break;
     case RIGHT:
-      yRotation += rotationStep;
+      rotation.y += rotationStep;
       break;
     case LEFT:
-      yRotation -= rotationStep;
+      rotation.y -= rotationStep;
       break;
     default:
     }
@@ -130,9 +164,9 @@ void updateCursor() {
   cursor.set( mouseX, mouseY, 0 );
   cursorTransformed.set( cursor );
   inverseTransform.reset();
-  inverseTransform.rotateZ( -zRotation );
-  inverseTransform.rotateY( -yRotation );
-  inverseTransform.rotateX( -xRotation );
+  inverseTransform.rotateZ( -rotation.z );
+  inverseTransform.rotateY( -rotation.y );
+  inverseTransform.rotateX( -rotation.x );
   inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   inverseTransform.mult( cursor, cursorTransformed );
 }
@@ -174,4 +208,35 @@ void createControllers() {
     .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
     .setPaddingX(0)
     ;
+}
+
+
+/************************************** SimpleOpenNI callbacks **************************************/
+
+void onNewUser(int userId) {
+  kinectStatus = "User found. Please assume Psi pose.";
+  kinect.startPoseDetection("Psi",userId);   
+}
+
+void onLostUser(int userId) {
+  kinectStatus = "User lost.";
+}
+
+void onStartPose(String pose, int userId) {
+  kinectStatus = "Pose detected. Requesting calibration skeleton.";
+
+  kinect.stopPoseDetection(userId); 
+  kinect.requestCalibrationSkeleton(userId, true);
+}
+
+void onEndCalibration(int userId, boolean successfull) {
+  if (successfull) { 
+    kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
+    println("  User calibrated !!!");
+    kinect.startTrackingSkeleton(userId);
+  } 
+  else { 
+    kinectStatus = "Calibration failed starting pose detection.";
+    kinect.startPoseDetection("Psi", userId);
+  }
 }
