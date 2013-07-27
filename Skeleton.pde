@@ -46,7 +46,6 @@ class Skeleton {
   
   boolean update(PVector c) {
     if (kinect.isTrackingSkeleton( userID )) {
-      println("Found user.");
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_HEAD, head);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_NECK, neck);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_TORSO, torso);
@@ -67,10 +66,9 @@ class Skeleton {
       }
       userCalibrated = true;
     } else {
-      println("No user yet can update joint positions");
       userCalibrated = false;
     }
-    c = this.cursor;
+    c.set(cursor);
     return userCalibrated;
   }
   
