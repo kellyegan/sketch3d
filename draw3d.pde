@@ -1,13 +1,11 @@
 /*
   draw3d
   Copyright Kelly Egan 2013
-  
- */
+*/
 
 import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
-
 
 ControlP5 cp5;
 ColorPicker cp;
@@ -43,12 +41,12 @@ void setup() {
   kinect = new SimpleOpenNI(this);
   kinectStatus = "Looking for Kinect...";
   if ( kinect.deviceCount() > 0 ) {
-    deviceReady = true;
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
     cursor = new PVector();
+    deviceReady = true;
   } 
   else {
     kinectStatus = "No Kinect found. ";
@@ -91,6 +89,7 @@ void draw() {
   }
   
   updateCursor();
+  println(cursorTransformed + " " + cursor);
 
   if ( mousePressed && !cp5.isMouseOver() ) {
     if ( !drawing ) {
@@ -109,10 +108,16 @@ void draw() {
   rotateY(rotation.y);
 
   d.display();
+  skeleton.display();
 
   pushMatrix();
   translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-  ellipse(0, 0, 6, 6);
+  ellipse(0, 0, 10, 10);
+  popMatrix();
+  
+  pushMatrix();
+  translate( cursor.x, cursor.y, cursor.z);
+  ellipse(0, 0, 10, 10);
   popMatrix();
 
   popMatrix();
@@ -161,7 +166,7 @@ void keyPressed() {
 }
 
 void updateCursor() {
-  cursor.set( mouseX, mouseY, 0 );
+  //cursor.set( mouseX, mouseY, 0 );
   cursorTransformed.set( cursor );
   inverseTransform.reset();
   inverseTransform.rotateZ( -rotation.z );
