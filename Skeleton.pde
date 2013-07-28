@@ -108,7 +108,7 @@ class Skeleton {
       popMatrix();
         
       //Draw the cursor
-      fill(200, 0, 0);
+      fill(skeleton.getConfidence() * 200, 0, 0);
       noStroke();
       pushMatrix();
       translate(cursor.x, cursor.y, cursor.z);
@@ -127,6 +127,10 @@ class Skeleton {
   
   void getCursor(PVector target) {
     target.set(cursor);
+  }
+  
+  float getConfidence() {
+    return confidence;
   }
   
 }
