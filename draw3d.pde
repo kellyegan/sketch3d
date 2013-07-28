@@ -1,7 +1,7 @@
 /*
   draw3d
-  Copyright Kelly Egan 2013
-*/
+ Copyright Kelly Egan 2013
+ */
 
 import controlP5.*;
 import processing.core.PApplet;
@@ -28,7 +28,7 @@ PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector cursor, cursorTransformed;
 
-float rotationStep = TWO_PI / 180;
+float rotationStep = TWO_PI / 45;
 
 void setup() {
   size(1280, 768, P3D);
@@ -36,22 +36,23 @@ void setup() {
 
   //GUI
   createControllers();
-  
+
   //Kinect
   kinect = new SimpleOpenNI(this);
   kinectStatus = "Looking for Kinect...";
-  if ( kinect.deviceCount() > 0 ) {
+  if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
     cursor = new PVector();
     deviceReady = true;
-  } else {
+  } 
+  else {
     kinectStatus = "No Kinect found. ";
     deviceReady = false;
   }
-  
+
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
@@ -62,22 +63,21 @@ void setup() {
   //View
   inverseTransform = new PMatrix3D();
   offset = new PVector( width/2, height/2, 0);
-  rotation = new PVector(0, 0, 0);
-  
+  rotation = new PVector(0, PI /2, 0);
+
   cursor = new PVector();
   cursorTransformed = new PVector();
-  
-//
-//  File path = new File(sketchPath + "/data");  
-//
-//  for ( File file : path.listFiles() ) {
-//    if ( file.toString().endsWith(".gml") ) {
-//      background(255);
-//      d = new Drawing(this, file.toString() );
-//    }
-//  }
-//  println(this);
-  
+
+  //
+  //  File path = new File(sketchPath + "/data");  
+  //
+  //  for ( File file : path.listFiles() ) {
+  //    if ( file.toString().endsWith(".gml") ) {
+  //      background(255);
+  //      d = new Drawing(this, file.toString() );
+  //    }
+  //  }
+  //  println(this);
 }
 
 void draw() {
@@ -87,24 +87,24 @@ void draw() {
     skeleton.update( cursor );
   }
   
-  updateCursor();
-  println(cursorTransformed + " " + cursor);
-
   if ( mousePressed && !cp5.isMouseOver() ) {
     if ( !drawing ) {
       drawing = true;
       d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
     }
     d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-  } 
+  }
+
+  updateCursor();
+  println(cursorTransformed + " " + cursor);
 
   /*************************************** DISPLAY **************************************/
   background(220);
-    
+
   pushMatrix();
   translate(offset.x, offset.y, offset.z);
-  
-  if( deviceReady ) {
+
+  if ( deviceReady ) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
@@ -112,22 +112,22 @@ void draw() {
     skeleton.display();
     popMatrix();
   }
-  
+
   rotateX(rotation.x);
   rotateY(rotation.y);
 
   d.display();
 
-  //Cursor
-  pushMatrix();
-  translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-  ellipse(0, 0, 10, 10);
-  popMatrix();
-  
-  pushMatrix();
-  translate( cursor.x, cursor.y, cursor.z);
-  ellipse(0, 0, 10, 10);
-  popMatrix();
+//Cursor
+//  pushMatrix();
+//  translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+//  ellipse(0, 0, 10, 10);
+//  popMatrix();
+//  
+//  pushMatrix();
+//  translate( cursor.x, cursor.y, cursor.z);
+//  ellipse(0, 0, 10, 10);
+//  popMatrix();
 
   popMatrix();
 }
@@ -135,6 +135,10 @@ void draw() {
 void mouseReleased() {
   drawing = false;
   d.endStroke();
+}
+
+void mousePressed() {
+
 }
 
 void keyPressed() {
@@ -191,37 +195,37 @@ void createControllers() {
 
   Group brushCtrl = cp5.addGroup("Brush")
     .setPosition(50, 50)
-    .setBackgroundHeight(100)
-    .setBackgroundColor(color(100, 100))
-    .setSize(270, 125)
-    ;
+      .setBackgroundHeight(100)
+        .setBackgroundColor(color(100, 100))
+          .setSize(270, 125)
+            ;
 
   cp5.addSlider("strokeWeight")
     .setGroup(brushCtrl)
-    .setRange(1, 50)
-    .setPosition(5, 20)
-    .setSize(200, 20)
-    .setValue(1)
-    .setLabel("Stroke weight");
-    ;
+      .setRange(1, 50)
+        .setPosition(5, 20)
+          .setSize(200, 20)
+            .setValue(1)
+              .setLabel("Stroke weight");
+  ;
 
   cp = cp5.addColorPicker("brushColor")
     .setPosition(5, 50)
-    .setColorValue(color(0, 0, 0, 255))
-    .setGroup(brushCtrl)
-    ;
+      .setColorValue(color(0, 0, 0, 255))
+        .setGroup(brushCtrl)
+          ;
 
   // reposition the Label for controller 'slider'
   cp5.getController("strokeWeight")
     .getValueLabel()
-    .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
-    .setPaddingX(0)
-    ;
+      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+        .setPaddingX(0)
+          ;
   cp5.getController("strokeWeight")
     .getCaptionLabel()
-    .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
-    .setPaddingX(0)
-    ;
+      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
+        .setPaddingX(0)
+          ;
 }
 
 
@@ -229,7 +233,7 @@ void createControllers() {
 
 void onNewUser(int userId) {
   kinectStatus = "User found. Please assume Psi pose.";
-  kinect.startPoseDetection("Psi",userId);   
+  kinect.startPoseDetection("Psi", userId);
 }
 
 void onLostUser(int userId) {
