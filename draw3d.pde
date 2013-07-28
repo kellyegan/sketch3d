@@ -21,17 +21,21 @@ Drawing d;
 Brush defaultBrush;
 float strokeWeight;
 int brushColor;
-boolean drawing;
+boolean clickStarted;
 
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector cursor, cursorTransformed, max, min;
+PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
+
 
 float rotationStep = TWO_PI / 45;
 
 void setup() {
   size(1280, 768, P3D);
+//  size(displayWidth, displayHeight, P3D);
+
   smooth();
 
   //GUI
@@ -60,15 +64,20 @@ void setup() {
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
   strokeWeight = 1;
   brushColor = color(0, 0, 0);
-  drawing = false;
+  clickStarted = false;
 
   //View
   inverseTransform = new PMatrix3D();
-  offset = new PVector( width/2, height/2, 0);
-  rotation = new PVector(0, PI /2, 0);
+  offset = new PVector( 0, 0, -1750);
+  rotation = new PVector();
 
   cursor = new PVector();
   cursorTransformed = new PVector();
+  
+  rotationStarted = new PVector();
+  rotationEnded = new PVector();
+  rotationCenter = new PVector( 0, 0, 1000 );
+  oldRotation = new PVector();
 
   //
   //  File path = new File(sketchPath + "/data");  
@@ -90,16 +99,33 @@ void draw() {
 
     if ( mousePressed && !cp5.isMouseOver() ) {
       switch( mouseButton ) {
+        //DRAWING
         case LEFT:
-          if ( !drawing ) {
-            drawing = true;
+          if ( !clickStarted ) {
+            clickStarted = true;
             d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
           }
           d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
           break;
+        //ROTATION
         case RIGHT:
+          if ( !clickStarted ) {
+            clickStarted = true;
+            rotationStarted.set(cursorTransformed);
+            oldRotation.set( rotation );
+          }
+          rotationEnded.set(cursorTransformed);
+          stroke(255, 0,0);
+          line( 0,0,0, rotationEnded.x, rotationEnded.y, rotationEnded.z);
+          rotation.y = oldRotation.y + atan2( rotationEnded.x, rotationEnded.z ) - atan2( rotationStarted.x, rotationStarted.z );
+          println( "Rotation: " + rotation.y);
+//          rotation.y = oldRotation.y + PVector.angleBetween( rotationStarted, cursorTransformed );
           break;
+        //COLOR
         case CENTER:
+          if ( !clickStarted ) {
+            clickStarted = true;
+          }
           break;
       }
     }
@@ -112,13 +138,13 @@ void draw() {
   background(220);
 
   pushMatrix();
-  translate(offset.x, offset.y, offset.z);
+  translate(width/2, height/2, offset.z);
 
   if ( deviceReady ) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    translate(0, 0, -2500);
+    translate(offset.x, offset.y, offset.z);
     skeleton.display();
     popMatrix();
   }
@@ -132,7 +158,7 @@ void draw() {
 }
 
 void mouseReleased() {
-  drawing = false;
+  clickStarted = false;
   d.endStroke();
 }
 
@@ -180,10 +206,9 @@ void updateCursor() {
   //cursor.set( mouseX, mouseY, 0 );
   cursorTransformed.set( cursor );
   inverseTransform.reset();
-  inverseTransform.rotateZ( -rotation.z );
   inverseTransform.rotateY( PI - rotation.y );
   inverseTransform.rotateX( PI - rotation.x );
-  inverseTransform.translate( 0, 0, -2500 );
+  inverseTransform.translate( offset.x, offset.y, offset.z );
   inverseTransform.mult( cursor, cursorTransformed );
   
   max.set( max( cursor.x, max.x), max( cursor.y, max.y), max( cursor.z, max.z) );
@@ -195,11 +220,11 @@ void createControllers() {
   cp5 = new ControlP5(this);
 
   Group brushCtrl = cp5.addGroup("Brush")
-    .setPosition(50, 50)
-      .setBackgroundHeight(100)
-        .setBackgroundColor(color(100, 100))
-          .setSize(270, 125)
-            ;
+    .setPosition(width- (270 + 25), 150)
+    .setBackgroundHeight(100)
+    .setBackgroundColor(color(100, 100))
+    .setSize(270, 125)
+    ;
 
   cp5.addSlider("strokeWeight")
     .setGroup(brushCtrl)
