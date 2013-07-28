@@ -31,7 +31,7 @@ PVector cursor, cursorTransformed;
 float rotationStep = TWO_PI / 180;
 
 void setup() {
-  size(1280, 768, OPENGL);
+  size(1280, 768, P3D);
   smooth();
 
   //GUI
