@@ -26,7 +26,7 @@ boolean drawing;
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
-PVector cursor, cursorTransformed;
+PVector cursor, cursorTransformed, max, min;
 
 float rotationStep = TWO_PI / 45;
 
@@ -46,6 +46,8 @@ void setup() {
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
     cursor = new PVector();
+    min = new PVector( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
+    max = new PVector( Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE );
     deviceReady = true;
   } 
   else {
@@ -85,18 +87,26 @@ void draw() {
   if (deviceReady) {
     kinect.update();
     skeleton.update( cursor );
-  }
-  
-  if ( mousePressed && !cp5.isMouseOver() ) {
-    if ( !drawing ) {
-      drawing = true;
-      d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
-    }
-    d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-  }
 
-  updateCursor();
-  println(cursorTransformed + " " + cursor);
+    if ( mousePressed && !cp5.isMouseOver() ) {
+      switch( mouseButton ) {
+        case LEFT:
+          if ( !drawing ) {
+            drawing = true;
+            d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
+          }
+          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+          break;
+        case RIGHT:
+          break;
+        case CENTER:
+          break;
+      }
+    }
+
+    updateCursor();
+    println("Cursor: " + cursor + "  Max: " + max + "  Min: " + min);
+  }
 
   /*************************************** DISPLAY **************************************/
   background(220);
@@ -118,17 +128,6 @@ void draw() {
 
   d.display();
 
-//Cursor
-//  pushMatrix();
-//  translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-//  ellipse(0, 0, 10, 10);
-//  popMatrix();
-//  
-//  pushMatrix();
-//  translate( cursor.x, cursor.y, cursor.z);
-//  ellipse(0, 0, 10, 10);
-//  popMatrix();
-
   popMatrix();
 }
 
@@ -138,7 +137,6 @@ void mouseReleased() {
 }
 
 void mousePressed() {
-
 }
 
 void keyPressed() {
@@ -187,6 +185,9 @@ void updateCursor() {
   inverseTransform.rotateX( PI - rotation.x );
   inverseTransform.translate( 0, 0, -2500 );
   inverseTransform.mult( cursor, cursorTransformed );
+  
+  max.set( max( cursor.x, max.x), max( cursor.y, max.y), max( cursor.z, max.z) );
+  min.set( min( cursor.x, min.x), min( cursor.y, min.y), min( cursor.z, min.z) );
 }
 
 void createControllers() {

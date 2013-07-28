@@ -82,6 +82,7 @@ class Skeleton {
     if( userCalibrated ) {
       
       noFill();
+      strokeWeight(3);
       stroke( 128 );
       
       //Head
