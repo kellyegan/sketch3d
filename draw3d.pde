@@ -31,7 +31,7 @@ PVector cursor, cursorTransformed;
 float rotationStep = TWO_PI / 180;
 
 void setup() {
-  size(1024, 768, OPENGL);
+  size(1280, 768, OPENGL);
   smooth();
 
   //GUI
@@ -47,8 +47,7 @@ void setup() {
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
     cursor = new PVector();
     deviceReady = true;
-  } 
-  else {
+  } else {
     kinectStatus = "No Kinect found. ";
     deviceReady = false;
   }
@@ -63,7 +62,7 @@ void setup() {
   //View
   inverseTransform = new PMatrix3D();
   offset = new PVector( width/2, height/2, 0);
-  rotation = new PVector();
+  rotation = new PVector(0, 0, 0);
   
   cursor = new PVector();
   cursorTransformed = new PVector();
@@ -100,16 +99,26 @@ void draw() {
   } 
 
   /*************************************** DISPLAY **************************************/
-  background(200, 200, 190);
+  background(220);
     
   pushMatrix();
   translate(offset.x, offset.y, offset.z);
+  
+  if( deviceReady ) {
+    pushMatrix();
+    rotateX(PI);
+    rotateY(PI);
+    translate(0, 0, -2500);
+    skeleton.display();
+    popMatrix();
+  }
+  
   rotateX(rotation.x);
   rotateY(rotation.y);
 
   d.display();
-  skeleton.display();
 
+  //Cursor
   pushMatrix();
   translate( cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
   ellipse(0, 0, 10, 10);
@@ -170,9 +179,9 @@ void updateCursor() {
   cursorTransformed.set( cursor );
   inverseTransform.reset();
   inverseTransform.rotateZ( -rotation.z );
-  inverseTransform.rotateY( -rotation.y );
-  inverseTransform.rotateX( -rotation.x );
-  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  inverseTransform.rotateY( PI - rotation.y );
+  inverseTransform.rotateX( PI - rotation.x );
+  inverseTransform.translate( 0, 0, -2500 );
   inverseTransform.mult( cursor, cursorTransformed );
 }
 
