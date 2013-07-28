@@ -6,12 +6,16 @@ class Skeleton {
   int userID;
   boolean handedness;
   boolean userCalibrated;
+  float confidence;
   
   final static boolean LEFT_HANDED = true;
   final static boolean RIGHT_HANDED = false;
   
   PVector head, neck, torso, shoulderL, shoulderR, elbowL, elbowR, handL, handR, hipL, hipR;
+  PVector [] joints;
+    
   PVector cursor;
+  PVector offset, flip;
   
   /**
    * Create a new User
@@ -23,9 +27,9 @@ class Skeleton {
     applet = p;
     kinect = k;
     userID = u;
-    handedness = h;
-
+    handedness = h;  
     
+    joints = new PVector[11];
     
     head = new PVector();
     neck = new PVector();
@@ -53,16 +57,18 @@ class Skeleton {
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_SHOULDER, shoulderR);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_RIGHT_ELBOW, elbowL);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_ELBOW, elbowR);
-      kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_RIGHT_HAND, handL);
-      kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_HAND, handR);
+      float confidenceL = kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_RIGHT_HAND, handL);
+      float confidenceR = kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_HAND, handR);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_RIGHT_HIP, hipL);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_HIP, hipR);
       
       //Based on hand setting choose where to draw the cursor
       if( handedness == LEFT_HANDED ) {
         cursor.set( handL );
+        confidence = confidenceL;
       } else {
         cursor.set( handR );
+        confidence = confidenceR;
       }
       userCalibrated = true;
     } else {
