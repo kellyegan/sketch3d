@@ -23,11 +23,14 @@ float strokeWeight;
 int brushColor;
 boolean clickStarted;
 
+color bgColor;
+
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector cursor, cursorTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
+PShader lineShader;
 
 
 float rotationStep = TAU / 45;
@@ -70,6 +73,13 @@ void setup() {
   inverseTransform = new PMatrix3D();
   offset = new PVector( 0, 0, -1750);
   rotation = new PVector();
+  
+  
+  bgColor = color(220.0);
+  lineShader = loadShader("linefrag.glsl", "linevert.glsl");
+  lineShader.set("fogNear", -offset.z);
+  lineShader.set("fogFar", 4000.0);
+  lineShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
 
   cursor = new PVector();
   cursorTransformed = new PVector();
@@ -132,14 +142,15 @@ void draw() {
     }
 
     updateCursor();
-    println("Cursor: " + cursor + "  Max: " + max + "  Min: " + min);
+//    println("Cursor: " + cursor + "  Max: " + max + "  Min: " + min);
   }
 
   /*************************************** DISPLAY **************************************/
   background(220);
 
   pushMatrix();
-  translate(width/2, height/2, offset.z);
+  shader(lineShader, LINES);
+  translate(width/2, height/2, offset.z);  //1000 * sin((float) frameCount / 120) + offset.z);
 
   if ( deviceReady ) {
     pushMatrix();
