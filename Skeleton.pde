@@ -82,8 +82,8 @@ class Skeleton {
     if( userCalibrated ) {
       
       noFill();
-      strokeWeight(3);
-      stroke( 128 );
+      strokeWeight(2);
+      stroke( 0 );
       
       //Head
 //      line( head, neck );
@@ -118,8 +118,20 @@ class Skeleton {
     }
   }
   
+  void changeHand() {
+    handedness = !handedness; 
+  }
+  
   void line( PVector a, PVector b ) {
     applet.line( a.x, a.y, a.z, b.x, b.y, b.z ); 
+  }
+  
+  void nextUser() {
+    int numberOfUsers = kinect.getUsers().length; 
+    if( numberOfUsers > 1 ) {
+      userID = (userID + 1 ) % 10;
+    }  
+    println("Current users is " + userID);
   }
   
   PVector getCursor() {

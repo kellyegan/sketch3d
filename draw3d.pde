@@ -30,7 +30,7 @@ PVector cursor, cursorTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 
 
-float rotationStep = TWO_PI / 45;
+float rotationStep = TAU / 45;
 
 void setup() {
   size(1280, 768, P3D);
@@ -111,15 +111,16 @@ void draw() {
         case RIGHT:
           if ( !clickStarted ) {
             clickStarted = true;
-            rotationStarted.set(cursorTransformed);
+            rotationStarted.set(cursor);
             oldRotation.set( rotation );
           }
-          rotationEnded.set(cursorTransformed);
+          rotationEnded.set(cursor);
           stroke(255, 0,0);
-          line( 0,0,0, rotationEnded.x, rotationEnded.y, rotationEnded.z);
-          rotation.y = oldRotation.y + atan2( rotationEnded.x, rotationEnded.z ) - atan2( rotationStarted.x, rotationStarted.z );
-          println( "Rotation: " + rotation.y);
-//          rotation.y = oldRotation.y + PVector.angleBetween( rotationStarted, cursorTransformed );
+
+          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
           break;
         //COLOR
         case CENTER:
@@ -197,7 +198,16 @@ void keyPressed() {
     case 'U':
       d.undoLastStroke();
       break;
+    case 'n':
+    case 'N':
+      skeleton.nextUser();
+      break;
+    case 'h':
+    case 'H':
+      skeleton.changeHand();
+      break;
     default:
+    
     }
   }
 }
@@ -207,7 +217,7 @@ void updateCursor() {
   cursorTransformed.set( cursor );
   inverseTransform.reset();
   inverseTransform.rotateY( PI - rotation.y );
-  inverseTransform.rotateX( PI - rotation.x );
+  inverseTransform.rotateX( PI + rotation.x );
   inverseTransform.translate( offset.x, offset.y, offset.z );
   inverseTransform.mult( cursor, cursorTransformed );
   
