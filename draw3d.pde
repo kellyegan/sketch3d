@@ -32,6 +32,8 @@ PVector cursor, cursorTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader lineShader;
 
+boolean displayOrigin;  //Display the origin
+
 
 float rotationStep = TAU / 45;
 
@@ -43,6 +45,7 @@ void setup() {
 
   //GUI
   createControllers();
+  displayOrigin = true;
 
   //Kinect
   kinect = new SimpleOpenNI(this);
@@ -65,7 +68,7 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 1;
+  strokeWeight = 2;
   brushColor = color(0, 0, 0);
   clickStarted = false;
 
@@ -163,6 +166,17 @@ void draw() {
 
   rotateX(rotation.x);
   rotateY(rotation.y);
+
+ if ( displayOrigin ) {
+    strokeWeight(3);
+    println("Displaying the origin");
+    stroke(255, 0, 0);
+    line( 0, 0, 0, 0, 0, 500);
+    stroke(0, 255, 0);
+    line( 0, 0, 0, 0, -500, 0);
+    stroke(0, 0, 255);
+    line( 0, 0, 0, 500, 0, 0);    
+  }
 
   d.display();
 
