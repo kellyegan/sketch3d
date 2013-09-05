@@ -10,6 +10,8 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
+boolean mouseLeft, mouseCenter, mouseRight;
+
 //Kinect
 SimpleOpenNI kinect;
 boolean deviceReady;
@@ -25,6 +27,7 @@ boolean clickStarted;
 
 color bgColor;
 
+
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
@@ -33,6 +36,7 @@ PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader lineShader;
 
 boolean displayOrigin;  //Display the origin
+
 
 
 float rotationStep = TAU / 45;
@@ -46,6 +50,10 @@ void setup() {
   //GUI
   createControllers();
   displayOrigin = true;
+  
+  mouseLeft = false;
+  mouseCenter = false;
+  mouseRight= false;
 
   //Kinect
   kinect = new SimpleOpenNI(this);
@@ -183,13 +191,27 @@ void draw() {
   popMatrix();
 }
 
+void mousePressed() {
+  if(mouseButton==LEFT)
+    mouseLeft=true;
+  if(mouseButton==RIGHT)
+    mouseRight=true;
+  if(mouseButton==CENTER)
+    mouseCenter=true;
+}
+
 void mouseReleased() {
   clickStarted = false;
   d.endStroke();
-}
+  
+  if(mouseButton==LEFT)
+    mouseLeft=false;
+  if(mouseButton==RIGHT)
+    mouseRight=false;
+  if(mouseButton==CENTER)
+    mouseCenter=false;
+} 
 
-void mousePressed() {
-}
 
 void keyPressed() {
   if ( key == CODED ) {
@@ -230,6 +252,10 @@ void keyPressed() {
     case 'h':
     case 'H':
       skeleton.changeHand();
+      break;
+    case 'r':
+    case 'R':
+      //Reset view rotation/translation
       break;
     default:
     
