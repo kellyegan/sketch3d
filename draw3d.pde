@@ -10,7 +10,8 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
-boolean mouseLeft, mouseCenter, mouseRight;
+boolean mouseLeft, mouseCenter, mouseRight;    //Current button states 
+boolean up, down, left, right;
 
 //Kinect
 SimpleOpenNI kinect;
@@ -39,7 +40,7 @@ boolean displayOrigin;  //Display the origin
 
 
 
-float rotationStep = TAU / 45;
+float rotationStep = TAU / 180;
 
 void setup() {
   size(1280, 768, P3D);
@@ -114,6 +115,19 @@ void setup() {
 
 void draw() {
   /*************************************** UPDATE ***************************************/
+  if( up ) {
+    rotation.x += rotationStep;
+  }
+  if( down ) {
+    rotation.x -= rotationStep;
+  }
+  if( right ) {
+      rotation.y += rotationStep;    
+  }
+  if( left ) {
+      rotation.y -= rotationStep;
+  }
+  
   if (deviceReady) {
     kinect.update();
     skeleton.update( cursor );
@@ -177,7 +191,6 @@ void draw() {
 
  if ( displayOrigin ) {
     strokeWeight(3);
-    println("Displaying the origin");
     stroke(255, 0, 0);
     line( 0, 0, 0, 0, 0, 500);
     stroke(0, 255, 0);
@@ -202,8 +215,7 @@ void mousePressed() {
 
 void mouseReleased() {
   clickStarted = false;
-  d.endStroke();
-  
+  d.endStroke(); 
   if(mouseButton==LEFT)
     mouseLeft=false;
   if(mouseButton==RIGHT)
@@ -217,50 +229,64 @@ void keyPressed() {
   if ( key == CODED ) {
     switch(keyCode) {
     case UP:
-      rotation.x += rotationStep;
+      up = true;
       break;
     case DOWN:
-      rotation.x -= rotationStep;
+      down = true;
       break;
     case RIGHT:
-      rotation.y += rotationStep;
+      right = true;
       break;
     case LEFT:
-      rotation.y -= rotationStep;
+      left = true;
       break;
     default:
     }
   } 
   else {
     switch(key) {
-    case 's':
-    case 'S':
+    case 's': case 'S':
       d.save("data/default.gml");
       break;
-    case 'c':
-    case 'C':
+    case 'c': case 'C':
       d.clearStrokes();
       break;
-    case 'u':
-    case 'U':
+    case 'u': case 'U':
       d.undoLastStroke();
       break;
-    case 'n':
-    case 'N':
+    case 'n': case 'N':
       skeleton.nextUser();
       break;
-    case 'h':
-    case 'H':
+    case 'h': case 'H':
       skeleton.changeHand();
       break;
-    case 'r':
-    case 'R':
+    case 'r': case 'R':
       //Reset view rotation/translation
       break;
     default:
     
     }
   }
+}
+
+void keyReleased() {
+  if ( key == CODED ) {
+    switch(keyCode) {
+    case UP:
+      up = false;
+      break;
+    case DOWN:
+      down = false;
+      break;
+    case RIGHT:
+      right = false;
+      break;
+    case LEFT:
+      left = false;
+      break;
+    default:
+    }
+  } 
 }
 
 void updateCursor() {
