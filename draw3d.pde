@@ -10,7 +10,7 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
-boolean mouseLeft, mouseCenter, mouseRight;    //Current button states 
+boolean drawingNow, pickingColor, rotatingNow;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -52,9 +52,9 @@ void setup() {
   createControllers();
   displayOrigin = true;
   
-  mouseLeft = false;
-  mouseCenter = false;
-  mouseRight= false;
+  drawingNow = false;
+  pickingColor = false;
+  rotatingNow= false;
 
   //Kinect
   kinect = new SimpleOpenNI(this);
@@ -132,57 +132,56 @@ void draw() {
     kinect.update();
     skeleton.update( cursor );
 
-//    if( !cp5.isMouseOver() ) {
-//      if( mouseLeft ) {
+    if( !cp5.isMouseOver() ) {
+      if( drawingNow ) {
+          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+      }
+      if( rotatingNow ) {
+          rotationEnded.set(cursor);
+          stroke(255, 0,0);
+          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
+      }
+      if( pickingColor ) {
+          break;        
+      }
+    }
+    
+//    if ( mousePressed && !cp5.isMouseOver() ) {
+//      switch( mouseButton ) {
+//        //DRAWING
+//        case LEFT:
+//          if ( !clickStarted ) {
+//            clickStarted = true;
+//            d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
+//          }
 //          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-//      }
-//      if( mouseRight ) {
+//          break;
+//        //ROTATION
+//        case RIGHT:
+//          if ( !clickStarted ) {
+//            clickStarted = true;
+//            rotationStarted.set(cursor);
+//            oldRotation.set( rotation );
+//          }
 //          rotationEnded.set(cursor);
 //          stroke(255, 0,0);
 //
 //          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
 //          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
 //          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-//            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
-//      }
-//      if( mouseCenter ) {
-//          break;        
+//            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
+//          break;
+//        //COLOR
+//        case CENTER:
+//          if ( !clickStarted ) {
+//            clickStarted = true;
+//          }
+//          break;
 //      }
 //    }
-    
-    if ( mousePressed && !cp5.isMouseOver() ) {
-      switch( mouseButton ) {
-        //DRAWING
-        case LEFT:
-          if ( !clickStarted ) {
-            clickStarted = true;
-            d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
-          }
-          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
-          break;
-        //ROTATION
-        case RIGHT:
-          if ( !clickStarted ) {
-            clickStarted = true;
-            rotationStarted.set(cursor);
-            oldRotation.set( rotation );
-          }
-          rotationEnded.set(cursor);
-          stroke(255, 0,0);
-
-          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
-          break;
-        //COLOR
-        case CENTER:
-          if ( !clickStarted ) {
-            clickStarted = true;
-          }
-          break;
-      }
-    }
 
     updateCursor();
   }
@@ -225,26 +224,26 @@ void draw() {
 void mousePressed() {
   if(mouseButton==LEFT) {
     d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
-    mouseLeft=true;
+    drawingNow=true;
   }
   if(mouseButton==RIGHT) {
     rotationStarted.set(cursor);
     oldRotation.set( rotation );
-    mouseRight=true;
+    rotatingNow=true;
   }
   if(mouseButton==CENTER)
-    mouseCenter=true;
+    pickingColor=true;
 }
 
 void mouseReleased() {
   clickStarted = false;
   d.endStroke(); 
   if(mouseButton==LEFT)
-    mouseLeft=false;
+    drawingNow=false;
   if(mouseButton==RIGHT)
-    mouseRight=false;
+    rotatingNow=false;
   if(mouseButton==CENTER)
-    mouseCenter=false;
+    pickingColor=false;
 } 
 
 
