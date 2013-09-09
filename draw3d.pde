@@ -132,6 +132,24 @@ void draw() {
     kinect.update();
     skeleton.update( cursor );
 
+//    if( !cp5.isMouseOver() ) {
+//      if( mouseLeft ) {
+//          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+//      }
+//      if( mouseRight ) {
+//          rotationEnded.set(cursor);
+//          stroke(255, 0,0);
+//
+//          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+//          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+//          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+//            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
+//      }
+//      if( mouseCenter ) {
+//          break;        
+//      }
+//    }
+    
     if ( mousePressed && !cp5.isMouseOver() ) {
       switch( mouseButton ) {
         //DRAWING
@@ -167,11 +185,11 @@ void draw() {
     }
 
     updateCursor();
-//    println("Cursor: " + cursor + "  Max: " + max + "  Min: " + min);
   }
 
   /*************************************** DISPLAY **************************************/
   background(220);
+  camera(width/2.0, height/2.0, (height/2.0) / tan(PI*30.0 / 180.0), width/2.0, height/2.0, 0, 0, 1, 0);
 
   pushMatrix();
   shader(lineShader, LINES);
@@ -205,10 +223,15 @@ void draw() {
 }
 
 void mousePressed() {
-  if(mouseButton==LEFT)
+  if(mouseButton==LEFT) {
+    d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
     mouseLeft=true;
-  if(mouseButton==RIGHT)
+  }
+  if(mouseButton==RIGHT) {
+    rotationStarted.set(cursor);
+    oldRotation.set( rotation );
     mouseRight=true;
+  }
   if(mouseButton==CENTER)
     mouseCenter=true;
 }
