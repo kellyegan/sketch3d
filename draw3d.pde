@@ -32,7 +32,7 @@ color bgColor;
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
-PVector cursor, cursorTransformed, max, min;
+PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader lineShader;
 
@@ -64,7 +64,6 @@ void setup() {
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
-    cursor = new PVector();
     min = new PVector( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
     max = new PVector( Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE );
     deviceReady = true;
@@ -93,8 +92,10 @@ void setup() {
   lineShader.set("fogFar", 4000.0);
   lineShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
 
-  cursor = new PVector();
-  cursorTransformed = new PVector();
+  drawingHand = new PVector();
+  drawingHandTransformed = new PVector();
+  secondaryHand = new PVector();
+  secondaryHandTransformed = new PVector();
   
   rotationStarted = new PVector();
   rotationEnded = new PVector();
@@ -130,14 +131,17 @@ void draw() {
   
   if (deviceReady) {
     kinect.update();
-    skeleton.update( cursor );
+    skeleton.update( drawingHand );
+    skeleton.getSecondaryHand( secondaryHand );
+    updateDrawingHand();
+
 
     if( !cp5.isMouseOver() ) {
       if( drawingNow ) {
-          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
       }
       if( rotatingNow ) {
-          rotationEnded.set(cursor);
+          rotationEnded.set(secondaryHand);
           stroke(255, 0,0);
           rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
           rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
@@ -156,16 +160,16 @@ void draw() {
 //            clickStarted = true;
 //            d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
 //          }
-//          d.addPoint( (float)millis() / 1000.0, cursorTransformed.x, cursorTransformed.y, cursorTransformed.z);
+//          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
 //          break;
 //        //ROTATION
 //        case RIGHT:
 //          if ( !clickStarted ) {
 //            clickStarted = true;
-//            rotationStarted.set(cursor);
+//            rotationStarted.set(drawingHand);
 //            oldRotation.set( rotation );
 //          }
-//          rotationEnded.set(cursor);
+//          rotationEnded.set(drawingHand);
 //          stroke(255, 0,0);
 //
 //          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
@@ -182,7 +186,6 @@ void draw() {
 //      }
 //    }
 
-    updateCursor();
   }
 
   /*************************************** DISPLAY **************************************/
@@ -226,7 +229,7 @@ void mousePressed() {
     drawingNow=true;
   }
   if(mouseButton==RIGHT) {
-    rotationStarted.set(cursor);
+    rotationStarted.set(secondaryHand);
     oldRotation.set( rotation );
     rotatingNow=true;
   }
@@ -310,17 +313,19 @@ void keyReleased() {
   } 
 }
 
-void updateCursor() {
-  //cursor.set( mouseX, mouseY, 0 );
-  cursorTransformed.set( cursor );
+void updateDrawingHand() {
+  //drawingHand.set( mouseX, mouseY, 0 );
+  drawingHandTransformed.set( drawingHand );
+  secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
   inverseTransform.rotateY( PI - rotation.y );
   inverseTransform.rotateX( PI + rotation.x );
   inverseTransform.translate( offset.x, offset.y, offset.z );
-  inverseTransform.mult( cursor, cursorTransformed );
+  inverseTransform.mult( drawingHand, drawingHandTransformed );
+  inverseTransform.mult( secondaryHand, secondaryHandTransformed );
   
-  max.set( max( cursor.x, max.x), max( cursor.y, max.y), max( cursor.z, max.z) );
-  min.set( min( cursor.x, min.x), min( cursor.y, min.y), min( cursor.z, min.z) );
+  max.set( max( drawingHand.x, max.x), max( drawingHand.y, max.y), max( drawingHand.z, max.z) );
+  min.set( min( drawingHand.x, min.x), min( drawingHand.y, min.y), min( drawingHand.z, min.z) );
 }
 
 void createControllers() {
