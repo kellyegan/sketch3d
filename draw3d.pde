@@ -145,7 +145,6 @@ void draw() {
             + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
       }
       if( pickingColor ) {
-          break;        
       }
     }
     
