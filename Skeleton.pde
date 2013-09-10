@@ -102,12 +102,12 @@ class Skeleton {
       line( shoulderR, elbowR );
       line( elbowR, handR );
           
-      float neckLength = PVector.sub(neck, head).mag();
+      float shoulderWidth = PVector.sub(shoulderL, shoulderR).mag();
       
       //Draw a simple head
       pushMatrix();
-      translate( head.x, head.y + (neckLength * -1) / 2, head.z );
-      ellipse(0, 0, neckLength * 0.5, neckLength * 1 );
+      translate( head.x, head.y + (shoulderWidth * -0.5) / 2, head.z );
+      ellipse(0, 0, shoulderWidth * 0.5, shoulderWidth * 0.5 );
       popMatrix();
         
       //Draw the drawingHand
