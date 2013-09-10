@@ -37,6 +37,7 @@ PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader lineShader;
 
 boolean displayOrigin;  //Display the origin
+boolean displayUser;  //Display the origin
 
 
 
@@ -51,6 +52,7 @@ void setup() {
   //GUI
   createControllers();
   displayOrigin = true;
+  displayUser = true;
   
   drawingNow = false;
   pickingColor = false;
@@ -165,7 +167,7 @@ void draw() {
   shader(lineShader, LINES);
   translate(width/2, height/2, offset.z);  //1000 * sin((float) frameCount / 120) + offset.z);
 
-  if ( deviceReady ) {
+  if ( deviceReady && displayUser) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
@@ -244,7 +246,7 @@ void keyPressed() {
     case 'c': case 'C':
       d.clearStrokes();
       break;
-    case 'u': case 'U':
+    case 'z': case 'Z':
       d.undoLastStroke();
       break;
     case 'n': case 'N':
@@ -254,7 +256,12 @@ void keyPressed() {
       skeleton.changeHand();
       break;
     case 'o': case 'O':
+      //Hide the x, y, z axis
       displayOrigin = !displayOrigin;
+      break;
+    case 'u': case 'U':
+      //Toggle user
+      displayUser = !displayUser;
       break;
     case 'f': case 'F':
       //Reset view rotation/translation
