@@ -102,6 +102,9 @@ void setup() {
   rotationCenter = new PVector( 0, 0, 1000 );
   oldRotation = new PVector();
 
+  hint(DISABLE_DEPTH_MASK);
+
+
   //
   //  File path = new File(sketchPath + "/data");  
   //
@@ -149,43 +152,9 @@ void draw() {
             + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
       }
       if( pickingColor ) {
+        
       }
     }
-    
-//    if ( mousePressed && !cp5.isMouseOver() ) {
-//      switch( mouseButton ) {
-//        //DRAWING
-//        case LEFT:
-//          if ( !clickStarted ) {
-//            clickStarted = true;
-//            d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
-//          }
-//          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
-//          break;
-//        //ROTATION
-//        case RIGHT:
-//          if ( !clickStarted ) {
-//            clickStarted = true;
-//            rotationStarted.set(drawingHand);
-//            oldRotation.set( rotation );
-//          }
-//          rotationEnded.set(drawingHand);
-//          stroke(255, 0,0);
-//
-//          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-//          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-//          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-//            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
-//          break;
-//        //COLOR
-//        case CENTER:
-//          if ( !clickStarted ) {
-//            clickStarted = true;
-//          }
-//          break;
-//      }
-//    }
-
   }
 
   /*************************************** DISPLAY **************************************/
@@ -205,8 +174,8 @@ void draw() {
     popMatrix();
   }
 
-  rotateX(rotation.x);
-  rotateY(rotation.y);
+ rotateX(rotation.x);
+ rotateY(rotation.y);
 
  if ( displayOrigin ) {
     strokeWeight(3);
@@ -284,8 +253,28 @@ void keyPressed() {
     case 'h': case 'H':
       skeleton.changeHand();
       break;
-    case 'r': case 'R':
+    case 'o': case 'O':
+      displayOrigin = !displayOrigin;
+      break;
+    case 'f': case 'F':
       //Reset view rotation/translation
+      rotation.set(0, 0, 0);
+      break;
+    case 'l': case 'L':
+      //Left view
+      rotation.set(0, TAU / 4, 0);
+      break;
+    case 'r': case 'R':
+      //Right view
+      rotation.set(0, -TAU / 4, 0);
+      break;
+    case 't': case 'T':
+      //Top view
+      rotation.set(-TAU / 4, 0, 0);
+      break;
+    case 'b': case 'B':
+      //Bottom view
+      rotation.set(TAU / 4, 0, 0);
       break;
     default:
     
