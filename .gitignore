@@ -1,3 +1,8 @@
 data/*.gml
 .DS_Store
 *.swp
+data/caligraphy.png
+
+data/brush_speckle.png
+
+data/brush.psd

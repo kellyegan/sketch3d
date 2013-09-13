@@ -1,5 +1,5 @@
 /*
-  draw3d
+ draw3d
  Copyright Kelly Egan 2013
  */
 
@@ -28,31 +28,29 @@ boolean clickStarted;
 
 color bgColor;
 
-
 //View stuff
 PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
-PShader lineShader;
+PShader fogShader, fogTextShader;
+PImage brush;
 
 boolean displayOrigin;  //Display the origin
 boolean displayUser;  //Display the origin
-
-
 
 float rotationStep = TAU / 180;
 
 void setup() {
   size(1280, 768, P3D);
-//  size(displayWidth, displayHeight, P3D);
+  //size(displayWidth, displayHeight, P3D);
 
   smooth();
 
   //GUI
   createControllers();
   displayOrigin = true;
-  displayUser = true;
+  displayUser = true;  
   
   drawingNow = false;
   pickingColor = false;
@@ -69,8 +67,7 @@ void setup() {
     min = new PVector( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
     max = new PVector( Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE );
     deviceReady = true;
-  } 
-  else {
+  } else {
     kinectStatus = "No Kinect found. ";
     deviceReady = false;
   }
@@ -87,12 +84,20 @@ void setup() {
   offset = new PVector( 0, 0, -1750);
   rotation = new PVector();
   
-  
   bgColor = color(220.0);
-  lineShader = loadShader("linefrag.glsl", "linevert.glsl");
-  lineShader.set("fogNear", -offset.z);
-  lineShader.set("fogFar", 4000.0);
-  lineShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
+  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
+  fogShader.set("fogNear", -offset.z);
+  fogShader.set("fogFar", 4000.0);
+  fogShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
+  
+  fogTextShader = loadShader("fog_text_frag.glsl", "fog_text_vert.glsl");
+  fogTextShader.set("weight", 100.0);
+  brush = loadImage("brush.png");
+  fogTextShader.set("sprite", brush);
+  fogTextShader.set("fogNear", -offset.z);
+  fogTextShader.set("fogFar", 4000.0);
+  fogTextShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
+  
 
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
@@ -105,7 +110,6 @@ void setup() {
   oldRotation = new PVector();
 
   hint(DISABLE_DEPTH_MASK);
-
 
   //
   //  File path = new File(sketchPath + "/data");  
@@ -164,7 +168,8 @@ void draw() {
   camera(width/2.0, height/2.0, (height/2.0) / tan(PI*30.0 / 180.0), width/2.0, height/2.0, 0, 0, 1, 0);
 
   pushMatrix();
-  shader(lineShader, LINES);
+//  shader(fogShader, LINES);
+  shader(fogTextShader, LINES);
   translate(width/2, height/2, offset.z);  //1000 * sin((float) frameCount / 120) + offset.z);
 
   if ( deviceReady && displayUser) {
