@@ -10,7 +10,7 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
-boolean drawingNow, pickingColor, rotatingNow;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -33,6 +33,8 @@ PVector cameraPos, cameraFocus;
 
 PMatrix3D inverseTransform;
 PVector offset, rotation;
+PVector moveStart, moveNow, moveDelta;
+
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader fogShader, fogTextShader;
@@ -55,7 +57,7 @@ void setup() {
   displayUser = true;  
   
   drawingNow = false;
-  pickingColor = false;
+  moveDrawing = false;
   rotatingNow= false;
 
   //Kinect
@@ -77,7 +79,7 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 20;
+  strokeWeight = 20.0;
   brushColor = color(0, 0, 0);
   clickStarted = false;
 
@@ -86,6 +88,10 @@ void setup() {
   cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
   offset = new PVector( 0, 0, 0);
+  moveStart = new PVector();
+  moveNow = new PVector();
+  moveDelta = new PVector();
+  
   rotation = new PVector();
   
   bgColor = color(220.0);
@@ -160,8 +166,10 @@ void draw() {
           println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
             + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
       }
-      if( pickingColor ) {
-        
+      if( moveDrawing ) {
+        moveNow.set( secondaryHand );
+        moveDelta = PVector.sub( moveStart, moveNow );
+        line( moveStart.x, moveStart.y, moveStart.z, moveNow.x, moveNow.y, moveNow.z );
       }
     }
   }
@@ -172,6 +180,7 @@ void draw() {
   pushMatrix();
   
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
+  perspective();
 
   
 //  shader(fogShader, LINES);
@@ -205,6 +214,7 @@ void draw() {
   popMatrix();
 }
 
+
 void mousePressed() {
   if(mouseButton==LEFT) {
     d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
@@ -215,8 +225,10 @@ void mousePressed() {
     oldRotation.set( rotation );
     rotatingNow=true;
   }
-  if(mouseButton==CENTER)
-    pickingColor=true;
+  if(mouseButton==CENTER) {
+    moveDrawing=true;
+    moveStart.set( secondaryHand ); 
+  }
 }
 
 void mouseReleased() {
@@ -227,7 +239,7 @@ void mouseReleased() {
   if(mouseButton==RIGHT)
     rotatingNow=false;
   if(mouseButton==CENTER)
-    pickingColor=false;
+    moveDrawing=false;
 } 
 
 
