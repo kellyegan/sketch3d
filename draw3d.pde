@@ -33,7 +33,7 @@ PVector cameraPos, cameraFocus;
 
 PMatrix3D inverseTransform;
 PVector offset, rotation;
-PVector moveStart, moveNow, moveDelta;
+PVector moveStart, moveNow, moveDelta, oldOffset;
 
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
@@ -91,6 +91,7 @@ void setup() {
   moveStart = new PVector();
   moveNow = new PVector();
   moveDelta = new PVector();
+  oldOffset = new PVector();
   
   rotation = new PVector();
   
@@ -168,8 +169,8 @@ void draw() {
       }
       if( moveDrawing ) {
         moveNow.set( secondaryHand );
-        moveDelta = PVector.sub( moveStart, moveNow );
-        line( moveStart.x, moveStart.y, moveStart.z, moveNow.x, moveNow.y, moveNow.z );
+        moveDelta = PVector.sub( moveNow, moveStart );
+        offset = PVector.add( oldOffset, moveDelta );
       }
     }
   }
@@ -190,7 +191,6 @@ void draw() {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    translate(offset.x, offset.y, offset.z);
     skeleton.display();
     popMatrix();
   }
@@ -209,6 +209,8 @@ void draw() {
   }
 
   shader(fogTextShader, LINES);
+  
+  translate(offset.x, offset.y, offset.z);
   d.display();
 
   popMatrix();
@@ -227,7 +229,8 @@ void mousePressed() {
   }
   if(mouseButton==CENTER) {
     moveDrawing=true;
-    moveStart.set( secondaryHand ); 
+    moveStart.set( secondaryHand );
+    oldOffset.set( offset ); 
   }
 }
 
@@ -337,9 +340,10 @@ void updateDrawingHand() {
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
+  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   inverseTransform.rotateY( PI - rotation.y );
   inverseTransform.rotateX( PI + rotation.x );
-  inverseTransform.translate( offset.x, offset.y, offset.z );
+
   inverseTransform.mult( drawingHand, drawingHandTransformed );
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
   
