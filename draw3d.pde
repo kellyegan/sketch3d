@@ -214,10 +214,10 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  clickStarted = false;
-  d.endStroke(); 
-  if(mouseButton==LEFT)
+  if(mouseButton==LEFT) {
     drawingNow=false;
+    d.endStroke(); 
+  }
   if(mouseButton==RIGHT)
     rotatingNow=false;
   if(mouseButton==CENTER)
