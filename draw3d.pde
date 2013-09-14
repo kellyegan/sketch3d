@@ -268,6 +268,9 @@ void keyPressed() {
   } 
   else {
     switch(key) {
+    case '0':
+      offset.set( 0, 0, 0 );
+      break;
     case 'b': case 'B':
       //Bottom view
       rotation.set(TAU / 4, 0, 0);
