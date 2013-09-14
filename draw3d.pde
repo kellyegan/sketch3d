@@ -268,51 +268,49 @@ void keyPressed() {
   } 
   else {
     switch(key) {
-    case 's': case 'S':
-      d.save("data/default.gml");
+    case 'b': case 'B':
+      //Bottom view
+      rotation.set(TAU / 4, 0, 0);
       break;
     case 'c': case 'C':
       d.clearStrokes();
-      break;
-    case 'z': case 'Z':
-      d.undoLastStroke();
-      break;
-    case 'n': case 'N':
-      skeleton.nextUser();
-      break;
-    case 'h': case 'H':
-      skeleton.changeHand();
-      break;
-    case 'o': case 'O':
-      //Hide the x, y, z axis
-      displayOrigin = !displayOrigin;
-      break;
-    case 'u': case 'U':
-      //Toggle user
-      displayUser = !displayUser;
       break;
     case 'f': case 'F':
       //Reset view rotation/translation
       rotation.set(0, 0, 0);
       break;
+    case 'h': case 'H':
+      skeleton.changeHand();
+      break; 
     case 'l': case 'L':
       //Left view
       rotation.set(0, TAU / 4, 0);
+      break; 
+    case 'n': case 'N':
+      skeleton.nextUser();
       break;
+    case 'o': case 'O':
+      //Hide the x, y, z axis
+      displayOrigin = !displayOrigin;
+      break;      
     case 'r': case 'R':
       //Right view
       rotation.set(0, -TAU / 4, 0);
+      break;      
+    case 's': case 'S':
+      d.save("data/default.gml");
       break;
     case 't': case 'T':
       //Top view
       rotation.set(-TAU / 4, 0, 0);
       break;
-    case 'b': case 'B':
-      //Bottom view
-      rotation.set(TAU / 4, 0, 0);
+    case 'u': case 'U':
+      //Toggle user
+      displayUser = !displayUser;
       break;
-    default:
-    
+    case 'z': case 'Z':
+      d.undoLastStroke();
+      break;    
     }
   }
 }
