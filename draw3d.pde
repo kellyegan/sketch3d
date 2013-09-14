@@ -29,6 +29,8 @@ boolean clickStarted;
 color bgColor;
 
 //View stuff
+PVector cameraPos, cameraFocus;
+
 PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
@@ -75,13 +77,15 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 2;
+  strokeWeight = 20;
   brushColor = color(0, 0, 0);
   clickStarted = false;
 
   //View
+  cameraPos = new PVector( 0, 0, 4000 );
+  cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
-  offset = new PVector( 0, 0, -1750);
+  offset = new PVector( 0, 0, 0);
   rotation = new PVector();
   
   bgColor = color(220.0);
@@ -94,11 +98,10 @@ void setup() {
   fogTextShader.set("weight", 100.0);
   brush = loadImage("brush.png");
   fogTextShader.set("sprite", brush);
-  fogTextShader.set("fogNear", -offset.z);
-  fogTextShader.set("fogFar", 4000.0);
+  fogTextShader.set("fogNear", 0.25 * (cameraPos.z - cameraFocus.z) );
+  fogTextShader.set("fogFar",  1.75 * (cameraPos.z - cameraFocus.z) );
   fogTextShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
   
-
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
   secondaryHand = new PVector();
@@ -165,12 +168,14 @@ void draw() {
 
   /*************************************** DISPLAY **************************************/
   background(220);
-  camera(width/2.0, height/2.0, (height/2.0) / tan(PI*30.0 / 180.0), width/2.0, height/2.0, 0, 0, 1, 0);
 
   pushMatrix();
+  
+  camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
+
+  
 //  shader(fogShader, LINES);
-  shader(fogTextShader, LINES);
-  translate(width/2, height/2, offset.z);  //1000 * sin((float) frameCount / 120) + offset.z);
+  
 
   if ( deviceReady && displayUser) {
     pushMatrix();
@@ -194,6 +199,7 @@ void draw() {
     line( 0, 0, 0, 500, 0, 0);    
   }
 
+  shader(fogTextShader, LINES);
   d.display();
 
   popMatrix();
