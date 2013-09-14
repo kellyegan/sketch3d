@@ -33,7 +33,7 @@ PVector cameraPos, cameraFocus;
 
 PMatrix3D inverseTransform;
 PVector offset, rotation;
-PVector moveStart, moveNow, moveDelta, oldOffset;
+PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
@@ -91,6 +91,7 @@ void setup() {
   moveStart = new PVector();
   moveNow = new PVector();
   moveDelta = new PVector();
+  moveModel = new PVector();
   oldOffset = new PVector();
   
   rotation = new PVector();
@@ -169,7 +170,8 @@ void draw() {
       }
       if( moveDrawing ) {
         moveNow.set( secondaryHand );
-        moveDelta = PVector.sub( moveNow, moveStart );
+        PVector.sub( moveNow, moveStart, moveDelta );
+        moveDelta.set( -moveDelta.x, -moveDelta.y, moveDelta.z );
         offset = PVector.add( oldOffset, moveDelta );
       }
     }
