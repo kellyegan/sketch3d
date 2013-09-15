@@ -35,7 +35,7 @@ PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 
-PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
+PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader fogShader, fogTextShader;
 PImage brush;
@@ -68,8 +68,6 @@ void setup() {
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
-    min = new PVector( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
-    max = new PVector( Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE );
     deviceReady = true;
   } else {
     kinectStatus = "No Kinect found. ";
@@ -349,9 +347,6 @@ void updateDrawingHand() {
 
   inverseTransform.mult( drawingHand, drawingHandTransformed );
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
-  
-  max.set( max( drawingHand.x, max.x), max( drawingHand.y, max.y), max( drawingHand.z, max.z) );
-  min.set( min( drawingHand.x, min.x), min( drawingHand.y, min.y), min( drawingHand.z, min.z) );
 }
 
 void createControllers() {
