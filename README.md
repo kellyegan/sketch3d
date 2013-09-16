@@ -1,5 +1,5 @@
-draw3d
-======
+sketch3d
+========
 
 Copyright Kelly Egan 2013
 http://kellyegan.net
