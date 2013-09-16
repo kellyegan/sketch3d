@@ -187,7 +187,7 @@ void draw() {
   perspective();
 
   
-  shader(fogShader, LINES);
+//  shader(fogShader, LINES);
   
   if ( deviceReady && displayUser) {
     pushMatrix();
