@@ -46,8 +46,8 @@ boolean displayUser;  //Display the origin
 float rotationStep = TAU / 180;
 
 void setup() {
-  size(1280, 768, P3D);
-  //size(displayWidth, displayHeight, P3D);
+  //size(1280, 768, P3D);
+  size(displayWidth, displayHeight, P3D);
 
   smooth();
 
@@ -154,6 +154,7 @@ void draw() {
     updateDrawingHand();
 
 
+
     if( !cp5.isMouseOver() ) {
       if( drawingNow ) {
           d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
@@ -169,10 +170,12 @@ void draw() {
       if( moveDrawing ) {
         moveNow.set( secondaryHand );
         PVector.sub( moveNow, moveStart, moveDelta );
-        moveDelta.set( -moveDelta.x, -moveDelta.y, moveDelta.z );
-        offset = PVector.add( oldOffset, moveDelta );
+        moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
+        inverseTransform.mult( moveDelta, moveModel );
+        offset = PVector.add( oldOffset, moveModel );
       }
     }
+    
   }
 
   /*************************************** DISPLAY **************************************/
@@ -336,12 +339,22 @@ void keyReleased() {
   } 
 }
 
+boolean sketchFullScreen() {
+  return true;
+}
+
+void stop() {
+  
+}
+
 void updateDrawingHand() {
   //drawingHand.set( mouseX, mouseY, 0 );
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
-  inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  if( !moveDrawing ) {
+    inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  }
   inverseTransform.rotateY( PI - rotation.y );
   inverseTransform.rotateX( PI + rotation.x );
 
