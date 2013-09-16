@@ -14,7 +14,7 @@ class Skeleton {
   PVector head, neck, torso, shoulderL, shoulderR, elbowL, elbowR, handL, handR, hipL, hipR;
   PVector [] joints;
     
-  PVector cursor;
+  PVector drawingHand;
   PVector offset, flip;
   
   /**
@@ -43,7 +43,7 @@ class Skeleton {
     hipL = new PVector();
     hipR = new PVector();
     
-    cursor = new PVector();
+    drawingHand = new PVector();
     
     userCalibrated = false;
   }
@@ -62,19 +62,21 @@ class Skeleton {
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_RIGHT_HIP, hipL);
       kinect.getJointPositionSkeleton(userID, SimpleOpenNI.SKEL_LEFT_HIP, hipR);
       
-      //Based on hand setting choose where to draw the cursor
+      //Based on hand setting choose where to draw the drawingHand
       if( handedness == LEFT_HANDED ) {
-        cursor.set( handL );
+        drawingHand.set( handL );
+        secondaryHand.set( handR );
         confidence = confidenceL;
       } else {
-        cursor.set( handR );
+        drawingHand.set( handR );
+        secondaryHand.set( handL );
         confidence = confidenceR;
       }
       userCalibrated = true;
     } else {
       userCalibrated = false;
     }
-    c.set(cursor);
+    c.set(drawingHand);
     return userCalibrated;
   }
   
@@ -100,19 +102,19 @@ class Skeleton {
       line( shoulderR, elbowR );
       line( elbowR, handR );
           
-      float neckLength = PVector.sub(neck, head).mag();
+      float shoulderWidth = PVector.sub(shoulderL, shoulderR).mag();
       
       //Draw a simple head
       pushMatrix();
-      translate( head.x, head.y + (neckLength * -1) / 2, head.z );
-      ellipse(0, 0, neckLength * 0.5, neckLength * 1 );
+      translate( head.x, head.y + (shoulderWidth * -0.5) / 2, head.z );
+      ellipse(0, 0, shoulderWidth * 0.5, shoulderWidth * 0.5 );
       popMatrix();
         
-      //Draw the cursor
+      //Draw the drawingHand
       fill(skeleton.getConfidence() * 200, 0, 0);
       noStroke();
       pushMatrix();
-      translate(cursor.x, cursor.y, cursor.z);
+      translate(drawingHand.x, drawingHand.y, drawingHand.z);
       sphere( 20 );
       popMatrix();
     }
@@ -134,13 +136,22 @@ class Skeleton {
     println("Current users is " + userID);
   }
   
-  PVector getCursor() {
-    return cursor;
+  PVector getDrawingHand() {
+    return drawingHand;
   }
   
-  void getCursor(PVector target) {
-    target.set(cursor);
+  void getDrawingHand(PVector target) {
+    target.set(drawingHand);
   }
+  
+  void getSecondaryHand(PVector target) {
+    if( handedness == LEFT_HANDED ) {
+      target.set(handR);
+    } else {
+      target.set(handL);
+    }
+  }
+  
   
   float getConfidence() {
     return confidence;
