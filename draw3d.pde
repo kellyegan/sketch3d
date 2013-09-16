@@ -10,7 +10,7 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
-boolean drawingNow, pickingColor, rotatingNow;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -29,9 +29,13 @@ boolean clickStarted;
 color bgColor;
 
 //View stuff
+PVector cameraPos, cameraFocus;
+
 PMatrix3D inverseTransform;
 PVector offset, rotation;
-PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, max, min;
+PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
+
+PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PShader fogShader, fogTextShader;
 PImage brush;
@@ -42,8 +46,8 @@ boolean displayUser;  //Display the origin
 float rotationStep = TAU / 180;
 
 void setup() {
-  size(1280, 768, P3D);
-  //size(displayWidth, displayHeight, P3D);
+  //size(1280, 768, P3D);
+  size(displayWidth, displayHeight, P3D);
 
   smooth();
 
@@ -53,7 +57,7 @@ void setup() {
   displayUser = true;  
   
   drawingNow = false;
-  pickingColor = false;
+  moveDrawing = false;
   rotatingNow= false;
 
   //Kinect
@@ -64,8 +68,6 @@ void setup() {
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
     skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
-    min = new PVector( Float.MAX_VALUE, Float.MAX_VALUE, Float.MAX_VALUE );
-    max = new PVector( Float.MIN_VALUE, Float.MIN_VALUE, Float.MIN_VALUE );
     deviceReady = true;
   } else {
     kinectStatus = "No Kinect found. ";
@@ -75,13 +77,21 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 2;
+  strokeWeight = 20.0;
   brushColor = color(0, 0, 0);
   clickStarted = false;
 
   //View
+  cameraPos = new PVector( 0, 0, 4000 );
+  cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
-  offset = new PVector( 0, 0, -1750);
+  offset = new PVector( 0, 0, 0);
+  moveStart = new PVector();
+  moveNow = new PVector();
+  moveDelta = new PVector();
+  moveModel = new PVector();
+  oldOffset = new PVector();
+  
   rotation = new PVector();
   
   bgColor = color(220.0);
@@ -94,11 +104,10 @@ void setup() {
   fogTextShader.set("weight", 100.0);
   brush = loadImage("brush.png");
   fogTextShader.set("sprite", brush);
-  fogTextShader.set("fogNear", -offset.z);
-  fogTextShader.set("fogFar", 4000.0);
+  fogTextShader.set("fogNear", 0.25 * (cameraPos.z - cameraFocus.z) );
+  fogTextShader.set("fogFar",  1.75 * (cameraPos.z - cameraFocus.z) );
   fogTextShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
   
-
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
   secondaryHand = new PVector();
@@ -145,6 +154,7 @@ void draw() {
     updateDrawingHand();
 
 
+
     if( !cp5.isMouseOver() ) {
       if( drawingNow ) {
           d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
@@ -157,26 +167,33 @@ void draw() {
           println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
             + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
       }
-      if( pickingColor ) {
-        
+      if( moveDrawing ) {
+        moveNow.set( secondaryHand );
+        PVector.sub( moveNow, moveStart, moveDelta );
+        moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
+        inverseTransform.mult( moveDelta, moveModel );
+        offset = PVector.add( oldOffset, moveModel );
       }
     }
+    
   }
 
   /*************************************** DISPLAY **************************************/
   background(220);
-  camera(width/2.0, height/2.0, (height/2.0) / tan(PI*30.0 / 180.0), width/2.0, height/2.0, 0, 0, 1, 0);
 
   pushMatrix();
+  
+  camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
+  perspective();
+
+  
 //  shader(fogShader, LINES);
-  shader(fogTextShader, LINES);
-  translate(width/2, height/2, offset.z);  //1000 * sin((float) frameCount / 120) + offset.z);
+  
 
   if ( deviceReady && displayUser) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    translate(offset.x, offset.y, offset.z);
     skeleton.display();
     popMatrix();
   }
@@ -194,10 +211,14 @@ void draw() {
     line( 0, 0, 0, 500, 0, 0);    
   }
 
+  shader(fogTextShader, LINES);
+  
+  translate(offset.x, offset.y, offset.z);
   d.display();
 
   popMatrix();
 }
+
 
 void mousePressed() {
   if(mouseButton==LEFT) {
@@ -209,8 +230,11 @@ void mousePressed() {
     oldRotation.set( rotation );
     rotatingNow=true;
   }
-  if(mouseButton==CENTER)
-    pickingColor=true;
+  if(mouseButton==CENTER) {
+    moveDrawing=true;
+    moveStart.set( secondaryHand );
+    oldOffset.set( offset ); 
+  }
 }
 
 void mouseReleased() {
@@ -221,7 +245,7 @@ void mouseReleased() {
   if(mouseButton==RIGHT)
     rotatingNow=false;
   if(mouseButton==CENTER)
-    pickingColor=false;
+    moveDrawing=false;
 } 
 
 
@@ -245,51 +269,52 @@ void keyPressed() {
   } 
   else {
     switch(key) {
-    case 's': case 'S':
-      d.save("data/default.gml");
-      break;
-    case 'c': case 'C':
-      d.clearStrokes();
-      break;
-    case 'z': case 'Z':
-      d.undoLastStroke();
-      break;
-    case 'n': case 'N':
-      skeleton.nextUser();
-      break;
-    case 'h': case 'H':
-      skeleton.changeHand();
-      break;
-    case 'o': case 'O':
-      //Hide the x, y, z axis
-      displayOrigin = !displayOrigin;
-      break;
-    case 'u': case 'U':
-      //Toggle user
-      displayUser = !displayUser;
-      break;
-    case 'f': case 'F':
-      //Reset view rotation/translation
-      rotation.set(0, 0, 0);
-      break;
-    case 'l': case 'L':
-      //Left view
-      rotation.set(0, TAU / 4, 0);
-      break;
-    case 'r': case 'R':
-      //Right view
-      rotation.set(0, -TAU / 4, 0);
-      break;
-    case 't': case 'T':
-      //Top view
-      rotation.set(-TAU / 4, 0, 0);
+    case '0':
+      offset.set( 0, 0, 0 );
       break;
     case 'b': case 'B':
       //Bottom view
       rotation.set(TAU / 4, 0, 0);
       break;
-    default:
-    
+    case 'c': case 'C':
+      d.clearStrokes();
+      break;
+    case 'f': case 'F':
+      //Reset view rotation/translation
+      rotation.set(0, 0, 0);
+      break;
+    case 'h': case 'H':
+      skeleton.changeHand();
+      break; 
+    case 'l': case 'L':
+      //Left view
+      rotation.set(0, TAU / 4, 0);
+      break; 
+    case 'n': case 'N':
+      skeleton.nextUser();
+      break;
+    case 'o': case 'O':
+      //Hide the x, y, z axis
+      displayOrigin = !displayOrigin;
+      break;      
+    case 'r': case 'R':
+      //Right view
+      rotation.set(0, -TAU / 4, 0);
+      break;      
+    case 's': case 'S':
+      d.save("data/default.gml");
+      break;
+    case 't': case 'T':
+      //Top view
+      rotation.set(-TAU / 4, 0, 0);
+      break;
+    case 'u': case 'U':
+      //Toggle user
+      displayUser = !displayUser;
+      break;
+    case 'z': case 'Z':
+      d.undoLastStroke();
+      break;    
     }
   }
 }
@@ -314,19 +339,27 @@ void keyReleased() {
   } 
 }
 
+boolean sketchFullScreen() {
+  return true;
+}
+
+void stop() {
+  
+}
+
 void updateDrawingHand() {
   //drawingHand.set( mouseX, mouseY, 0 );
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
+  if( !moveDrawing ) {
+    inverseTransform.translate( -offset.x, -offset.y, -offset.z );
+  }
   inverseTransform.rotateY( PI - rotation.y );
   inverseTransform.rotateX( PI + rotation.x );
-  inverseTransform.translate( offset.x, offset.y, offset.z );
+
   inverseTransform.mult( drawingHand, drawingHandTransformed );
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
-  
-  max.set( max( drawingHand.x, max.x), max( drawingHand.y, max.y), max( drawingHand.z, max.z) );
-  min.set( min( drawingHand.x, min.x), min( drawingHand.y, min.y), min( drawingHand.z, min.z) );
 }
 
 void createControllers() {
