@@ -153,8 +153,6 @@ void draw() {
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
 
-
-
     if( !cp5.isMouseOver() ) {
       if( drawingNow ) {
           d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
@@ -167,7 +165,7 @@ void draw() {
           println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
             + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
       }
-      if( moveDrawing ) {
+      if( moveDrawing && !drawingNow ) {
         moveNow.set( secondaryHand );
         PVector.sub( moveNow, moveStart, moveDelta );
         moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
