@@ -104,7 +104,8 @@ class Drawing {
           int r = strokeElement.getChild("brush/color/r").getIntContent();
           int g = strokeElement.getChild("brush/color/g").getIntContent();
           int b = strokeElement.getChild("brush/color/b").getIntContent();
-          brushStyle.setColor( color(r,g,b) );
+          int a = strokeElement.getChild("brush/color/a").getIntContent();
+          brushStyle.setColor( color(r,g,b,a) );
         } catch( Exception e ) {
           System.err.println("ERROR: Color data not found for Brush.");
         }       
@@ -174,6 +175,7 @@ class Drawing {
         brushColor.addChild("r").setIntContent( (int)red( stroke.brushStyle.getColor() ) );
         brushColor.addChild("g").setIntContent( (int)green( stroke.brushStyle.getColor() ) );
         brushColor.addChild("b").setIntContent( (int)blue( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("a").setIntContent( (int)alpha( stroke.brushStyle.getColor() ) );
         
         for( Point point : stroke.points ) {
           XML ptElement = vectorToXml("pt", scaleToGML(point.location));
