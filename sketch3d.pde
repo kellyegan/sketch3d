@@ -269,6 +269,10 @@ void keyPressed() {
     case '0':
       offset.set( 0, 0, 0 );
       break;
+    case 'a': case 'A':
+      //Hide the x, y, z axis
+      displayOrigin = !displayOrigin;
+      break; 
     case 'b': case 'B':
       //Bottom view
       rotation.set(TAU / 4, 0, 0);
@@ -291,15 +295,14 @@ void keyPressed() {
       skeleton.nextUser();
       break;
     case 'o': case 'O':
-      //Hide the x, y, z axis
-      displayOrigin = !displayOrigin;
-      break;      
+      //Open a file
+      selectInput("Please select a file to load", "loadDrawing" );
     case 'r': case 'R':
       //Right view
       rotation.set(0, -TAU / 4, 0);
       break;      
     case 's': case 'S':
-      d.save("data/default.gml");
+      selectOutput("Save drawing:", "saveDrawing");
       break;
     case 't': case 'T':
       //Top view
@@ -342,6 +345,27 @@ boolean sketchFullScreen() {
 
 void stop() {
   
+}
+
+void loadDrawing( File f ) {
+  if ( f != null ) {
+    try {
+      d.clearStrokes();
+      d.load( f.getAbsolutePath() );
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+}
+
+void saveDrawing(File f) {
+  if ( f != null ) {
+    try {
+      d.save( f.getAbsolutePath() );
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }  
 }
 
 void updateDrawingHand() {
