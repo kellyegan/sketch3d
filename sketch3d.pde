@@ -16,6 +16,7 @@ boolean up, down, left, right;
 //Kinect
 SimpleOpenNI kinect;
 boolean deviceReady;
+boolean handPicked;
 Skeleton skeleton;
 String kinectStatus;
 
@@ -59,6 +60,8 @@ void setup() {
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
+  
+  handPicked = false;
 
   //Kinect
   kinect = new SimpleOpenNI(this);
@@ -154,6 +157,7 @@ void draw() {
     updateDrawingHand();
 
 //    if ( !cp5.isMouseOver() ) {
+    
       if ( drawingNow ) {
         d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
       }
@@ -217,6 +221,7 @@ void draw() {
 
 
 void mousePressed() {
+  if( handPicked ) {
   if (mouseButton==LEFT) {
     d.startStroke(new Brush( "", brushColor, strokeWeight ) );
     drawingNow=true;
@@ -230,6 +235,14 @@ void mousePressed() {
     moveDrawing=true;
     moveStart.set( secondaryHand );
     oldOffset.set( offset );
+  }
+  } else {
+    handPicked = true;
+    if (mouseButton==CENTER) {
+      skeleton.setHand( Skeleton.LEFT_HANDED );
+    } else if ( mouseButton==RIGHT ) {
+      skeleton.setHand( Skeleton.RIGHT_HANDED );
+    }
   }
 }
 
@@ -308,10 +321,12 @@ void keyPressed() {
     case 'R':
       //Right view
       rotation.set(0, -TAU / 4, 0);
-      break;      
+      break;     
     case 's': 
     case 'S':
-      selectOutput("Save drawing:", "saveDrawing");
+      //selectOutput("Save drawing:", "saveDrawing");
+      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
+      d.save( "makerfaire/mf_" + timestamp + ".gml");
       break;
     case 't': 
     case 'T':
