@@ -61,6 +61,7 @@ void setup() {
   moveDrawing = false;
   rotatingNow= false;
   
+  deviceReady = false;
   handPicked = false;
 
   //Kinect
@@ -70,12 +71,14 @@ void setup() {
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
-    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
+    println(kinectStatus);
+    skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
     deviceReady = true;
   } 
   else {
+    
     kinectStatus = "No Kinect found. ";
-    deviceReady = false;
+    println(kinectStatus);
   }
 
   //Drawing
@@ -222,26 +225,28 @@ void draw() {
 
 void mousePressed() {
   if( handPicked ) {
-  if (mouseButton==LEFT) {
-    d.startStroke(new Brush( "", brushColor, strokeWeight ) );
-    drawingNow=true;
-  }
-  if (mouseButton==RIGHT) {
-    rotationStarted.set(secondaryHand);
-    oldRotation.set( rotation );
-    rotatingNow=true;
-  }
-  if (mouseButton==CENTER) {
-    moveDrawing=true;
-    moveStart.set( secondaryHand );
-    oldOffset.set( offset );
-  }
+    if (mouseButton==LEFT) {
+      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      drawingNow=true;
+    }
+    if (mouseButton==RIGHT) {
+      rotationStarted.set(secondaryHand);
+      oldRotation.set( rotation );
+      rotatingNow=true;
+    }
+    if (mouseButton==CENTER) {
+      moveDrawing=true;
+      moveStart.set( secondaryHand );
+      oldOffset.set( offset );
+    }
   } else {
-    handPicked = true;
+    
     if (mouseButton==CENTER) {
       skeleton.setHand( Skeleton.LEFT_HANDED );
+      handPicked = true;
     } else if ( mouseButton==RIGHT ) {
       skeleton.setHand( Skeleton.RIGHT_HANDED );
+      handPicked = true;
     }
   }
 }
@@ -311,7 +316,9 @@ void keyPressed() {
       break; 
     case 'n': 
     case 'N':
-      skeleton.nextUser();
+      skeleton.reset();
+      kinect.init();
+      setup();
       break;
     case 'o': 
     case 'O':
@@ -396,9 +403,9 @@ void keyReleased() {
   }
 }
 
-boolean sketchFullScreen() {
-  return true;
-}
+//boolean sketchFullScreen() {
+//  return true;
+//}
 
 void stop() {
 }
@@ -484,26 +491,30 @@ void updateDrawingHand() {
 /************************************** SimpleOpenNI callbacks **************************************/
 
 void onNewUser(int userId) {
-  kinectStatus = "User found. Please assume Psi pose.";
+  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
+  println( kinectStatus );
   kinect.startPoseDetection("Psi", userId);
 }
 
 void onLostUser(int userId) {
-  kinectStatus = "User lost.";
+  kinectStatus = "User " + userId + " lost.";
+  println( kinectStatus);
 }
 
 void onStartPose(String pose, int userId) {
-  kinectStatus = "Pose detected. Requesting calibration skeleton.";
-
+  kinectStatus = pose + " pose detected for user " + userId + ". Requesting calibration skeleton.";
+  println( kinectStatus);
   kinect.stopPoseDetection(userId); 
   kinect.requestCalibrationSkeleton(userId, true);
+
 }
 
-void onEndCalibration(int userId, boolean successfull) {
-  if (successfull) { 
+void onEndCalibration(int userId, boolean successful) {
+  if (successful) { 
     kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
-    println("  User calibrated !!!");
+    println( kinectStatus );
     kinect.startTrackingSkeleton(userId);
+    skeleton.setUser(userId);
   } 
   else { 
     kinectStatus = "Calibration failed starting pose detection.";
