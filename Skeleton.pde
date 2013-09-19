@@ -132,6 +132,10 @@ class Skeleton {
     applet.line( a.x, a.y, a.z, b.x, b.y, b.z ); 
   }
   
+  void setUser(int u ) {
+    userID = u; 
+  }
+  
   void nextUser() {
     int numberOfUsers = kinect.getUsers().length; 
     if( numberOfUsers > 1 ) {
@@ -154,6 +158,11 @@ class Skeleton {
     } else {
       target.set(handL);
     }
+  }
+  
+  void reset() {
+    kinect.stopTrackingSkeleton(userID);
+   
   }
   
   
