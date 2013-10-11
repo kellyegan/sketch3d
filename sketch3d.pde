@@ -29,6 +29,8 @@ float strokeWeight;
 int brushColor;
 boolean clickStarted;
 
+PImage bgImage;
+boolean backgroundImageOn;
 color bgColor;
 
 //View stuff
@@ -44,7 +46,7 @@ PShader fogShader, fogTextShader;
 PImage brush;
 
 boolean displayOrigin;  //Display the origin
-boolean displayUser;  //Display the origin
+boolean displaySkeleton;  //Display the origin
 
 float rotationStep = TAU / 180;
 
@@ -60,7 +62,7 @@ void setup() {
   textFont(font, 20);
 
   displayOrigin = true;
-  displayUser = true;  
+  displaySkeleton = true;  
 
   drawingNow = false;
   moveDrawing = false;
@@ -107,6 +109,9 @@ void setup() {
   rotation = new PVector();
 
   bgColor = color(220.0);
+  bgImage = loadImage("data/testBackground.jpg");
+  backgroundImageOn = false;
+  
   fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
   fogShader.set("fogNear", -offset.z);
   fogShader.set("fogFar", 4000.0);
@@ -189,6 +194,9 @@ void draw() {
 
   /*************************************** DISPLAY **************************************/
   background(220);
+  if( backgroundImageOn ) {
+    image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
+  }
   fill(100);
   text(kinectStatus, 40, height - 60);
   noFill();
@@ -200,11 +208,11 @@ void draw() {
 
   //  shader(fogShader, LINES);
 
-  if ( deviceReady && displayUser) {
+  if ( deviceReady ) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    skeleton.display();
+    skeleton.display(displaySkeleton);
     popMatrix();
   }
 
@@ -363,7 +371,11 @@ void keyPressed() {
     case 'u': 
     case 'U':
       //Toggle user
-      displayUser = !displayUser;
+      displaySkeleton = !displaySkeleton;
+      break;
+    case 'q':
+    case 'Q':
+      exit();
       break;
     case 'x':
     case 'X':
