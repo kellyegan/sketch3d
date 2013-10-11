@@ -230,7 +230,6 @@ void draw() {
 }
 
 void mousePressed() {
-  if( handPicked ) {
     if (mouseButton==LEFT) {
       d.startStroke(new Brush( "", brushColor, strokeWeight ) );
       drawingNow=true;
@@ -245,18 +244,6 @@ void mousePressed() {
       moveStart.set( secondaryHand );
       oldOffset.set( offset );
     }
-  } else {
-    
-    if (mouseButton==CENTER) {
-      skeleton.setHand( Skeleton.LEFT_HANDED );
-      d.clearStrokes();
-      handPicked = true;
-    } else if ( mouseButton==RIGHT ) {
-      skeleton.setHand( Skeleton.RIGHT_HANDED );
-      d.clearStrokes();
-      handPicked = true;
-    }
-  }
 }
 
 void mouseReleased() {
@@ -280,10 +267,22 @@ void keyPressed() {
       down = true;
       break;
     case RIGHT:
-      right = true;
+      if( handPicked ) {
+        right = true;
+      } else {
+        skeleton.setHand( Skeleton.LEFT_HANDED );
+        d.clearStrokes();
+        handPicked = true;  
+      }
       break;
     case LEFT:
-      left = true;
+      if( handPicked ) {
+        left = true;
+      } else {
+        skeleton.setHand( Skeleton.LEFT_HANDED );
+        d.clearStrokes();
+        handPicked = true;  
+      }
       break;
     default:
     }
@@ -300,12 +299,17 @@ void keyPressed() {
       break; 
     case 'b': 
     case 'B':
-      //Bottom view
+      //Change background color
       rotation.set(TAU / 4, 0, 0);
       break;
     case 'c': 
     case 'C':
-      d.clearStrokes();
+      //Change stroke color
+      break;
+    case 'd':
+    case 'D':
+      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      drawingNow=true;
       break;
     case 'f': 
     case 'F':
@@ -321,6 +325,12 @@ void keyPressed() {
       //Left view
       rotation.set(0, TAU / 4, 0);
       break; 
+    case 'm':
+    case 'M':
+      moveDrawing=true;
+      moveStart.set( secondaryHand );
+      oldOffset.set( offset );
+      break;
     case 'n': 
     case 'N':
       skeleton.reset();
@@ -333,8 +343,11 @@ void keyPressed() {
       selectInput("Please select a file to load", "loadDrawing" );
     case 'r': 
     case 'R':
+      rotationStarted.set(secondaryHand);
+      oldRotation.set( rotation );
+      rotatingNow=true;      
       //Right view
-      rotation.set(0, -TAU / 4, 0);
+      //rotation.set(0, -TAU / 4, 0);
       break;     
     case 's': 
     case 'S':
@@ -351,6 +364,10 @@ void keyPressed() {
     case 'U':
       //Toggle user
       displayUser = !displayUser;
+      break;
+    case 'x':
+    case 'X':
+      d.clearStrokes();
       break;
     case 'z': 
     case 'Z':
@@ -406,6 +423,22 @@ void keyReleased() {
       left = false;
       break;
     default:
+    }
+  } else {
+    switch(key) {
+     case 'd':
+     case 'D':
+       drawingNow=false;
+       d.endStroke();
+       break;
+     case 'm':
+     case 'M':
+      moveDrawing=false;
+      break;
+     case 'r':
+     case 'R':
+      rotatingNow=false;
+      break; 
     }
   }
 }
