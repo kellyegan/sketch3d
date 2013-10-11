@@ -2,7 +2,7 @@ data/*.gml
 .DS_Store
 *.swp
 data/caligraphy.png
-
+makerfaire/*
 data/brush_speckle.png
-
+application.macosx/*
 data/brush.psd
