@@ -14,7 +14,7 @@ class Skeleton {
   PVector head, neck, torso, shoulderL, shoulderR, elbowL, elbowR, handL, handR, hipL, hipR;
   PVector [] joints;
     
-  PVector drawingHand;
+  PVector drawingHand, secondaryHand;
   PVector offset, flip;
   
   /**
@@ -44,6 +44,7 @@ class Skeleton {
     hipR = new PVector();
     
     drawingHand = new PVector();
+    secondaryHand = new PVector();
     
     userCalibrated = false;
   }
@@ -81,40 +82,51 @@ class Skeleton {
   }
   
   void display() {
+    display( true ); 
+  }
+  
+  void display(boolean showSkeleton) {
     if( userCalibrated ) {
       
       noFill();
       strokeWeight(2);
       stroke( 0 );
-      
-      //Head
+
+      if( showSkeleton ) {
+        //Head
 //      line( head, neck );
-      
-      //Body square
-      line( shoulderL, shoulderR );
-      line( shoulderR, hipR );
-      line( hipR, hipL );
-      line( hipL, shoulderL );
-      
-      //Arms
-      line( shoulderL, elbowL );
-      line( elbowL, handL );
-      line( shoulderR, elbowR );
-      line( elbowR, handR );
-          
-      float shoulderWidth = PVector.sub(shoulderL, shoulderR).mag();
-      
-      //Draw a simple head
-      pushMatrix();
-      translate( head.x, head.y + (shoulderWidth * -0.5) / 2, head.z );
-      ellipse(0, 0, shoulderWidth * 0.5, shoulderWidth * 0.5 );
-      popMatrix();
         
-      //Draw the drawingHand
+        //Body square
+        line( shoulderL, shoulderR );
+        line( shoulderR, hipR );
+        line( hipR, hipL );
+        line( hipL, shoulderL );
+        
+        //Arms
+        line( shoulderL, elbowL );
+        line( elbowL, handL );
+        line( shoulderR, elbowR );
+        line( elbowR, handR );
+            
+        float shoulderWidth = PVector.sub(shoulderL, shoulderR).mag();
+        
+        //Draw a simple head
+        pushMatrix();
+        translate( head.x, head.y + (shoulderWidth * -0.5) / 2, head.z );
+        ellipse(0, 0, shoulderWidth * 0.5, shoulderWidth * 0.5 );
+        popMatrix();
+      }
+        
+      //Draw hands
       fill(skeleton.getConfidence() * 200, 0, 0);
       noStroke();
       pushMatrix();
       translate(drawingHand.x, drawingHand.y, drawingHand.z);
+      sphere( 20 );
+      popMatrix();
+      fill( 150 );
+      pushMatrix();
+      translate(secondaryHand.x, secondaryHand.y, secondaryHand.z);
       sphere( 20 );
       popMatrix();
     }
