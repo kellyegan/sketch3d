@@ -30,7 +30,7 @@ int brushColor;
 boolean clickStarted;
 
 PImage bgImage;
-boolean backgroundImageOn;
+boolean displayBackgroundImage;
 color bgColor;
 
 //View stuff
@@ -57,7 +57,7 @@ void setup() {
   smooth();
 
   //GUI
-//  createControllers();
+  createControllers();
   font = createFont("Helvetica", 20);
   textFont(font, 20);
 
@@ -110,7 +110,7 @@ void setup() {
 
   bgColor = color(220.0);
   bgImage = loadImage("data/testBackground.jpg");
-  backgroundImageOn = false;
+  displayBackgroundImage = false;
   
   fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
   fogShader.set("fogNear", -offset.z);
@@ -194,7 +194,7 @@ void draw() {
 
   /*************************************** DISPLAY **************************************/
   background(220);
-  if( backgroundImageOn ) {
+  if( displayBackgroundImage ) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
   fill(100);
@@ -297,123 +297,100 @@ void keyPressed() {
   } 
   else {
     switch(key) {
-    case 'g':
+    case 'g': case: 'G':
       offset.set( 0, 0, 0 );
       break;
-    case 'a': 
-    case 'A':
+    case 'a': case 'A':
       //Hide the x, y, z axis
       displayOrigin = !displayOrigin;
       break; 
-    case 'b': 
-    case 'B':
+    case 'b':  case 'B':
       //Change background color
       rotation.set(TAU / 4, 0, 0);
       break;
-    case 'c': 
-    case 'C':
+    case 'c': case 'C':
       //Change stroke color
       break;
-    case 'd':
-    case 'D':
+    case 'd': case 'D':
       d.startStroke(new Brush( "", brushColor, strokeWeight ) );
       drawingNow=true;
       break;
-    case 'f': 
-    case 'F':
+    case 'f': case 'F':
       //Reset view rotation/translation
       rotation.set(0, 0, 0);
       break;
-    case 'h': 
-    case 'H':
+    case 'h':  case 'H':
       skeleton.changeHand();
       break; 
-    case 'l': 
-    case 'L':
+    case 'i':  case 'I':
+      displayBackgroundImage = !displayBackgroundImage;
+      break;
+    case 'l':  case 'L':
+      selectInput("Please select a background image", "loadBackground" );
       //Left view
-      rotation.set(0, TAU / 4, 0);
+//      rotation.set(0, TAU / 4, 0);
       break; 
-    case 'm':
-    case 'M':
+    case 'm': case 'M':
       moveDrawing=true;
       moveStart.set( secondaryHand );
       oldOffset.set( offset );
       break;
-    case 'n': 
-    case 'N':
+    case 'n': case 'N':
       skeleton.reset();
       kinect.init();
       setup();
       break;
-    case 'o': 
-    case 'O':
+    case 'o': case 'O':
       //Open a file
-      selectInput("Please select a file to load", "loadDrawing" );
-    case 'r': 
-    case 'R':
+      selectInput("Please select a drawing to load", "loadDrawing" );
+    case 'r': case 'R':
       rotationStarted.set(secondaryHand);
       oldRotation.set( rotation );
       rotatingNow=true;      
       //Right view
       //rotation.set(0, -TAU / 4, 0);
       break;     
-    case 's': 
-    case 'S':
-      //selectOutput("Save drawing:", "saveDrawing");
-      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
-      d.save( "makerfaire/mf_" + timestamp + ".gml");
+    case 's': case 'S':
+      selectOutput("Save drawing:", "saveDrawing");
+//      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
+//      d.save( "makerfaire/mf_" + timestamp + ".gml");
       break;
-    case 't': 
-    case 'T':
+    case 't': case 'T':
       //Top view
       rotation.set(-TAU / 4, 0, 0);
       break;
-    case 'u': 
-    case 'U':
+    case 'u': case 'U':
       //Toggle user
       displaySkeleton = !displaySkeleton;
       break;
-    case 'q':
-    case 'Q':
+    case 'q': case 'Q':
       exit();
       break;
-    case 'x':
-    case 'X':
+    case 'x': case 'X':
       d.clearStrokes();
       break;
-    case 'z': 
-    case 'Z':
+    case 'z': case 'Z':
       d.undoLastStroke();
       break; 
     case '0':
-      brushColor = color(0, 0, 0, 128);
       break;
     case '1':
-      brushColor = color(200, 0, 0, 128);
       break;
     case '2':
-      brushColor = color(0, 200, 0, 128);
       break;
     case '3':
-      brushColor = color(0, 0, 200, 128);
       break;
     case '4':
-      brushColor = color(0, 200, 200, 128);
       break;
     case '5':
-      brushColor = color(200, 0, 200, 128);
       break;
     case '6':
-      brushColor = color(200, 200, 0, 128);
       break;
     case '7':
-      brushColor = color(200, 100, 50, 128);
       break;
     case '8':
-      brushColor = color(0, 100, 200, 128);
       break;
     case '9':
-      brushColor = color(100, 100, 100, 128);
       break;
     }
   }
@@ -485,6 +462,18 @@ void saveDrawing(File f) {
   }
 }
 
+void loadBackground( File f ) {
+  if ( f != null ) {
+    try {
+      bgImage = loadImage( f.getAbsolutePath() );
+      displayBackgroundImage = true;
+    } 
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  }   
+}
+
 void updateDrawingHand() {
   //drawingHand.set( mouseX, mouseY, 0 );
   drawingHandTransformed.set( drawingHand );
@@ -500,44 +489,44 @@ void updateDrawingHand() {
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
 }
 
-//void createControllers() {
-//  //GUI
-//  cp5 = new ControlP5(this);
-//
-//  Group brushCtrl = cp5.addGroup("Brush")
-//    .setPosition(width- (270 + 25), 150)
-//    .setBackgroundHeight(100)
-//    .setBackgroundColor(color(100, 100))
-//    .setSize(270, 125)
-//    ;
-//
-//  cp5.addSlider("strokeWeight")
-//    .setGroup(brushCtrl)
-//      .setRange(1, 50)
-//        .setPosition(5, 20)
-//          .setSize(200, 20)
-//            .setValue(1)
-//              .setLabel("Stroke weight");
-//  ;
-//
-//  cp = cp5.addColorPicker("brushColor")
-//    .setPosition(5, 50)
-//      .setColorValue(color(0, 0, 0, 255))
-//        .setGroup(brushCtrl)
-//          ;
-//
-//  // reposition the Label for controller 'slider'
-//  cp5.getController("strokeWeight")
-//    .getValueLabel()
-//      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
-//        .setPaddingX(0)
-//          ;
-//  cp5.getController("strokeWeight")
-//    .getCaptionLabel()
-//      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
-//        .setPaddingX(0)
-//          ;
-//}
+void createControllers() {
+  //GUI
+  cp5 = new ControlP5(this);
+
+  Group brushCtrl = cp5.addGroup("Brush")
+    .setPosition(width- (270 + 25), 150)
+    .setBackgroundHeight(100)
+    .setBackgroundColor(color(100, 100))
+    .setSize(270, 125)
+    ;
+
+  cp5.addSlider("strokeWeight")
+    .setGroup(brushCtrl)
+      .setRange(1, 50)
+        .setPosition(5, 20)
+          .setSize(200, 20)
+            .setValue(1)
+              .setLabel("Stroke weight")
+              ;
+
+  cp = cp5.addColorPicker("brushColor")
+    .setPosition(5, 50)
+      .setColorValue(color(0, 0, 0, 255))
+        .setGroup(brushCtrl)
+          ;
+
+  // reposition the Label for controller 'slider'
+  cp5.getController("strokeWeight")
+    .getValueLabel()
+      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+        .setPaddingX(0)
+          ;
+  cp5.getController("strokeWeight")
+    .getCaptionLabel()
+      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
+        .setPaddingX(0)
+          ;
+}
 
 
 /************************************** SimpleOpenNI callbacks **************************************/
