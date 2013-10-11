@@ -10,6 +10,8 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
+PFont font;
+
 boolean drawingNow, moveDrawing, rotatingNow;    //Current button states 
 boolean up, down, left, right;
 
@@ -54,6 +56,9 @@ void setup() {
 
   //GUI
 //  createControllers();
+  font = createFont("Helvetica", 20);
+  textFont(font, 20);
+
   displayOrigin = true;
   displayUser = true;  
 
@@ -184,12 +189,14 @@ void draw() {
 
   /*************************************** DISPLAY **************************************/
   background(220);
+  fill(100);
+  text(kinectStatus, 40, height - 60);
+  noFill();
 
   pushMatrix();
 
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
   perspective();
-
 
   //  shader(fogShader, LINES);
 
@@ -222,7 +229,6 @@ void draw() {
   popMatrix();
 }
 
-
 void mousePressed() {
   if( handPicked ) {
     if (mouseButton==LEFT) {
@@ -243,9 +249,11 @@ void mousePressed() {
     
     if (mouseButton==CENTER) {
       skeleton.setHand( Skeleton.LEFT_HANDED );
+      d.clearStrokes();
       handPicked = true;
     } else if ( mouseButton==RIGHT ) {
       skeleton.setHand( Skeleton.RIGHT_HANDED );
+      d.clearStrokes();
       handPicked = true;
     }
   }
@@ -261,7 +269,6 @@ void mouseReleased() {
   if (mouseButton==CENTER)
     moveDrawing=false;
 } 
-
 
 void keyPressed() {
   if ( key == CODED ) {
@@ -403,9 +410,9 @@ void keyReleased() {
   }
 }
 
-//boolean sketchFullScreen() {
-//  return true;
-//}
+boolean sketchFullScreen() {
+  return true;
+}
 
 void stop() {
 }
