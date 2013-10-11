@@ -10,12 +10,15 @@ import SimpleOpenNI.*;
 ControlP5 cp5;
 ColorPicker cp;
 
+PFont font;
+
 boolean drawingNow, moveDrawing, rotatingNow;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
 SimpleOpenNI kinect;
 boolean deviceReady;
+boolean handPicked;
 Skeleton skeleton;
 String kinectStatus;
 
@@ -52,13 +55,19 @@ void setup() {
   smooth();
 
   //GUI
-  createControllers();
+//  createControllers();
+  font = createFont("Helvetica", 20);
+  textFont(font, 20);
+
   displayOrigin = true;
   displayUser = true;  
-  
+
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
+  
+  deviceReady = false;
+  handPicked = false;
 
   //Kinect
   kinect = new SimpleOpenNI(this);
@@ -67,18 +76,21 @@ void setup() {
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
     kinectStatus = "Kinect found. Waiting for user...";
-    skeleton = new Skeleton(this, kinect, 1, Skeleton.LEFT_HANDED );
+    println(kinectStatus);
+    skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
     deviceReady = true;
-  } else {
+  } 
+  else {
+    
     kinectStatus = "No Kinect found. ";
-    deviceReady = false;
+    println(kinectStatus);
   }
 
   //Drawing
   d = new Drawing(this, "default.gml");
   defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 20.0;
-  brushColor = color(0, 0, 0);
+  strokeWeight = 60.0;
+  brushColor = color(0, 0, 0, 200);
   clickStarted = false;
 
   //View
@@ -91,28 +103,27 @@ void setup() {
   moveDelta = new PVector();
   moveModel = new PVector();
   oldOffset = new PVector();
-  
+
   rotation = new PVector();
-  
+
   bgColor = color(220.0);
   fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
   fogShader.set("fogNear", -offset.z);
   fogShader.set("fogFar", 4000.0);
   fogShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
-  
+
   fogTextShader = loadShader("fog_text_frag.glsl", "fog_text_vert.glsl");
   fogTextShader.set("weight", 100.0);
   brush = loadImage("brush.png");
   fogTextShader.set("sprite", brush);
   fogTextShader.set("fogNear", 0.25 * (cameraPos.z - cameraFocus.z) );
-  fogTextShader.set("fogFar",  1.75 * (cameraPos.z - cameraFocus.z) );
-  fogTextShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
-  
+  fogTextShader.set("fogFar", 1.75 * (cameraPos.z - cameraFocus.z) );
+
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
   secondaryHand = new PVector();
   secondaryHandTransformed = new PVector();
-  
+
   rotationStarted = new PVector();
   rotationEnded = new PVector();
   rotationCenter = new PVector( 0, 0, 1000 );
@@ -134,38 +145,39 @@ void setup() {
 
 void draw() {
   /*************************************** UPDATE ***************************************/
-  if( up ) {
+  if ( up ) {
     rotation.x += rotationStep;
   }
-  if( down ) {
+  if ( down ) {
     rotation.x -= rotationStep;
   }
-  if( right ) {
-      rotation.y += rotationStep;    
+  if ( right ) {
+    rotation.y += rotationStep;
   }
-  if( left ) {
-      rotation.y -= rotationStep;
+  if ( left ) {
+    rotation.y -= rotationStep;
   }
-  
+
   if (deviceReady) {
     kinect.update();
     skeleton.update( drawingHand );
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
 
-    if( !cp5.isMouseOver() ) {
-      if( drawingNow ) {
-          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
+//    if ( !cp5.isMouseOver() ) {
+    
+      if ( drawingNow ) {
+        d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
       }
-      if( rotatingNow ) {
-          rotationEnded.set(secondaryHand);
-          stroke(255, 0,0);
-          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-          println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-            + "  x difference: " + (rotationStarted.x -rotationEnded.x) );        
+      if ( rotatingNow ) {
+        rotationEnded.set(secondaryHand);
+        stroke(255, 0, 0);
+        rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+        rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
       }
-      if( moveDrawing && !drawingNow ) {
+      if ( moveDrawing && !drawingNow ) {
         moveNow.set( secondaryHand );
         PVector.sub( moveNow, moveStart, moveDelta );
         moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
@@ -173,20 +185,21 @@ void draw() {
         offset = PVector.add( oldOffset, moveModel );
       }
     }
-    
-  }
+//  }
 
   /*************************************** DISPLAY **************************************/
   background(220);
+  fill(100);
+  text(kinectStatus, 40, height - 60);
+  noFill();
 
   pushMatrix();
-  
+
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
   perspective();
 
-  
-//  shader(fogShader, LINES);
-  
+  //  shader(fogShader, LINES);
+
   if ( deviceReady && displayUser) {
     pushMatrix();
     rotateX(PI);
@@ -195,56 +208,54 @@ void draw() {
     popMatrix();
   }
 
- rotateX(rotation.x);
- rotateY(rotation.y);
+  rotateX(rotation.x);
+  rotateY(rotation.y);
 
- if ( displayOrigin ) {
+  if ( displayOrigin ) {
     strokeWeight(3);
     stroke(255, 0, 0);
     line( 0, 0, 0, 0, 0, 500);
     stroke(0, 255, 0);
     line( 0, 0, 0, 0, -500, 0);
     stroke(0, 0, 255);
-    line( 0, 0, 0, 500, 0, 0);    
+    line( 0, 0, 0, 500, 0, 0);
   }
 
   shader(fogTextShader, LINES);
-  
+
   translate(offset.x, offset.y, offset.z);
   d.display();
 
   popMatrix();
 }
 
-
 void mousePressed() {
-  if(mouseButton==LEFT) {
-    d.startStroke(new Brush( "", cp.getColorValue(), strokeWeight ) );
-    drawingNow=true;
-  }
-  if(mouseButton==RIGHT) {
-    rotationStarted.set(secondaryHand);
-    oldRotation.set( rotation );
-    rotatingNow=true;
-  }
-  if(mouseButton==CENTER) {
-    moveDrawing=true;
-    moveStart.set( secondaryHand );
-    oldOffset.set( offset ); 
-  }
+    if (mouseButton==LEFT) {
+      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      drawingNow=true;
+    }
+    if (mouseButton==RIGHT) {
+      rotationStarted.set(secondaryHand);
+      oldRotation.set( rotation );
+      rotatingNow=true;
+    }
+    if (mouseButton==CENTER) {
+      moveDrawing=true;
+      moveStart.set( secondaryHand );
+      oldOffset.set( offset );
+    }
 }
 
 void mouseReleased() {
-  if(mouseButton==LEFT) {
+  if (mouseButton==LEFT) {
     drawingNow=false;
-    d.endStroke(); 
+    d.endStroke();
   }
-  if(mouseButton==RIGHT)
+  if (mouseButton==RIGHT)
     rotatingNow=false;
-  if(mouseButton==CENTER)
+  if (mouseButton==CENTER)
     moveDrawing=false;
 } 
-
 
 void keyPressed() {
   if ( key == CODED ) {
@@ -256,65 +267,142 @@ void keyPressed() {
       down = true;
       break;
     case RIGHT:
-      right = true;
+      if( handPicked ) {
+        right = true;
+      } else {
+        skeleton.setHand( Skeleton.LEFT_HANDED );
+        d.clearStrokes();
+        handPicked = true;  
+      }
       break;
     case LEFT:
-      left = true;
+      if( handPicked ) {
+        left = true;
+      } else {
+        skeleton.setHand( Skeleton.LEFT_HANDED );
+        d.clearStrokes();
+        handPicked = true;  
+      }
       break;
     default:
     }
   } 
   else {
     switch(key) {
-    case '0':
+    case 'g':
       offset.set( 0, 0, 0 );
       break;
-    case 'a': case 'A':
+    case 'a': 
+    case 'A':
       //Hide the x, y, z axis
       displayOrigin = !displayOrigin;
       break; 
-    case 'b': case 'B':
-      //Bottom view
+    case 'b': 
+    case 'B':
+      //Change background color
       rotation.set(TAU / 4, 0, 0);
       break;
-    case 'c': case 'C':
-      d.clearStrokes();
+    case 'c': 
+    case 'C':
+      //Change stroke color
       break;
-    case 'f': case 'F':
+    case 'd':
+    case 'D':
+      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      drawingNow=true;
+      break;
+    case 'f': 
+    case 'F':
       //Reset view rotation/translation
       rotation.set(0, 0, 0);
       break;
-    case 'h': case 'H':
+    case 'h': 
+    case 'H':
       skeleton.changeHand();
       break; 
-    case 'l': case 'L':
+    case 'l': 
+    case 'L':
       //Left view
       rotation.set(0, TAU / 4, 0);
       break; 
-    case 'n': case 'N':
-      skeleton.nextUser();
+    case 'm':
+    case 'M':
+      moveDrawing=true;
+      moveStart.set( secondaryHand );
+      oldOffset.set( offset );
       break;
-    case 'o': case 'O':
+    case 'n': 
+    case 'N':
+      skeleton.reset();
+      kinect.init();
+      setup();
+      break;
+    case 'o': 
+    case 'O':
       //Open a file
       selectInput("Please select a file to load", "loadDrawing" );
-    case 'r': case 'R':
+    case 'r': 
+    case 'R':
+      rotationStarted.set(secondaryHand);
+      oldRotation.set( rotation );
+      rotatingNow=true;      
       //Right view
-      rotation.set(0, -TAU / 4, 0);
-      break;      
-    case 's': case 'S':
-      selectOutput("Save drawing:", "saveDrawing");
+      //rotation.set(0, -TAU / 4, 0);
+      break;     
+    case 's': 
+    case 'S':
+      //selectOutput("Save drawing:", "saveDrawing");
+      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
+      d.save( "makerfaire/mf_" + timestamp + ".gml");
       break;
-    case 't': case 'T':
+    case 't': 
+    case 'T':
       //Top view
       rotation.set(-TAU / 4, 0, 0);
       break;
-    case 'u': case 'U':
+    case 'u': 
+    case 'U':
       //Toggle user
       displayUser = !displayUser;
       break;
-    case 'z': case 'Z':
+    case 'x':
+    case 'X':
+      d.clearStrokes();
+      break;
+    case 'z': 
+    case 'Z':
       d.undoLastStroke();
-      break;    
+      break; 
+    case '0':
+      brushColor = color(0, 0, 0, 128);
+      break;
+    case '1':
+      brushColor = color(200, 0, 0, 128);
+      break;
+    case '2':
+      brushColor = color(0, 200, 0, 128);
+      break;
+    case '3':
+      brushColor = color(0, 0, 200, 128);
+      break;
+    case '4':
+      brushColor = color(0, 200, 200, 128);
+      break;
+    case '5':
+      brushColor = color(200, 0, 200, 128);
+      break;
+    case '6':
+      brushColor = color(200, 200, 0, 128);
+      break;
+    case '7':
+      brushColor = color(200, 100, 50, 128);
+      break;
+    case '8':
+      brushColor = color(0, 100, 200, 128);
+      break;
+    case '9':
+      brushColor = color(100, 100, 100, 128);
+      break;
     }
   }
 }
@@ -336,7 +424,23 @@ void keyReleased() {
       break;
     default:
     }
-  } 
+  } else {
+    switch(key) {
+     case 'd':
+     case 'D':
+       drawingNow=false;
+       d.endStroke();
+       break;
+     case 'm':
+     case 'M':
+      moveDrawing=false;
+      break;
+     case 'r':
+     case 'R':
+      rotatingNow=false;
+      break; 
+    }
+  }
 }
 
 boolean sketchFullScreen() {
@@ -344,7 +448,6 @@ boolean sketchFullScreen() {
 }
 
 void stop() {
-  
 }
 
 void loadDrawing( File f ) {
@@ -352,7 +455,8 @@ void loadDrawing( File f ) {
     try {
       d.clearStrokes();
       d.load( f.getAbsolutePath() );
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
       e.printStackTrace();
     }
   }
@@ -362,10 +466,11 @@ void saveDrawing(File f) {
   if ( f != null ) {
     try {
       d.save( f.getAbsolutePath() );
-    } catch (Exception e) {
+    } 
+    catch (Exception e) {
       e.printStackTrace();
     }
-  }  
+  }
 }
 
 void updateDrawingHand() {
@@ -373,7 +478,7 @@ void updateDrawingHand() {
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
-  if( !moveDrawing ) {
+  if ( !moveDrawing ) {
     inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   }
   inverseTransform.rotateY( PI - rotation.y );
@@ -383,72 +488,77 @@ void updateDrawingHand() {
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
 }
 
-void createControllers() {
-  //GUI
-  cp5 = new ControlP5(this);
-
-  Group brushCtrl = cp5.addGroup("Brush")
-    .setPosition(width- (270 + 25), 150)
-    .setBackgroundHeight(100)
-    .setBackgroundColor(color(100, 100))
-    .setSize(270, 125)
-    ;
-
-  cp5.addSlider("strokeWeight")
-    .setGroup(brushCtrl)
-      .setRange(1, 50)
-        .setPosition(5, 20)
-          .setSize(200, 20)
-            .setValue(1)
-              .setLabel("Stroke weight");
-  ;
-
-  cp = cp5.addColorPicker("brushColor")
-    .setPosition(5, 50)
-      .setColorValue(color(0, 0, 0, 255))
-        .setGroup(brushCtrl)
-          ;
-
-  // reposition the Label for controller 'slider'
-  cp5.getController("strokeWeight")
-    .getValueLabel()
-      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
-        .setPaddingX(0)
-          ;
-  cp5.getController("strokeWeight")
-    .getCaptionLabel()
-      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
-        .setPaddingX(0)
-          ;
-}
+//void createControllers() {
+//  //GUI
+//  cp5 = new ControlP5(this);
+//
+//  Group brushCtrl = cp5.addGroup("Brush")
+//    .setPosition(width- (270 + 25), 150)
+//    .setBackgroundHeight(100)
+//    .setBackgroundColor(color(100, 100))
+//    .setSize(270, 125)
+//    ;
+//
+//  cp5.addSlider("strokeWeight")
+//    .setGroup(brushCtrl)
+//      .setRange(1, 50)
+//        .setPosition(5, 20)
+//          .setSize(200, 20)
+//            .setValue(1)
+//              .setLabel("Stroke weight");
+//  ;
+//
+//  cp = cp5.addColorPicker("brushColor")
+//    .setPosition(5, 50)
+//      .setColorValue(color(0, 0, 0, 255))
+//        .setGroup(brushCtrl)
+//          ;
+//
+//  // reposition the Label for controller 'slider'
+//  cp5.getController("strokeWeight")
+//    .getValueLabel()
+//      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+//        .setPaddingX(0)
+//          ;
+//  cp5.getController("strokeWeight")
+//    .getCaptionLabel()
+//      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
+//        .setPaddingX(0)
+//          ;
+//}
 
 
 /************************************** SimpleOpenNI callbacks **************************************/
 
 void onNewUser(int userId) {
-  kinectStatus = "User found. Please assume Psi pose.";
+  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
+  println( kinectStatus );
   kinect.startPoseDetection("Psi", userId);
 }
 
 void onLostUser(int userId) {
-  kinectStatus = "User lost.";
+  kinectStatus = "User " + userId + " lost.";
+  println( kinectStatus);
 }
 
 void onStartPose(String pose, int userId) {
-  kinectStatus = "Pose detected. Requesting calibration skeleton.";
-
+  kinectStatus = pose + " pose detected for user " + userId + ". Requesting calibration skeleton.";
+  println( kinectStatus);
   kinect.stopPoseDetection(userId); 
   kinect.requestCalibrationSkeleton(userId, true);
+
 }
 
-void onEndCalibration(int userId, boolean successfull) {
-  if (successfull) { 
+void onEndCalibration(int userId, boolean successful) {
+  if (successful) { 
     kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
-    println("  User calibrated !!!");
+    println( kinectStatus );
     kinect.startTrackingSkeleton(userId);
+    skeleton.setUser(userId);
   } 
   else { 
     kinectStatus = "Calibration failed starting pose detection.";
     kinect.startPoseDetection("Psi", userId);
   }
 }
+

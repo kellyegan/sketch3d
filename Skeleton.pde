@@ -124,8 +124,16 @@ class Skeleton {
     handedness = !handedness; 
   }
   
+  void setHand( boolean hand ) {
+    handedness = hand;
+  }
+  
   void line( PVector a, PVector b ) {
     applet.line( a.x, a.y, a.z, b.x, b.y, b.z ); 
+  }
+  
+  void setUser(int u ) {
+    userID = u; 
   }
   
   void nextUser() {
@@ -150,6 +158,11 @@ class Skeleton {
     } else {
       target.set(handL);
     }
+  }
+  
+  void reset() {
+    kinect.stopTrackingSkeleton(userID);
+   
   }
   
   
