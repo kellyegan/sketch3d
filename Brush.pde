@@ -1,18 +1,18 @@
 class Brush {
   String strokeName;
   int strokeColor;
-  float strokeWeight;
+  float brushSize;
   
   Brush() {
     strokeName = "";
     strokeColor = color(0, 0, 0, 255);
-    strokeWeight = 1;
+    brushSize = 1;
   }
   
   Brush(String n, int c, float w) {
    strokeName = n;
    strokeColor = c;
-   strokeWeight = w;
+   brushSize = w;
   }
   
   String getName() {
@@ -32,17 +32,17 @@ class Brush {
   }
   
   float getWeight() {
-    return strokeWeight;
+    return brushSize;
   }
    
   void setWeight( float w ) {
-    strokeWeight = w;
+    brushSize = w;
   }
   
   void apply() {
     noFill();
     stroke( strokeColor );
-    strokeWeight( strokeWeight );
+    strokeWeight( brushSize );
   }
   
 }
