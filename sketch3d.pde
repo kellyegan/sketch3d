@@ -7,8 +7,8 @@ import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
 
-ControlP5 cp5;
-ColorPicker cp;
+//ControlP5 cp5;
+//ColorPicker cp;
 
 PFont font;
 
@@ -25,7 +25,7 @@ String kinectStatus;
 //Drawing
 Drawing d;
 Brush defaultBrush;
-float strokeWeight;
+float brushSize;
 int brushColor;
 boolean clickStarted;
 
@@ -57,7 +57,7 @@ void setup() {
   smooth();
 
   //GUI
-  createControllers();
+//  createControllers();
   font = createFont("Helvetica", 20);
   textFont(font, 20);
 
@@ -90,8 +90,9 @@ void setup() {
 
   //Drawing
   d = new Drawing(this, "default.gml");
-  defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), 1);
-  strokeWeight = 60.0;
+  brushSize = 60.0;
+  defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), brushSize);
+  
   brushColor = color(0, 0, 0, 200);
   clickStarted = false;
 
@@ -112,13 +113,13 @@ void setup() {
   bgImage = loadImage("data/testBackground.jpg");
   displayBackgroundImage = false;
   
-  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
-  fogShader.set("fogNear", -offset.z);
-  fogShader.set("fogFar", 4000.0);
-  fogShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
+//  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
+//  fogShader.set("fogNear", -offset.z);
+//  fogShader.set("fogFar", 4000.0);
+//  fogShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
 
   fogTextShader = loadShader("fog_text_frag.glsl", "fog_text_vert.glsl");
-  fogTextShader.set("weight", 100.0);
+  fogTextShader.set("weight", 200.0);
   brush = loadImage("brush.png");
   fogTextShader.set("sprite", brush);
   fogTextShader.set("fogNear", 0.25 * (cameraPos.z - cameraFocus.z) );
@@ -179,8 +180,8 @@ void draw() {
         stroke(255, 0, 0);
         rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
         rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
+//        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+//          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
       }
       if ( moveDrawing && !drawingNow ) {
         moveNow.set( secondaryHand );
@@ -239,7 +240,8 @@ void draw() {
 
 void mousePressed() {
     if (mouseButton==LEFT) {
-      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      println( red(brushColor));
+      d.startStroke(new Brush( "", brushColor, brushSize ) );
       drawingNow=true;
     }
     if (mouseButton==RIGHT) {
@@ -297,7 +299,7 @@ void keyPressed() {
   } 
   else {
     switch(key) {
-    case 'g': case: 'G':
+    case 'g': case 'G':
       offset.set( 0, 0, 0 );
       break;
     case 'a': case 'A':
@@ -312,7 +314,7 @@ void keyPressed() {
       //Change stroke color
       break;
     case 'd': case 'D':
-      d.startStroke(new Brush( "", brushColor, strokeWeight ) );
+      d.startStroke(new Brush( "", brushColor, brushSize ) );
       drawingNow=true;
       break;
     case 'f': case 'F':
@@ -372,6 +374,13 @@ void keyPressed() {
     case 'z': case 'Z':
       d.undoLastStroke();
       break; 
+    case '-': case '_':
+      brushSize -= 5;
+      println("Brush decreased: " + brushSize);
+      break;
+    case '=': case '+':
+      brushSize += 5;
+      println("Brush increased: " + brushSize);
     case '0':
       break;
     case '1':
@@ -489,44 +498,44 @@ void updateDrawingHand() {
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
 }
 
-void createControllers() {
-  //GUI
-  cp5 = new ControlP5(this);
-
-  Group brushCtrl = cp5.addGroup("Brush")
-    .setPosition(width- (270 + 25), 150)
-    .setBackgroundHeight(100)
-    .setBackgroundColor(color(100, 100))
-    .setSize(270, 125)
-    ;
-
-  cp5.addSlider("strokeWeight")
-    .setGroup(brushCtrl)
-      .setRange(1, 50)
-        .setPosition(5, 20)
-          .setSize(200, 20)
-            .setValue(1)
-              .setLabel("Stroke weight")
-              ;
-
-  cp = cp5.addColorPicker("brushColor")
-    .setPosition(5, 50)
-      .setColorValue(color(0, 0, 0, 255))
-        .setGroup(brushCtrl)
-          ;
-
-  // reposition the Label for controller 'slider'
-  cp5.getController("strokeWeight")
-    .getValueLabel()
-      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
-        .setPaddingX(0)
-          ;
-  cp5.getController("strokeWeight")
-    .getCaptionLabel()
-      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
-        .setPaddingX(0)
-          ;
-}
+//void createControllers() {
+//  //GUI
+//  cp5 = new ControlP5(this);
+//
+//  Group brushCtrl = cp5.addGroup("Brush")
+//    .setPosition(width- (270 + 25), 150)
+//    .setBackgroundHeight(100)
+//    .setBackgroundColor(color(100, 100))
+//    .setSize(270, 125)
+//    ;
+//
+//  cp5.addSlider("brushSize")
+//    .setGroup(brushCtrl)
+//      .setRange(1, 50)
+//        .setPosition(5, 20)
+//          .setSize(200, 20)
+//            .setValue(1)
+//              .setLabel("Stroke weight")
+//              ;
+//
+//  cp = cp5.addColorPicker("brushColor")
+//    .setPosition(5, 50)
+//      .setColorValue(color(0, 0, 0, 255))
+//        .setGroup(brushCtrl)
+//          ;
+//
+//  // reposition the Label for controller 'slider'
+//  cp5.getController("brushSize")
+//    .getValueLabel()
+//      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+//        .setPaddingX(0)
+//          ;
+//  cp5.getController("brushSize")
+//    .getCaptionLabel()
+//      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
+//        .setPaddingX(0)
+//          ;
+//}
 
 
 /************************************** SimpleOpenNI callbacks **************************************/
