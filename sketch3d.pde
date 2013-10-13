@@ -313,147 +313,144 @@ void mouseReleased() {
 } 
 
 void keyPressed() {
-  if ( key == CODED ) {
-    switch(keyCode) {
-    case UP:
-      up = true;
-      break;
-    case DOWN:
-      down = true;
-      break;
-    case RIGHT:
-      if( handPicked ) {
+  if( handPicked ) {
+    if ( key == CODED ) {
+      switch(keyCode) {
+      case UP:
+        up = true;
+        break;
+      case DOWN:
+        down = true;
+        break;
+      case RIGHT:
         right = true;
-      } else {
-        skeleton.setHand( Skeleton.LEFT_HANDED );
-        d.clearStrokes();
-        handPicked = true;  
-      }
-      break;
-    case LEFT:
-      if( handPicked ) {
+        break;
+      case LEFT:
         left = true;
-      } else {
-        skeleton.setHand( Skeleton.LEFT_HANDED );
-        d.clearStrokes();
-        handPicked = true;  
+        break;
+      default:
       }
-      break;
-    default:
+    } 
+    else {
+      switch(key) {
+      case 'g': case 'G':
+        offset.set( 0, 0, 0 );
+        break;
+      case 'a': case 'A':
+        //Hide the x, y, z axis
+        displayOrigin = !displayOrigin;
+        break; 
+      case 'b':  case 'B':
+        //Change background color
+        pickingBackground = true;
+        oldBgColorHSB.set( bgColorHSB );
+        startPosition.set( drawingHand );
+        break;
+      case 'c': case 'C':
+        //Change stroke color
+        pickingColor = true;
+        oldBrushColorHSB.set( brushColorHSB );
+        startPosition.set( drawingHand );
+        break;
+      case 'd': case 'D':
+        d.startStroke(new Brush( "", brushColor, brushSize ) );
+        drawingNow=true;
+        break;
+      case 'f': case 'F':
+        //Reset view rotation/translation
+        rotation.set(0, 0, 0);
+        break;
+      case 'h':  case 'H':
+        skeleton.changeHand();
+        break; 
+      case 'i':  case 'I':
+        displayBackgroundImage = !displayBackgroundImage;
+        break;
+      case 'l':  case 'L':
+        selectInput("Please select a background image", "loadBackground" );
+        //Left view
+  //      rotation.set(0, TAU / 4, 0);
+        break; 
+      case 'm': case 'M':
+        moveDrawing=true;
+        moveStart.set( secondaryHand );
+        oldOffset.set( offset );
+        break;
+      case 'n': case 'N':
+        skeleton.reset();
+        kinect.init();
+        setup();
+        break;
+      case 'o': case 'O':
+        //Open a file
+        selectInput("Please select a drawing to load", "loadDrawing" );
+      case 'r': case 'R':
+        rotationStarted.set(secondaryHand);
+        oldRotation.set( rotation );
+        rotatingNow=true;      
+        //Right view
+        //rotation.set(0, -TAU / 4, 0);
+        break;     
+      case 's': case 'S':
+        selectOutput("Save drawing:", "saveDrawing");
+  //      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
+  //      d.save( "makerfaire/mf_" + timestamp + ".gml");
+        break;
+      case 't': case 'T':
+        //Top view
+        rotation.set(-TAU / 4, 0, 0);
+        break;
+      case 'u': case 'U':
+        //Toggle user
+        displaySkeleton = !displaySkeleton;
+        break;
+      case 'q': case 'Q':
+        exit();
+        break;
+      case 'x': case 'X':
+        d.clearStrokes();
+        break;
+      case 'z': case 'Z':
+        d.undoLastStroke();
+        break; 
+      case '-': case '_':
+        brushSize -= 5;
+        println("Brush decreased: " + brushSize);
+        break;
+      case '=': case '+':
+        brushSize += 5;
+        println("Brush increased: " + brushSize);
+      case '0':
+        break;
+      case '1':
+        break;
+      case '2':
+        break;
+      case '3':
+        break;
+      case '4':
+        break;
+      case '5':
+        rotation.set(TAU / 4, 0, 0);
+        break;
+      case '6':
+        break;
+      case '7':
+        break;
+      case '8':
+        break;
+      case '9':
+        break;
+      }
     }
-  } 
-  else {
-    switch(key) {
-    case 'g': case 'G':
-      offset.set( 0, 0, 0 );
-      break;
-    case 'a': case 'A':
-      //Hide the x, y, z axis
-      displayOrigin = !displayOrigin;
-      break; 
-    case 'b':  case 'B':
-      //Change background color
-      pickingBackground = true;
-      oldBgColorHSB.set( bgColorHSB );
-      startPosition.set( drawingHand );
-      break;
-    case 'c': case 'C':
-      //Change stroke color
-      pickingColor = true;
-      oldBrushColorHSB.set( brushColorHSB );
-      startPosition.set( drawingHand );
-      break;
-    case 'd': case 'D':
-      d.startStroke(new Brush( "", brushColor, brushSize ) );
-      drawingNow=true;
-      break;
-    case 'f': case 'F':
-      //Reset view rotation/translation
-      rotation.set(0, 0, 0);
-      break;
-    case 'h':  case 'H':
-      skeleton.changeHand();
-      break; 
-    case 'i':  case 'I':
-      displayBackgroundImage = !displayBackgroundImage;
-      break;
-    case 'l':  case 'L':
-      selectInput("Please select a background image", "loadBackground" );
-      //Left view
-//      rotation.set(0, TAU / 4, 0);
-      break; 
-    case 'm': case 'M':
-      moveDrawing=true;
-      moveStart.set( secondaryHand );
-      oldOffset.set( offset );
-      break;
-    case 'n': case 'N':
-      skeleton.reset();
-      kinect.init();
-      setup();
-      break;
-    case 'o': case 'O':
-      //Open a file
-      selectInput("Please select a drawing to load", "loadDrawing" );
-    case 'r': case 'R':
-      rotationStarted.set(secondaryHand);
-      oldRotation.set( rotation );
-      rotatingNow=true;      
-      //Right view
-      //rotation.set(0, -TAU / 4, 0);
-      break;     
-    case 's': case 'S':
-      selectOutput("Save drawing:", "saveDrawing");
-//      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
-//      d.save( "makerfaire/mf_" + timestamp + ".gml");
-      break;
-    case 't': case 'T':
-      //Top view
-      rotation.set(-TAU / 4, 0, 0);
-      break;
-    case 'u': case 'U':
-      //Toggle user
-      displaySkeleton = !displaySkeleton;
-      break;
-    case 'q': case 'Q':
-      exit();
-      break;
-    case 'x': case 'X':
-      d.clearStrokes();
-      break;
-    case 'z': case 'Z':
-      d.undoLastStroke();
-      break; 
-    case '-': case '_':
-      brushSize -= 5;
-      println("Brush decreased: " + brushSize);
-      break;
-    case '=': case '+':
-      brushSize += 5;
-      println("Brush increased: " + brushSize);
-    case '0':
-      break;
-    case '1':
-      break;
-    case '2':
-      break;
-    case '3':
-      break;
-    case '4':
-      break;
-    case '5':
-      rotation.set(TAU / 4, 0, 0);
-      break;
-    case '6':
-      break;
-    case '7':
-      break;
-    case '8':
-      break;
-    case '9':
-      break;
+  } else {
+    if( key == CODED && keyCode == LEFT) {
+      skeleton.setHand( Skeleton.LEFT_HANDED );
+    } else {
+      skeleton.setHand( Skeleton.RIGHT_HANDED );
     }
-  }
+    handPicked = true;
+    d.clearStrokes();
 }
 
 void keyReleased() {
