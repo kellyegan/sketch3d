@@ -1,4 +1,5 @@
 data/*.gml
+!data/default.gml
 .DS_Store
 *.swp
 data/caligraphy.png
