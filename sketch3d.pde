@@ -451,6 +451,7 @@ void keyPressed() {
     }
     handPicked = true;
     d.clearStrokes();
+  }
 }
 
 void keyReleased() {
