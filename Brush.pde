@@ -42,7 +42,7 @@ class Brush {
   void apply() {
     noFill();
     stroke( strokeColor );
-    strokeWeight( brushSize );
+    strokeWeight  ( brushSize );
   }
   
 }

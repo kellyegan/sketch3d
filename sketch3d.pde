@@ -6,13 +6,15 @@
 import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
+import java.awt.Color;
+
 
 //ControlP5 cp5;
 //ColorPicker cp;
 
 PFont font;
 
-boolean drawingNow, moveDrawing, rotatingNow;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow, pickingColor, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -26,12 +28,13 @@ String kinectStatus;
 Drawing d;
 Brush defaultBrush;
 float brushSize;
-int brushColor;
+int brushColor, bgColor;
+PVector brushColorHSB, bgColorHSB, oldBrushColorHSB, oldBgColorHSB;
 boolean clickStarted;
 
 PImage bgImage;
 boolean displayBackgroundImage;
-color bgColor;
+
 
 //View stuff
 PVector cameraPos, cameraFocus;
@@ -42,6 +45,7 @@ PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
+PVector startPosition, currentPosition, positionDelta;
 PShader fogShader, fogTextShader;
 PImage brush;
 
@@ -67,10 +71,13 @@ void setup() {
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
+  pickingColor = false;
+  pickingBackground = false;
+
   
   deviceReady = false;
   handPicked = false;
-
+  
   //Kinect
   kinect = new SimpleOpenNI(this);
   kinectStatus = "Looking for Kinect...";
@@ -91,10 +98,20 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 60.0;
-  defaultBrush = new Brush("draw3d_default_00001", color(0, 0, 0, 255), brushSize);
   
-  brushColor = color(0, 0, 0, 200);
+  brushColorHSB = new PVector();
+  oldBrushColorHSB = new PVector();
+  brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z);
+  
+  defaultBrush = new Brush("draw3d_default_00001", brushColor, brushSize);
   clickStarted = false;
+  
+  bgColorHSB = new PVector( 0.0, 0.0, 0.9 );
+  oldBgColorHSB = new PVector();
+  bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z);
+  
+  bgImage = loadImage("data/testBackground.jpg");
+  displayBackgroundImage = false;
 
   //View
   cameraPos = new PVector( 0, 0, 4000 );
@@ -109,9 +126,6 @@ void setup() {
 
   rotation = new PVector();
 
-  bgColor = color(220.0);
-  bgImage = loadImage("data/testBackground.jpg");
-  displayBackgroundImage = false;
   
 //  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
 //  fogShader.set("fogNear", -offset.z);
@@ -134,6 +148,10 @@ void setup() {
   rotationEnded = new PVector();
   rotationCenter = new PVector( 0, 0, 1000 );
   oldRotation = new PVector();
+  
+  startPosition = new PVector();
+  currentPosition = new PVector();
+  positionDelta = new PVector();
 
   hint(DISABLE_DEPTH_MASK);
 
@@ -169,32 +187,53 @@ void draw() {
     skeleton.update( drawingHand );
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
+    if( !pickingColor && !pickingBackground ) {
+  //    if ( !cp5.isMouseOver() ) {
+      
+        if ( drawingNow ) {
+          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
+        }
+        if ( rotatingNow ) {
+          rotationEnded.set(secondaryHand);
+          stroke(255, 0, 0);
+          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+  //        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
+  //          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
+        }
+        if ( moveDrawing && !drawingNow ) {
+          moveNow.set( secondaryHand );
+          PVector.sub( moveNow, moveStart, moveDelta );
+          moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
+          inverseTransform.mult( moveDelta, moveModel );
+          offset = PVector.add( oldOffset, moveModel );
+        }
+    } else {
+      //Picking color
+      positionDelta = PVector.sub( drawingHand, startPosition );
+      
+      if ( pickingColor ) {
+        brushColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBrushColorHSB.x) % 1.0;  //Hue
+        brushColorHSB.x = brushColorHSB.x == 1.0 ? 0.0 : brushColorHSB.x;
+        brushColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBrushColorHSB.z, 0, 1.0);  //Brightness
+        brushColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBrushColorHSB.y, 0, 1.0);  //Saturation
+        brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z );        
+      } else {
+        bgColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBgColorHSB.x) % 1.0;  //Hue
+        bgColorHSB.x = bgColorHSB.x == 1.0 ? 0.0 : bgColorHSB.x;
+        bgColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBgColorHSB.z, 0, 1.0);  //Brightness
+        bgColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBgColorHSB.y, 0, 1.0);  //Saturation
+        bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );         
+      }
+      
 
-//    if ( !cp5.isMouseOver() ) {
-    
-      if ( drawingNow ) {
-        d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
-      }
-      if ( rotatingNow ) {
-        rotationEnded.set(secondaryHand);
-        stroke(255, 0, 0);
-        rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-        rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-//        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-//          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
-      }
-      if ( moveDrawing && !drawingNow ) {
-        moveNow.set( secondaryHand );
-        PVector.sub( moveNow, moveStart, moveDelta );
-        moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
-        inverseTransform.mult( moveDelta, moveModel );
-        offset = PVector.add( oldOffset, moveModel );
-      }
+      
     }
-//  }
+//    }
+  }
 
   /*************************************** DISPLAY **************************************/
-  background(220);
+  background(bgColor);
   if( displayBackgroundImage ) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
@@ -236,6 +275,12 @@ void draw() {
   d.display();
 
   popMatrix();
+  
+  if( pickingColor ) {
+    noStroke();
+    fill(brushColor);
+    ellipse(  width/2, height/2, 400, 400); 
+  }
 }
 
 void mousePressed() {
@@ -308,10 +353,15 @@ void keyPressed() {
       break; 
     case 'b':  case 'B':
       //Change background color
-      rotation.set(TAU / 4, 0, 0);
+      pickingBackground = true;
+      oldBgColorHSB.set( bgColorHSB );
+      startPosition.set( drawingHand );
       break;
     case 'c': case 'C':
       //Change stroke color
+      pickingColor = true;
+      oldBrushColorHSB.set( brushColorHSB );
+      startPosition.set( drawingHand );
       break;
     case 'd': case 'D':
       d.startStroke(new Brush( "", brushColor, brushSize ) );
@@ -392,6 +442,7 @@ void keyPressed() {
     case '4':
       break;
     case '5':
+      rotation.set(TAU / 4, 0, 0);
       break;
     case '6':
       break;
@@ -424,6 +475,13 @@ void keyReleased() {
     }
   } else {
     switch(key) {
+     case 'b': case 'B':
+       pickingBackground = false;
+       break;
+     case 'c':
+     case 'C':
+       pickingColor = false;
+       break;
      case 'd':
      case 'D':
        drawingNow=false;
@@ -437,6 +495,7 @@ void keyReleased() {
      case 'R':
       rotatingNow=false;
       break; 
+     
     }
   }
 }
