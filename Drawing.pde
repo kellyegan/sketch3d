@@ -26,7 +26,6 @@ class Drawing {
 
   WB_Render render;
   
-  
   /**
    * Creates an empty Drawing from the "template.gml" file
    * The currentStroke is set to null until drawing begins
