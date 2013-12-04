@@ -379,7 +379,6 @@ void keyPressed() {
       case 'n': case 'N':
         skeleton.reset();
         kinect.init();
-        setup();
         break;
       case 'o': case 'O':
         //Open a file
