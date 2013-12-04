@@ -90,7 +90,6 @@ void setup() {
     deviceReady = true;
   } 
   else {
-    
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
@@ -125,7 +124,6 @@ void setup() {
   oldOffset = new PVector();
 
   rotation = new PVector();
-
   
 //  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
 //  fogShader.set("fogNear", -offset.z);

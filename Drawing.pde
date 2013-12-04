@@ -327,7 +327,9 @@ class Drawing {
    * Removes the last stroke from the Drawing object
    */
   void undoLastStroke() {
-    strokes.remove(strokes.size() - 1);
+    if( !strokes.isEmpty() ) {
+      strokes.remove(strokes.size() - 1);
+    }
   }
   
   /**
