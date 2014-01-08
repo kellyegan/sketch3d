@@ -125,7 +125,6 @@ void setup() {
   oldOffset = new PVector();
 
   rotation = new PVector();
-
   
 //  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
 //  fogShader.set("fogNear", -offset.z);
@@ -225,8 +224,6 @@ void draw() {
         bgColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBgColorHSB.y, 0, 1.0);  //Saturation
         bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );         
       }
-      
-
       
     }
 //    }
@@ -498,9 +495,9 @@ void keyReleased() {
   }
 }
 
-boolean sketchFullScreen() {
-  return true;
-}
+//boolean sketchFullScreen() {
+//  return true;
+//}
 
 void stop() {
 }
