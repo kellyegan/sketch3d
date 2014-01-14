@@ -1,4 +1,4 @@
-/*
+ /*
  draw3d
  Copyright Kelly Egan 2013
  */
@@ -7,7 +7,6 @@ import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
 import java.awt.Color;
-
 
 //ControlP5 cp5;
 //ColorPicker cp;
@@ -233,8 +232,6 @@ void draw() {
         bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );         
       }
       
-
-      
     }
 //    }
 
@@ -260,7 +257,7 @@ void draw() {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    skeleton.display(displaySkeleton);
+    skeleton.display(displaySkeleton, brushSize, brushColor);
     popMatrix();
   }
 
@@ -508,9 +505,9 @@ void keyReleased() {
   }
 }
 
-boolean sketchFullScreen() {
-  return true;
-}
+//boolean sketchFullScreen() {
+//  return true;
+//}
 
 void stop() {
 }
