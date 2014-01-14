@@ -248,7 +248,7 @@ void draw() {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
-    skeleton.display(displaySkeleton);
+    skeleton.display(displaySkeleton, brushSize, brushColor);
     popMatrix();
   }
 
