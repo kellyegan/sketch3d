@@ -82,10 +82,10 @@ class Skeleton {
   }
   
   void display() {
-    display( true ); 
+    display( true, 20, 0 ); 
   }
   
-  void display(boolean showSkeleton) {
+  void display(boolean showSkeleton, float cursorSize, int cursorColor) {
     if( userCalibrated ) {
       
       noFill();
@@ -118,7 +118,8 @@ class Skeleton {
       }
         
       //Draw hands
-      fill(skeleton.getConfidence() * 200, 0, 0);
+      //fill(skeleton.getConfidence() * 200, 0, 0);
+      fill(cursorColor);
       noStroke();
       pushMatrix();
       translate(drawingHand.x, drawingHand.y, drawingHand.z);
