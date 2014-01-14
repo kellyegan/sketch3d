@@ -1,4 +1,4 @@
-/*
+ /*
  draw3d
  Copyright Kelly Egan 2013
  */
@@ -7,7 +7,6 @@ import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
 import java.awt.Color;
-
 
 //ControlP5 cp5;
 //ColorPicker cp;
