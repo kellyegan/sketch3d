@@ -31,9 +31,10 @@ int brushColor, bgColor;
 PVector brushColorHSB, bgColorHSB, oldBrushColorHSB, oldBgColorHSB;
 boolean clickStarted;
 
+int startMillis, logoDuration;
+
 PImage bgImage;
 boolean displayBackgroundImage;
-
 
 
 //View stuff
@@ -54,8 +55,6 @@ boolean displaySkeleton;  //Display the origin
 
 float rotationStep = TAU / 180;
 
-boolean displayLogo;        //Display the sketch3D
-
 void setup() {
   //size(1280, 768, P3D);
   size(displayWidth, displayHeight, P3D);
@@ -69,7 +68,6 @@ void setup() {
 
   displayOrigin = true;
   displaySkeleton = true;  
-  displayLogo = true;
 
   drawingNow = false;
   moveDrawing = false;
@@ -93,6 +91,7 @@ void setup() {
     deviceReady = true;
   } 
   else {
+    
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
@@ -166,10 +165,17 @@ void setup() {
   //    }
   //  }
   //  println(this);
+  startMillis = millis();
+  logoDuration = 10000; //10 seconds to display logo and pick hand.
 }
 
 void draw() {
   /*************************************** UPDATE ***************************************/
+  if( !handPicked && (millis() - startMillis) > logoDuration) {
+    handPicked = true;
+    d.clearStrokes();
+  }
+  
   if ( up ) {
     rotation.x += rotationStep;
   }
@@ -182,12 +188,7 @@ void draw() {
   if ( left ) {
     rotation.y -= rotationStep;
   }
-  
-  if( displayLogo && millis() > 15000 ) {
-     d.clearStrokes();
-     displayLogo = false;
-  }
-  deviceReady = false;
+
   if (deviceReady) {
     kinect.update();
     skeleton.update( drawingHand );
@@ -234,7 +235,6 @@ void draw() {
       
     }
 //    }
-
   }
 
   /*************************************** DISPLAY **************************************/
@@ -384,6 +384,7 @@ void keyPressed() {
       case 'n': case 'N':
         skeleton.reset();
         kinect.init();
+        setup();
         break;
       case 'o': case 'O':
         //Open a file
@@ -413,9 +414,6 @@ void keyPressed() {
         break;
       case 'x': case 'X':
         d.clearStrokes();
-        if( displayLogo ) {
-            displayLogo = false;    //If the logo is still being displayed reset boolean
-        }
         break;
       case 'z': case 'Z':
         d.undoLastStroke();
