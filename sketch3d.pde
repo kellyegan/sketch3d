@@ -7,6 +7,7 @@ import controlP5.*;
 import processing.core.PApplet;
 import SimpleOpenNI.*;
 import java.awt.Color;
+import processing.dxf.*;
 
 //ControlP5 cp5;
 //ColorPicker cp;
@@ -36,6 +37,8 @@ int startMillis, logoDuration;
 PImage bgImage;
 boolean displayBackgroundImage;
 
+//Exporting dxf
+boolean exportDXF;
 
 //View stuff
 PVector cameraPos, cameraFocus;
@@ -74,6 +77,7 @@ void setup() {
   rotatingNow= false;
   pickingColor = false;
   pickingBackground = false;
+  exportDXF = false;
 
   
   deviceReady = false;
@@ -238,13 +242,19 @@ void draw() {
   }
 
   /*************************************** DISPLAY **************************************/
+  if( exportDXF ) {
+    beginRaw( DXF, "frame-####.dxf"); 
+  }
   background(bgColor);
-  if( displayBackgroundImage ) {
+  if( displayBackgroundImage && !exportDXF) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
-  fill(100);
-  text(kinectStatus, 40, height - 60);
-  noFill();
+  
+  if( !exportDXF ) {
+    fill(100);
+    text(kinectStatus, 40, height - 60);
+    noFill();
+  }
 
   pushMatrix();
 
@@ -253,7 +263,7 @@ void draw() {
 
   //  shader(fogShader, LINES);
 
-  if ( deviceReady ) {
+  if ( deviceReady && !exportDXF) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
@@ -261,10 +271,11 @@ void draw() {
     popMatrix();
   }
 
+  
   rotateX(rotation.x);
   rotateY(rotation.y);
 
-  if ( displayOrigin ) {
+  if ( displayOrigin && !exportDXF) {
     strokeWeight(3);
     stroke(255, 0, 0);
     line( 0, 0, 0, 0, 0, 500);
@@ -279,7 +290,13 @@ void draw() {
   translate(offset.x, offset.y, offset.z);
   d.display();
 
+
   popMatrix();
+
+  if( exportDXF ) {
+    endRaw();
+    exportDXF = false;
+  }
   
   if( pickingColor ) {
     noStroke();
@@ -360,6 +377,9 @@ void keyPressed() {
       case 'd': case 'D':
         d.startStroke(new Brush( "", brushColor, brushSize ) );
         drawingNow=true;
+        break;
+      case 'e': case 'E':
+        exportDXF = true;
         break;
       case 'f': case 'F':
         //Reset view rotation/translation
