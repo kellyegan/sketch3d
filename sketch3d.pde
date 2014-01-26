@@ -12,6 +12,8 @@ import processing.dxf.*;
 //ControlP5 cp5;
 //ColorPicker cp;
 
+//Key crap that appears --->  
+
 PFont font;
 
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, pickingBackground;    //Current button states 
@@ -22,7 +24,8 @@ SimpleOpenNI kinect;
 boolean deviceReady;
 boolean handPicked;
 Skeleton skeleton;
-String kinectStatus;
+String kinectStatus, keyStatus;
+int keyCount = 0;
 
 //Drawing
 Drawing d;
@@ -78,7 +81,6 @@ void setup() {
   pickingColor = false;
   pickingBackground = false;
   exportDXF = false;
-
   
   deviceReady = false;
   handPicked = false;
@@ -86,6 +88,8 @@ void setup() {
   //Kinect
   kinect = new SimpleOpenNI(this);
   kinectStatus = "Looking for Kinect...";
+  keyStatus = "...";
+  
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
     kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
@@ -103,7 +107,7 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 60.0;
-  
+
   brushColorHSB = new PVector();
   oldBrushColorHSB = new PVector();
   brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z);
@@ -180,6 +184,18 @@ void draw() {
     d.clearStrokes();
   }
   
+  if( !keyPressed ) {
+    drawingNow = false;
+    rotatingNow = false;
+    moveDrawing = false;
+    pickingColor = false;
+    pickingBackground = false;
+    up = false;
+    down = false;
+    left = false;
+    right = false;
+  }
+  
   if ( up ) {
     rotation.x += rotationStep;
   }
@@ -252,6 +268,7 @@ void draw() {
   
   if( !exportDXF ) {
     fill(100);
+    text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
@@ -335,25 +352,32 @@ void mouseReleased() {
 } 
 
 void keyPressed() {
+  keyCount++;  
+  keyStatus = " pressed. " + keyCount + " keys pressed";
   if( handPicked ) {
     if ( key == CODED ) {
       switch(keyCode) {
       case UP:
         up = true;
+        keyStatus = "'UP'" + keyStatus;
         break;
       case DOWN:
         down = true;
+        keyStatus = "'DOWN'" + keyStatus;
         break;
       case RIGHT:
         right = true;
+        keyStatus = "'RIGHT'" + keyStatus;
         break;
       case LEFT:
         left = true;
+        keyStatus = "'LEFT'" + keyStatus;
         break;
       default:
       }
     } 
     else {
+      keyStatus = key + keyStatus;
       switch(key) {
       case 'g': case 'G':
         offset.set( 0, 0, 0 );
@@ -480,45 +504,48 @@ void keyPressed() {
 }
 
 void keyReleased() {
+  keyCount--;
+  keyStatus = " released. " + keyCount + " keys pressed";
+
   if ( key == CODED ) {
     switch(keyCode) {
     case UP:
       up = false;
+      keyStatus = "'UP'" + keyStatus;
       break;
     case DOWN:
       down = false;
+      keyStatus = "'DOWN'" + keyStatus;
       break;
     case RIGHT:
       right = false;
+      keyStatus = "'RIGHT'" + keyStatus;
       break;
     case LEFT:
       left = false;
+      keyStatus = "'LEFT'" + keyStatus;
       break;
     default:
     }
   } else {
+    keyStatus = key + keyStatus;
     switch(key) {
      case 'b': case 'B':
        pickingBackground = false;
        break;
-     case 'c':
-     case 'C':
+     case 'c': case 'C':
        pickingColor = false;
        break;
-     case 'd':
-     case 'D':
+     case 'd': case 'D':
        drawingNow=false;
        d.endStroke();
        break;
-     case 'm':
-     case 'M':
+     case 'm': case 'M':
       moveDrawing=false;
       break;
-     case 'r':
-     case 'R':
+     case 'r': case 'R':
       rotatingNow=false;
       break; 
-     
     }
   }
 }
