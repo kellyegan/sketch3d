@@ -184,18 +184,6 @@ void draw() {
     d.clearStrokes();
   }
   
-  if( !keyPressed ) {
-    drawingNow = false;
-    rotatingNow = false;
-    moveDrawing = false;
-    pickingColor = false;
-    pickingBackground = false;
-    up = false;
-    down = false;
-    left = false;
-    right = false;
-  }
-  
   if ( up ) {
     rotation.x += rotationStep;
   }
