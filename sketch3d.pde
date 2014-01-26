@@ -1,4 +1,4 @@
- /*
+/*
  draw3d
  Copyright Kelly Egan 2013
  */
@@ -71,10 +71,10 @@ void setup() {
 //  createControllers();
   font = createFont("Helvetica", 20);
   textFont(font, 20);
-
+  
   displayOrigin = true;
   displaySkeleton = true;  
-
+  
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
@@ -99,11 +99,10 @@ void setup() {
     deviceReady = true;
   } 
   else {
-    
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
-
+  
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 60.0;
@@ -134,11 +133,6 @@ void setup() {
   oldOffset = new PVector();
 
   rotation = new PVector();
-  
-//  fogShader = loadShader("fog_frag.glsl", "fog_vert.glsl");
-//  fogShader.set("fogNear", -offset.z);
-//  fogShader.set("fogFar", 4000.0);
-//  fogShader.set("fogColor", red(bgColor)/255, green(bgColor)/255, blue(bgColor)/255, 1.0);
 
   fogTextShader = loadShader("fog_text_frag.glsl", "fog_text_vert.glsl");
   fogTextShader.set("weight", 200.0);
@@ -179,11 +173,11 @@ void setup() {
 
 void draw() {
   /*************************************** UPDATE ***************************************/
-  if( !handPicked && (millis() - startMillis) > logoDuration) {
+  if ( !handPicked && (millis() - startMillis) > logoDuration) {
     handPicked = true;
     d.clearStrokes();
   }
-  
+
   if ( up ) {
     rotation.x += rotationStep;
   }
@@ -202,59 +196,58 @@ void draw() {
     skeleton.update( drawingHand );
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
-    if( !pickingColor && !pickingBackground ) {
-  //    if ( !cp5.isMouseOver() ) {
-      
-        if ( drawingNow ) {
-          d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
-        }
-        if ( rotatingNow ) {
-          rotationEnded.set(secondaryHand);
-          stroke(255, 0, 0);
-          rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-          rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-  //        println( "Rotation: " + degrees(rotation.y) + "  Delta: " + degrees( map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI, PI )) 
-  //          + "  x difference: " + (rotationStarted.x -rotationEnded.x) );
-        }
-        if ( moveDrawing && !drawingNow ) {
-          moveNow.set( secondaryHand );
-          PVector.sub( moveNow, moveStart, moveDelta );
-          moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
-          inverseTransform.mult( moveDelta, moveModel );
-          offset = PVector.add( oldOffset, moveModel );
-        }
-    } else {
+    
+    fogTextShader.set("zPlane", cameraPos.z - drawingHand.z );
+    
+    if ( !pickingColor && !pickingBackground ) {
+      if ( drawingNow ) {
+        d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
+      }
+      if ( rotatingNow ) {
+        rotationEnded.set(secondaryHand);
+        stroke(255, 0, 0);
+        rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+        rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+      }
+      if ( moveDrawing && !drawingNow ) {
+        moveNow.set( secondaryHand );
+        PVector.sub( moveNow, moveStart, moveDelta );
+        moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
+        inverseTransform.mult( moveDelta, moveModel );
+        offset = PVector.add( oldOffset, moveModel );
+      }
+    } 
+    else {
       //Picking color
       positionDelta = PVector.sub( drawingHand, startPosition );
-      
+
       if ( pickingColor ) {
         brushColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBrushColorHSB.x) % 1.0;  //Hue
         brushColorHSB.x = brushColorHSB.x == 1.0 ? 0.0 : brushColorHSB.x;
         brushColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBrushColorHSB.z, 0, 1.0);  //Brightness
         brushColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBrushColorHSB.y, 0, 1.0);  //Saturation
-        brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z );        
-      } else {
+        brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z );
+      } 
+      else {
         bgColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBgColorHSB.x) % 1.0;  //Hue
         bgColorHSB.x = bgColorHSB.x == 1.0 ? 0.0 : bgColorHSB.x;
         bgColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBgColorHSB.z, 0, 1.0);  //Brightness
         bgColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBgColorHSB.y, 0, 1.0);  //Saturation
-        bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );         
+        bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );
       }
-      
     }
-//    }
   }
 
   /*************************************** DISPLAY **************************************/
-  if( exportDXF ) {
-    beginRaw( DXF, "frame-####.dxf"); 
+  if ( exportDXF ) {
+    beginRaw( DXF, "frame-####.dxf");
   }
   background(bgColor);
-  if( displayBackgroundImage && !exportDXF) {
+  if ( displayBackgroundImage && !exportDXF) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
-  
-  if( !exportDXF ) {
+
+  if ( !exportDXF ) {
     fill(100);
     text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
@@ -262,12 +255,10 @@ void draw() {
   }
 
   pushMatrix();
-
+  
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
-  perspective();
-
-  //  shader(fogShader, LINES);
-
+  //perspective();
+  
   if ( deviceReady && !exportDXF) {
     pushMatrix();
     rotateX(PI);
@@ -275,11 +266,10 @@ void draw() {
     skeleton.display(displaySkeleton, brushSize, brushColor);
     popMatrix();
   }
-
   
   rotateX(rotation.x);
   rotateY(rotation.y);
-
+  
   if ( displayOrigin && !exportDXF) {
     strokeWeight(3);
     stroke(255, 0, 0);
@@ -289,43 +279,45 @@ void draw() {
     stroke(0, 0, 255);
     line( 0, 0, 0, 500, 0, 0);
   }
-
+  
   shader(fogTextShader, LINES);
-
+  
   translate(offset.x, offset.y, offset.z);
   d.display();
-
-
+  
   popMatrix();
-
-  if( exportDXF ) {
+  
+  if ( exportDXF ) {
     endRaw();
     exportDXF = false;
   }
   
-  if( pickingColor ) {
+  if ( pickingColor ) {
     noStroke();
     fill(brushColor);
-    ellipse(  width/2, height/2, 400, 400); 
+    ellipse(  width/2, height/2, 400, 400);
   }
 }
 
 void mousePressed() {
-    if (mouseButton==LEFT) {
-      println( red(brushColor));
-      d.startStroke(new Brush( "", brushColor, brushSize ) );
-      drawingNow=true;
-    }
-    if (mouseButton==RIGHT) {
-      rotationStarted.set(secondaryHand);
-      oldRotation.set( rotation );
-      rotatingNow=true;
-    }
-    if (mouseButton==CENTER) {
-      moveDrawing=true;
-      moveStart.set( secondaryHand );
-      oldOffset.set( offset );
-    }
+  if (mouseButton==LEFT) {
+    println( red(brushColor));
+    d.startStroke(new Brush( "", brushColor, brushSize ) );
+    drawingNow=true;
+    keyStatus += " Left mouse.";
+  }
+  if (mouseButton==RIGHT) {
+    rotationStarted.set(secondaryHand);
+    oldRotation.set( rotation );
+    rotatingNow=true;
+    keyStatus += " Right mouse.";
+  }
+  if (mouseButton==CENTER) {
+    moveDrawing=true;
+    moveStart.set( secondaryHand );
+    oldOffset.set( offset );
+    keyStatus += " Center mouse.";
+  }
 }
 
 void mouseReleased() {
@@ -342,7 +334,7 @@ void mouseReleased() {
 void keyPressed() {
   keyCount++;  
   keyStatus = " pressed. " + keyCount + " keys pressed";
-  if( handPicked ) {
+  if ( handPicked ) {
     if ( key == CODED ) {
       switch(keyCode) {
       case UP:
@@ -367,94 +359,116 @@ void keyPressed() {
     else {
       keyStatus = key + keyStatus;
       switch(key) {
-      case 'g': case 'G':
+      case 'g': 
+      case 'G':
         offset.set( 0, 0, 0 );
         break;
-      case 'a': case 'A':
+      case 'a': 
+      case 'A':
         //Hide the x, y, z axis
         displayOrigin = !displayOrigin;
         break; 
-      case 'b':  case 'B':
+      case 'b':  
+      case 'B':
         //Change background color
         pickingBackground = true;
         oldBgColorHSB.set( bgColorHSB );
         startPosition.set( drawingHand );
         break;
-      case 'c': case 'C':
+      case 'c': 
+      case 'C':
         //Change stroke color
         pickingColor = true;
         oldBrushColorHSB.set( brushColorHSB );
         startPosition.set( drawingHand );
         break;
-      case 'd': case 'D':
+      case 'd': 
+      case 'D':
         d.startStroke(new Brush( "", brushColor, brushSize ) );
         drawingNow=true;
         break;
-      case 'e': case 'E':
+      case 'e': 
+      case 'E':
         exportDXF = true;
         break;
-      case 'f': case 'F':
+      case 'f': 
+      case 'F':
         //Reset view rotation/translation
         rotation.set(0, 0, 0);
         break;
-      case 'h':  case 'H':
+      case 'h':  
+      case 'H':
         skeleton.changeHand();
         break; 
-      case 'i':  case 'I':
+      case 'i':  
+      case 'I':
         displayBackgroundImage = !displayBackgroundImage;
         break;
-      case 'l':  case 'L':
+      case 'l':  
+      case 'L':
         selectInput("Please select a background image", "loadBackground" );
         //Left view
-  //      rotation.set(0, TAU / 4, 0);
+        //      rotation.set(0, TAU / 4, 0);
         break; 
-      case 'm': case 'M':
+      case 'm': 
+      case 'M':
         moveDrawing=true;
         moveStart.set( secondaryHand );
         oldOffset.set( offset );
         break;
-      case 'n': case 'N':
+      case 'n': 
+      case 'N':
         skeleton.reset();
         kinect.init();
         setup();
         break;
-      case 'o': case 'O':
+      case 'o': 
+      case 'O':
         //Open a file
         selectInput("Please select a drawing to load", "loadDrawing" );
-      case 'r': case 'R':
+      case 'r': 
+      case 'R':
         rotationStarted.set(secondaryHand);
         oldRotation.set( rotation );
         rotatingNow=true;      
         //Right view
         //rotation.set(0, -TAU / 4, 0);
         break;     
-      case 's': case 'S':
+      case 's': 
+      case 'S':
         selectOutput("Save drawing:", "saveDrawing");
-  //      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
-  //      d.save( "makerfaire/mf_" + timestamp + ".gml");
+        //      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
+        //      d.save( "makerfaire/mf_" + timestamp + ".gml");
         break;
-      case 't': case 'T':
+      case 't': 
+      case 'T':
         //Top view
         rotation.set(-TAU / 4, 0, 0);
         break;
-      case 'u': case 'U':
+      case 'u': 
+      case 'U':
         //Toggle user
         displaySkeleton = !displaySkeleton;
         break;
-      case 'q': case 'Q':
+      case 'q': 
+      case 'Q':
         exit();
         break;
-      case 'x': case 'X':
+      case 'x': 
+      case 'X':
         d.clearStrokes();
         break;
-      case 'z': case 'Z':
+      case 'z': 
+      case 'Z':
         d.undoLastStroke();
         break; 
-      case '-': case '_':
+      case '-': 
+      case '_':
         brushSize -= 5;
         println("Brush decreased: " + brushSize);
         break;
-      case '=': case '+':
+      case '=': 
+      case '+':
         brushSize += 5;
         println("Brush increased: " + brushSize);
       case '0':
@@ -480,10 +494,12 @@ void keyPressed() {
         break;
       }
     }
-  } else {
-    if( key == CODED && keyCode == LEFT) {
+  } 
+  else {
+    if ( key == CODED && keyCode == LEFT) {
       skeleton.setHand( Skeleton.LEFT_HANDED );
-    } else {
+    } 
+    else {
       skeleton.setHand( Skeleton.RIGHT_HANDED );
     }
     handPicked = true;
@@ -515,25 +531,31 @@ void keyReleased() {
       break;
     default:
     }
-  } else {
+  } 
+  else {
     keyStatus = key + keyStatus;
     switch(key) {
-     case 'b': case 'B':
-       pickingBackground = false;
-       break;
-     case 'c': case 'C':
-       pickingColor = false;
-       break;
-     case 'd': case 'D':
-       drawingNow=false;
-       d.endStroke();
-       break;
-     case 'm': case 'M':
+    case 'b': 
+    case 'B':
+      pickingBackground = false;
+      break;
+    case 'c': 
+    case 'C':
+      pickingColor = false;
+      break;
+    case 'd': 
+    case 'D':
+      drawingNow=false;
+      d.endStroke();
+      break;
+    case 'm': 
+    case 'M':
       moveDrawing=false;
       break;
-     case 'r': case 'R':
+    case 'r': 
+    case 'R':
       rotatingNow=false;
-      break; 
+      break;
     }
   }
 }
@@ -577,7 +599,7 @@ void loadBackground( File f ) {
     catch (Exception e) {
       e.printStackTrace();
     }
-  }   
+  }
 }
 
 void updateDrawingHand() {
@@ -653,7 +675,6 @@ void onStartPose(String pose, int userId) {
   println( kinectStatus);
   kinect.stopPoseDetection(userId); 
   kinect.requestCalibrationSkeleton(userId, true);
-
 }
 
 void onEndCalibration(int userId, boolean successful) {
