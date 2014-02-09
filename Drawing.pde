@@ -158,13 +158,13 @@ class Drawing {
         
         //Add Brush data
         XML brushElement = strokeElement.addChild("brush");
-        brushElement.addChild("uniqueStyleID").setContent( stroke.brushStyle.getName() );
-        brushElement.addChild("width").setFloatContent( stroke.brushStyle.getWeight() );
+        brushElement.addChild("uniqueStyleID").setContent( stroke.style.getName() );
+        brushElement.addChild("width").setFloatContent( stroke.style.getWeight() );
         XML brushColor = brushElement.addChild("color");
-        brushColor.addChild("r").setIntContent( (int)red( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("g").setIntContent( (int)green( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("b").setIntContent( (int)blue( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("a").setIntContent( (int)alpha( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("r").setIntContent( (int)red( stroke.style.getColor() ) );
+        brushColor.addChild("g").setIntContent( (int)green( stroke.style.getColor() ) );
+        brushColor.addChild("b").setIntContent( (int)blue( stroke.style.getColor() ) );
+        brushColor.addChild("a").setIntContent( (int)alpha( stroke.style.getColor() ) );
         
         for( Point point : stroke.points ) {
           XML ptElement = vectorToXml("pt", scaleToGML(point.location));

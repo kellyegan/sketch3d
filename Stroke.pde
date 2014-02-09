@@ -1,10 +1,13 @@
 /**
- * A Stroke represents a curve in 3D space overtime
+ * A Stroke represents a curve in 3D space over time
  * @author Kelly Egan
  * @version 0.1
  */
 
 import java.util.*;
+import processing.core.PApplet;
+import shapes3d.utils.*;
+import shapes3d.*;
 
 class Stroke {
   List<Point> points;
@@ -12,7 +15,7 @@ class Stroke {
   float strokeWeight;
   Point lastPoint;
   
-  Brush brushStyle;
+  Brush style;
   
   /**
    * Create an empty Stroke with a specific Brush
@@ -20,7 +23,7 @@ class Stroke {
    */
   Stroke(Brush b) {
     points = new LinkedList<Point>();
-    brushStyle = b;
+    style = b;
     lastPoint = null;
   }
   
@@ -63,7 +66,7 @@ class Stroke {
    * Display the stroke
    */
   void display() { 
-    brushStyle.apply();
+    style.apply();
     beginShape();
     for( Point point : points ) {
       vertex( point.location.x, point.location.y, point.location.z );
