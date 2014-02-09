@@ -17,20 +17,23 @@ class Drawing {
   PVector up;
   PVector realScale;
   
+  PApplet app;
+  
   /**
    * Creates an empty Drawing from the "template.gml" file
    * The currentStroke is set to null until drawing begins
    * And there is no Stroke or Point data
    */
-  Drawing(PApplet applet) {
-    this(applet, "template.gml");
+  Drawing(PApplet a) {
+    this(a, "template.gml");
   }
 
   /**
    * Creates a Drawing from a GML (Graffiti Markup Language) file.
    * @param filepath Path to the GML file.
    */  
-  Drawing(PApplet applet, String filepath ) {
+  Drawing(PApplet a, String filepath ) {
+    app = a;
     strokes = new ArrayList<Stroke>();
     minimumDistance = 10;
     load( filepath );
@@ -184,7 +187,7 @@ class Drawing {
    */
   void startStroke(Brush brushStyle) {
     if( currentStroke == null ) {
-      currentStroke = new Stroke( brushStyle );
+      currentStroke = new Stroke( app, brushStyle );
       strokes.add( currentStroke );
     } else {
       System.err.println("Already started stroke. Please endStroke before beginning new one");

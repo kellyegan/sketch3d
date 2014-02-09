@@ -9,22 +9,28 @@ import processing.core.PApplet;
 import shapes3d.utils.*;
 import shapes3d.*;
 
-class Stroke {
+class Stroke implements I_PathGen {
   List<Point> points;
   color strokeColor;
   float strokeWeight;
   Point lastPoint;
   
   Brush style;
+ 
+  PApplet app; 
+  PathTube mesh;
+  boolean meshCreated;
   
   /**
    * Create an empty Stroke with a specific Brush
    * @param b Brush to attach to this Stroke
    */
-  Stroke(Brush b) {
+  Stroke(PApplet a, Brush b) {
+    app = a;
     points = new LinkedList<Point>();
     style = b;
     lastPoint = null;
+    meshCreated = false;
   }
   
   /**
@@ -33,15 +39,15 @@ class Stroke {
    * @param w Width of the Stroke
    * @param c Color of the new Stroke
    */
-  Stroke(String n, int c, int w) {
-    this(new Brush(n, c, w));
+  Stroke(PApplet a, String n, int c, int w) {
+    this(a, new Brush(n, c, w));
   }
   
   /**
    * Create an empty Stroke with a default Brush
    */  
-  Stroke() {
-    this( new Brush() );
+  Stroke(PApplet a) {
+    this( a, new Brush() );
   }
   
   /**
@@ -57,7 +63,7 @@ class Stroke {
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
-    if( points != null && points.size() > 1) {
+    if( points != null && points.size() >= 2) {
 
     }
   }
@@ -66,12 +72,16 @@ class Stroke {
    * Display the stroke
    */
   void display() { 
-    style.apply();
-    beginShape();
-    for( Point point : points ) {
-      vertex( point.location.x, point.location.y, point.location.z );
+    if( meshCreated ) {
+      
+    } else {
+      style.apply();
+      beginShape();
+      for( Point point : points ) {
+        vertex( point.location.x, point.location.y, point.location.z );
+      }
+      endShape();
     }
-    endShape();
   }
   
   /**
