@@ -6,13 +6,6 @@
 
 import java.util.*;
 
-import wblut.math.*;
-import wblut.processing.*;
-import wblut.core.*;
-import wblut.*;
-import wblut.hemesh.*;
-import wblut.geom.*; 
- 
 class Stroke {
   List<Point> points;
   color strokeColor;
@@ -21,8 +14,6 @@ class Stroke {
   
   Brush brushStyle;
   
-  HE_Mesh mesh;
-
   /**
    * Create an empty Stroke with a specific Brush
    * @param b Brush to attach to this Stroke
@@ -64,31 +55,7 @@ class Stroke {
    */
   void createMesh() {
     if( points != null && points.size() > 1) {
-      println( points.size() );
-      WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
-      WB_BSpline spline;
-      HEC_SweepTube tube = new HEC_SweepTube();
-      mesh = new HE_Mesh();
-      
-      //Convert PVector points to WB_Points3d
-      int index = 0;
-      for( Point point : points ) {
-        wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
-        index++;
-        
-      }
-      println("Stroke has " + index + " points" );
-      
-      //Create the tube spline and tube object
-      spline = new WB_BSpline(wbPoints, 1);
-      tube.setCurve(spline);
-      tube.setRadius( 2 );
-      tube.setSteps( wbPoints.length * 2 );
-      tube.setFacets( 5 );
-      tube.setCap(true, true); // Cap start, cap end?
-      
-      //Create and assign mesh to stroke mesh object
-      mesh = new HE_Mesh( tube );
+
     }
   }
   

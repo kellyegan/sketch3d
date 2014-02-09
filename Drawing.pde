@@ -4,13 +4,6 @@
  * @author Kelly Egan
  * @version 0.1
  */
- 
-import wblut.math.*;
-import wblut.processing.*;
-import wblut.core.*;
-import wblut.*;
-import wblut.hemesh.*;
-import wblut.geom.*;
 
 import processing.core.PApplet;
  
@@ -23,8 +16,6 @@ class Drawing {
   PVector screenBounds; 
   PVector up;
   PVector realScale;
-
-  WB_Render render;
   
   /**
    * Creates an empty Drawing from the "template.gml" file
@@ -40,7 +31,6 @@ class Drawing {
    * @param filepath Path to the GML file.
    */  
   Drawing(PApplet applet, String filepath ) {
-    render = new WB_Render(applet);
     strokes = new ArrayList<Stroke>();
     minimumDistance = 10;
     load( filepath );
