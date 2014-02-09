@@ -64,7 +64,17 @@ class Stroke implements I_PathGen {
    */
   void createMesh() {
     if( points != null && points.size() >= 2) {
-
+      PVector[] pts = new PVector[points.size()];
+      
+      for( int i = 0; i < points.size(); i++ ) {
+        pts[i] = points.get(i).location; 
+      }
+      
+      mesh = new PathTube( app, this, style.getWeight(), points.size(), 5, false );
+      mesh.drawMode( Shape3D.SOLID );
+      mesh.fill( style.getColor() );
+      mesh.fill( style.getColor(), Tube.BOTH_CAP );
+      //meshCreated = true;
     }
   }
   
