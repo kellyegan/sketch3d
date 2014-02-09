@@ -100,7 +100,7 @@ void setup() {
   
   //Drawing
   d = new Drawing(this, "default.gml");
-  brushSize = 60.0;
+  brushSize = 30.0;
 
   brushColorHSB = new PVector();
   oldBrushColorHSB = new PVector();
@@ -150,7 +150,7 @@ void setup() {
   currentPosition = new PVector();
   positionDelta = new PVector();
 
-  hint(DISABLE_DEPTH_MASK);
+  //hint(DISABLE_DEPTH_MASK);
 
   //
   //  File path = new File(sketchPath + "/data");  
@@ -251,6 +251,9 @@ void draw() {
 
   pushMatrix();
   
+  if( true ) {
+    //lights();
+  }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
   //perspective();
   
@@ -275,7 +278,7 @@ void draw() {
     line( 0, 0, 0, 500, 0, 0);
   }
   
-  shader(fogTextShader, LINES);
+  //shader(fogTextShader, LINES);
   
   translate(offset.x, offset.y, offset.z);
   d.display();

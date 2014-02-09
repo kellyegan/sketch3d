@@ -57,9 +57,10 @@ class Stroke implements I_PathGen {
   void add(Point p) {
     points.add(p);
     lastPoint = p;
+    createMesh();
   }
   
-  /** Create a mesh for the given stroke
+  /** Creates a mesh for the given stroke
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
@@ -70,7 +71,7 @@ class Stroke implements I_PathGen {
         pts[i] = points.get(i).location; 
       }
       
-      mesh = new PathTube( app, this, style.getWeight(), points.size(), 5, false );
+      mesh = new PathTube( app, this, style.getWeight(), points.size(), 6, false );
       mesh.drawMode( Shape3D.SOLID );
       mesh.fill( style.getColor() );
       mesh.fill( style.getColor(), Tube.BOTH_CAP );
