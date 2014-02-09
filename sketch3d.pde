@@ -9,10 +9,6 @@ import SimpleOpenNI.*;
 import java.awt.Color;
 import processing.dxf.*;
 
-//ControlP5 cp5;
-//ColorPicker cp;
-
-//Key crap that appears --->  
 
 PFont font;
 
