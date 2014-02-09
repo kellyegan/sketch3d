@@ -218,6 +218,7 @@ class Drawing {
    * Sets currentStroke to null
    */ 
   void endStroke() {
+    currentStroke.createMesh();
     currentStroke = null;
   }
   

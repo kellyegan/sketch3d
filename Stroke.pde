@@ -74,7 +74,7 @@ class Stroke implements I_PathGen {
       mesh.drawMode( Shape3D.SOLID );
       mesh.fill( style.getColor() );
       mesh.fill( style.getColor(), Tube.BOTH_CAP );
-      //meshCreated = true;
+      meshCreated = true;
     }
   }
   
@@ -83,7 +83,7 @@ class Stroke implements I_PathGen {
    */
   void display() { 
     if( meshCreated ) {
-      
+      mesh.draw();
     } else {
       style.apply();
       beginShape();
