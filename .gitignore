@@ -2,8 +2,11 @@ data/*.gml
 !data/default.gml
 .DS_Store
 *.swp
+*.dxf
+*.pdf
 data/caligraphy.png
 makerfaire/*
 data/brush_speckle.png
 application.macosx/*
 data/brush.psd
+
