@@ -9,7 +9,6 @@ import SimpleOpenNI.*;
 import java.awt.Color;
 import processing.dxf.*;
 
-
 PFont font;
 
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, pickingBackground;    //Current button states 

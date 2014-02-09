@@ -95,5 +95,56 @@ class Stroke {
       return -1;
     }
   }
+  
+  /**
+   * Return x position along stroke length
+   */
+  public float x( float t ) {
+    float xPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      xPos = lerp( points.get( startPt ).location.x, points.get( endPt ).location.x, amt );
+    } else { 
+      xPos =  points.get( points.size() - 1 ).location.x;
+    }    
+    return xPos;
+  }
+  
+  /**
+   * Return x position along stroke
+   */
+  public float y( float t ) {
+    float yPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      yPos = lerp( points.get( startPt ).location.y, points.get( endPt ).location.y, amt );
+    } else { 
+      yPos =  points.get( points.size() - 1 ).location.y;
+    }    
+    return yPos;
+  }
+  
+  /**
+   * Return x position along stroke
+   */
+  public float z( float t ) {
+    float zPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      zPos = lerp( points.get( startPt ).location.z, points.get( endPt ).location.z, amt );
+    } else { 
+      zPos =  points.get( points.size() - 1 ).location.z;
+    }    
+    return zPos;
+  }
    
 }
