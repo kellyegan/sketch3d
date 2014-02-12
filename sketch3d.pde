@@ -48,7 +48,7 @@ PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PVector startPosition, currentPosition, positionDelta;
-PShader fogShader, fogTextShader;
+PShader fogShader, shader;
 PImage brush;
 
 boolean displayOrigin;  //Display the origin
@@ -129,12 +129,15 @@ void setup() {
 
   rotation = new PVector();
 
-  fogTextShader = loadShader("fog_text_frag.glsl", "fog_text_vert.glsl");
-  fogTextShader.set("weight", 200.0);
-  brush = loadImage("brush.png");
-  fogTextShader.set("sprite", brush);
-  fogTextShader.set("fogNear", 0.25 * (cameraPos.z - cameraFocus.z) );
-  fogTextShader.set("fogFar", 1.75 * (cameraPos.z - cameraFocus.z) );
+  shader = loadShader("frag.glsl", "vert.glsl");
+  
+  shader.set("fogFar", cameraPos.z + 5000 );
+  shader.set("zPlaneIndicatorOn", true);
+  //shader.set("zPlane", cameraPos.z);
+  
+  //shader.set("weight", 200.0);
+  //brush = loadImage("brush.png");
+  //shader.set("sprite", brush);
 
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
@@ -164,6 +167,7 @@ void setup() {
   //  println(this);
   startMillis = millis();
   logoDuration = 10000; //10 seconds to display logo and pick hand.
+  shader(shader);
 }
 
 void draw() {
@@ -191,8 +195,8 @@ void draw() {
     skeleton.update( drawingHand );
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
-    
-    fogTextShader.set("zPlane", cameraPos.z - drawingHand.z );
+    kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
+    shader.set("zPlane", cameraPos.z - drawingHand.z );
     
     if ( !pickingColor && !pickingBackground ) {
       if ( drawingNow ) {
@@ -234,6 +238,7 @@ void draw() {
   }
 
   /*************************************** DISPLAY **************************************/
+  
   if ( exportDXF ) {
     beginRaw( DXF, "frame-####.dxf");
   }
@@ -277,9 +282,7 @@ void draw() {
     stroke(0, 0, 255);
     line( 0, 0, 0, 500, 0, 0);
   }
-  
-  //shader(fogTextShader, LINES);
-  
+    
   translate(offset.x, offset.y, offset.z);
   d.display();
   
