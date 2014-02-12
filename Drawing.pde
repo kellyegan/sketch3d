@@ -4,13 +4,6 @@
  * @author Kelly Egan
  * @version 0.1
  */
- 
-import wblut.math.*;
-import wblut.processing.*;
-import wblut.core.*;
-import wblut.*;
-import wblut.hemesh.*;
-import wblut.geom.*;
 
 import processing.core.PApplet;
  
@@ -23,24 +16,24 @@ class Drawing {
   PVector screenBounds; 
   PVector up;
   PVector realScale;
-
-  WB_Render render;
+  
+  PApplet app;
   
   /**
    * Creates an empty Drawing from the "template.gml" file
    * The currentStroke is set to null until drawing begins
    * And there is no Stroke or Point data
    */
-  Drawing(PApplet applet) {
-    this(applet, "template.gml");
+  Drawing(PApplet a) {
+    this(a, "template.gml");
   }
 
   /**
    * Creates a Drawing from a GML (Graffiti Markup Language) file.
    * @param filepath Path to the GML file.
    */  
-  Drawing(PApplet applet, String filepath ) {
-    render = new WB_Render(applet);
+  Drawing(PApplet a, String filepath ) {
+    app = a;
     strokes = new ArrayList<Stroke>();
     minimumDistance = 10;
     load( filepath );
@@ -168,13 +161,13 @@ class Drawing {
         
         //Add Brush data
         XML brushElement = strokeElement.addChild("brush");
-        brushElement.addChild("uniqueStyleID").setContent( stroke.brushStyle.getName() );
-        brushElement.addChild("width").setFloatContent( stroke.brushStyle.getWeight() );
+        brushElement.addChild("uniqueStyleID").setContent( stroke.style.getName() );
+        brushElement.addChild("width").setFloatContent( stroke.style.getWeight() );
         XML brushColor = brushElement.addChild("color");
-        brushColor.addChild("r").setIntContent( (int)red( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("g").setIntContent( (int)green( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("b").setIntContent( (int)blue( stroke.brushStyle.getColor() ) );
-        brushColor.addChild("a").setIntContent( (int)alpha( stroke.brushStyle.getColor() ) );
+        brushColor.addChild("r").setIntContent( (int)red( stroke.style.getColor() ) );
+        brushColor.addChild("g").setIntContent( (int)green( stroke.style.getColor() ) );
+        brushColor.addChild("b").setIntContent( (int)blue( stroke.style.getColor() ) );
+        brushColor.addChild("a").setIntContent( (int)alpha( stroke.style.getColor() ) );
         
         for( Point point : stroke.points ) {
           XML ptElement = vectorToXml("pt", scaleToGML(point.location));
@@ -194,7 +187,7 @@ class Drawing {
    */
   void startStroke(Brush brushStyle) {
     if( currentStroke == null ) {
-      currentStroke = new Stroke( brushStyle );
+      currentStroke = new Stroke( app, brushStyle );
       strokes.add( currentStroke );
     } else {
       System.err.println("Already started stroke. Please endStroke before beginning new one");
@@ -225,6 +218,7 @@ class Drawing {
    * Sets currentStroke to null
    */ 
   void endStroke() {
+    currentStroke.createMesh();
     currentStroke = null;
   }
   
