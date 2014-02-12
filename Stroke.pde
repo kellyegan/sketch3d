@@ -1,36 +1,36 @@
 /**
- * A Stroke represents a curve in 3D space overtime
+ * A Stroke represents a curve in 3D space over time
  * @author Kelly Egan
  * @version 0.1
  */
 
 import java.util.*;
+import processing.core.PApplet;
+import shapes3d.utils.*;
+import shapes3d.*;
 
-import wblut.math.*;
-import wblut.processing.*;
-import wblut.core.*;
-import wblut.*;
-import wblut.hemesh.*;
-import wblut.geom.*; 
- 
-class Stroke {
+class Stroke implements I_PathGen {
   List<Point> points;
   color strokeColor;
   float strokeWeight;
   Point lastPoint;
   
-  Brush brushStyle;
+  Brush style;
+ 
+  PApplet app; 
+  PathTube mesh;
+  boolean meshCreated;
   
-  HE_Mesh mesh;
-
   /**
    * Create an empty Stroke with a specific Brush
    * @param b Brush to attach to this Stroke
    */
-  Stroke(Brush b) {
+  Stroke(PApplet a, Brush b) {
+    app = a;
     points = new LinkedList<Point>();
-    brushStyle = b;
+    style = b;
     lastPoint = null;
+    meshCreated = false;
   }
   
   /**
@@ -39,15 +39,15 @@ class Stroke {
    * @param w Width of the Stroke
    * @param c Color of the new Stroke
    */
-  Stroke(String n, int c, int w) {
-    this(new Brush(n, c, w));
+  Stroke(PApplet a, String n, int c, int w) {
+    this(a, new Brush(n, c, w));
   }
   
   /**
    * Create an empty Stroke with a default Brush
    */  
-  Stroke() {
-    this( new Brush() );
+  Stroke(PApplet a) {
+    this( a, new Brush() );
   }
   
   /**
@@ -57,38 +57,25 @@ class Stroke {
   void add(Point p) {
     points.add(p);
     lastPoint = p;
+    createMesh();
   }
   
-  /** Create a mesh for the given stroke
+  /** Creates a mesh for the given stroke
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
-    if( points != null && points.size() > 1) {
-      println( points.size() );
-      WB_Point3d[] wbPoints = new WB_Point3d[points.size()];
-      WB_BSpline spline;
-      HEC_SweepTube tube = new HEC_SweepTube();
-      mesh = new HE_Mesh();
+    if( points != null && points.size() >= 2) {
+      PVector[] pts = new PVector[points.size()];
       
-      //Convert PVector points to WB_Points3d
-      int index = 0;
-      for( Point point : points ) {
-        wbPoints[index] = new WB_Point3d(point.location.x, point.location.y, point.location.z);
-        index++;
-        
+      for( int i = 0; i < points.size(); i++ ) {
+        pts[i] = points.get(i).location; 
       }
-      println("Stroke has " + index + " points" );
       
-      //Create the tube spline and tube object
-      spline = new WB_BSpline(wbPoints, 1);
-      tube.setCurve(spline);
-      tube.setRadius( 2 );
-      tube.setSteps( wbPoints.length * 2 );
-      tube.setFacets( 5 );
-      tube.setCap(true, true); // Cap start, cap end?
-      
-      //Create and assign mesh to stroke mesh object
-      mesh = new HE_Mesh( tube );
+      mesh = new PathTube( app, this, style.getWeight(), points.size(), 6, false );
+      mesh.drawMode( Shape3D.SOLID );
+      mesh.fill( style.getColor() );
+      mesh.fill( style.getColor(), Tube.BOTH_CAP );
+      meshCreated = true;
     }
   }
   
@@ -96,12 +83,16 @@ class Stroke {
    * Display the stroke
    */
   void display() { 
-    brushStyle.apply();
-    beginShape();
-    for( Point point : points ) {
-      vertex( point.location.x, point.location.y, point.location.z );
+    if( meshCreated ) {
+      mesh.draw();
+    } else {
+      style.apply();
+      beginShape();
+      for( Point point : points ) {
+        vertex( point.location.x, point.location.y, point.location.z );
+      }
+      endShape();
     }
-    endShape();
   }
   
   /**
@@ -124,6 +115,57 @@ class Stroke {
     } else {
       return -1;
     }
+  }
+  
+  /**
+   * Return x position along stroke length
+   */
+  public float x( float t ) {
+    float xPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      xPos = lerp( points.get( startPt ).location.x, points.get( endPt ).location.x, amt );
+    } else { 
+      xPos =  points.get( points.size() - 1 ).location.x;
+    }    
+    return xPos;
+  }
+  
+  /**
+   * Return x position along stroke
+   */
+  public float y( float t ) {
+    float yPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      yPos = lerp( points.get( startPt ).location.y, points.get( endPt ).location.y, amt );
+    } else { 
+      yPos =  points.get( points.size() - 1 ).location.y;
+    }    
+    return yPos;
+  }
+  
+  /**
+   * Return x position along stroke
+   */
+  public float z( float t ) {
+    float zPos = 0;
+    if( t < 1.0 ) {
+      float pathPos = t * (points.size() - 1);
+      int startPt = floor(pathPos);
+      int endPt = startPt + 1;
+      float amt = pathPos - startPt;
+      zPos = lerp( points.get( startPt ).location.z, points.get( endPt ).location.z, amt );
+    } else { 
+      zPos =  points.get( points.size() - 1 ).location.z;
+    }    
+    return zPos;
   }
    
 }
