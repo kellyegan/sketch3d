@@ -130,14 +130,10 @@ void setup() {
   rotation = new PVector();
 
   shader = loadShader("frag.glsl", "vert.glsl");
-  
-  shader.set("fogFar", cameraPos.z + 5000 );
-  shader.set("zPlaneIndicatorOn", true);
-  //shader.set("zPlane", cameraPos.z);
-  
-  //shader.set("weight", 200.0);
-  //brush = loadImage("brush.png");
-  //shader.set("sprite", brush);
+  shader.set("fogNear", cameraPos.z + 0.0 );
+  shader.set("fogFar", cameraPos.z + 3500.0 );
+  println( red(bgColor) + " " + green(bgColor) + " " + blue(bgColor) );
+  shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
 
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
