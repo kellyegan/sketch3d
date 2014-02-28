@@ -132,8 +132,8 @@ void setup() {
   shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
   shader.set("fogNear", cameraPos.z + 0.0 );
   shader.set("fogFar", cameraPos.z + 3500.0 );
-  println( red(bgColor) + " " + green(bgColor) + " " + blue(bgColor) );
   shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
+  shader.set("zPlaneIndicatorOn", true);
 
   drawingHand = new PVector();
   drawingHandTransformed = new PVector();
@@ -234,7 +234,7 @@ void draw() {
   }
 
   /*************************************** DISPLAY **************************************/
-  directionalLight(hue(bgColor), saturation(bgColor), brightness(bgColor), 0, 1, 0.1);
+  directionalLight(255, 255, 255, 0, 0.5, 0.5);
   
   if ( exportDXF ) {
     beginRaw( DXF, "frame-####.dxf");
