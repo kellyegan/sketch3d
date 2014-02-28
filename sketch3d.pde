@@ -129,7 +129,7 @@ void setup() {
 
   rotation = new PVector();
 
-  shader = loadShader("frag.glsl", "vert.glsl");
+  shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
   shader.set("fogNear", cameraPos.z + 0.0 );
   shader.set("fogFar", cameraPos.z + 3500.0 );
   println( red(bgColor) + " " + green(bgColor) + " " + blue(bgColor) );
@@ -234,6 +234,7 @@ void draw() {
   }
 
   /*************************************** DISPLAY **************************************/
+  directionalLight(hue(bgColor), saturation(bgColor), brightness(bgColor), 0, 1, 0.1);
   
   if ( exportDXF ) {
     beginRaw( DXF, "frame-####.dxf");
