@@ -26,9 +26,13 @@ int keyCount = 0;
 Drawing d;
 Brush defaultBrush;
 float brushSize;
-int brushColor, bgColor;
 PVector brushColorHSB, bgColorHSB, oldBrushColorHSB, oldBgColorHSB;
 boolean clickStarted;
+
+int brushColor, bgColor;
+boolean currentColor;
+boolean FOREGROUND = true;
+boolean BACKGROUND = false;
 
 int startMillis, logoDuration;
 
@@ -39,6 +43,11 @@ boolean displayBackgroundImage;
 boolean exportDXF;
 
 //View stuff
+ControlP5 cp5;
+ColorChooserController colorChooser;
+Group colorGroup;
+Toggle fgbgToggle;
+
 PVector cameraPos, cameraFocus;
 
 PMatrix3D inverseTransform;
@@ -57,13 +66,17 @@ boolean displaySkeleton;  //Display the origin
 float rotationStep = TAU / 180;
 
 void setup() {
-  //size(1280, 768, P3D);
-  size(displayWidth, displayHeight, P3D);
+  size(1280, 768, P3D);
+  //size(displayWidth, displayHeight, P3D);
 
-  smooth();
+  //smooth();
 
   //GUI
-//  createControllers();
+  cp5 = new ControlP5(this);
+  createControllers( cp5 );
+  cp5.setAutoDraw(false);
+  cp5.getPointer().enable();
+  
   font = createFont("Helvetica", 20);
   textFont(font, 20);
   
@@ -102,7 +115,7 @@ void setup() {
   d = new Drawing(this, "default.gml");
   brushSize = 30.0;
 
-  brushColorHSB = new PVector();
+  brushColorHSB = new PVector(0.0, 0.0, 0.2);
   oldBrushColorHSB = new PVector();
   brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z);
   
@@ -117,10 +130,10 @@ void setup() {
   displayBackgroundImage = false;
 
   //View
-  cameraPos = new PVector( 0, 0, 4000 );
+  cameraPos = new PVector( 0, 0, 3500 );
   cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
-  offset = new PVector( 0, 0, 0);
+  offset = new PVector( 0, 0, 0 );
   moveStart = new PVector();
   moveNow = new PVector();
   moveDelta = new PVector();
@@ -130,8 +143,8 @@ void setup() {
   rotation = new PVector();
 
   shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
-  shader.set("fogNear", cameraPos.z + 0.0 );
-  shader.set("fogFar", cameraPos.z + 3500.0 );
+  shader.set("fogNear", cameraPos.z - 1500.0 );
+  shader.set("fogFar", cameraPos.z + 0.0 );
   shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
   shader.set("zPlaneIndicatorOn", true);
 
@@ -167,73 +180,13 @@ void setup() {
 }
 
 void draw() {
-  /*************************************** UPDATE ***************************************/
-  if ( !handPicked && (millis() - startMillis) > logoDuration) {
-    handPicked = true;
-    d.clearStrokes();
-  }
-
-  if ( up ) {
-    rotation.x += rotationStep;
-  }
-  if ( down ) {
-    rotation.x -= rotationStep;
-  }
-  if ( right ) {
-    rotation.y += rotationStep;
-  }
-  if ( left ) {
-    rotation.y -= rotationStep;
-  }
-
-  if (deviceReady) {
-    kinect.update();
-    skeleton.update( drawingHand );
-    skeleton.getSecondaryHand( secondaryHand );
-    updateDrawingHand();
-    kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
-    shader.set("zPlane", cameraPos.z - drawingHand.z );
-    
-    if ( !pickingColor && !pickingBackground ) {
-      if ( drawingNow ) {
-        d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
-      }
-      if ( rotatingNow ) {
-        rotationEnded.set(secondaryHand);
-        stroke(255, 0, 0);
-        rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-        rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
-      }
-      if ( moveDrawing && !drawingNow ) {
-        moveNow.set( secondaryHand );
-        PVector.sub( moveNow, moveStart, moveDelta );
-        moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
-        inverseTransform.mult( moveDelta, moveModel );
-        offset = PVector.add( oldOffset, moveModel );
-      }
-    } 
-    else {
-      //Picking color
-      positionDelta = PVector.sub( drawingHand, startPosition );
-
-      if ( pickingColor ) {
-        brushColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBrushColorHSB.x) % 1.0;  //Hue
-        brushColorHSB.x = brushColorHSB.x == 1.0 ? 0.0 : brushColorHSB.x;
-        brushColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBrushColorHSB.z, 0, 1.0);  //Brightness
-        brushColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBrushColorHSB.y, 0, 1.0);  //Saturation
-        brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z );
-      } 
-      else {
-        bgColorHSB.x = (map( positionDelta.x, 0, 700, 0, 1.0 ) + oldBgColorHSB.x) % 1.0;  //Hue
-        bgColorHSB.x = bgColorHSB.x == 1.0 ? 0.0 : bgColorHSB.x;
-        bgColorHSB.z = constrain( map( positionDelta.y, 0, 300, 0, 1.0 ) + oldBgColorHSB.z, 0, 1.0);  //Brightness
-        bgColorHSB.y = constrain( map( -positionDelta.z, 0, 400, 0, 1.0 ) + oldBgColorHSB.y, 0, 1.0);  //Saturation
-        bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z );
-      }
-    }
-  }
+  update();
 
   /*************************************** DISPLAY **************************************/
+
+  hint(ENABLE_DEPTH_TEST);
+  pushMatrix();
+  
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
   
   if ( exportDXF ) {
@@ -251,13 +204,16 @@ void draw() {
     noFill();
   }
 
-  pushMatrix();
   
   if( true ) {
     //lights();
   }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
   //perspective();
+  
+  //Set the cursor for the menus
+  cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+
   
   if ( deviceReady && !exportDXF) {
     pushMatrix();
@@ -290,43 +246,124 @@ void draw() {
     exportDXF = false;
   }
   
+  hint(DISABLE_DEPTH_TEST);
+  camera();
+  noLights();
+  
+  //Draw the user face 
+  //This is manually drawn so that the custom pointer will be seen.
+  cp5.draw();
+  
   if ( pickingColor ) {
-    noStroke();
-    fill(brushColor);
-    ellipse(  width/2, height/2, 400, 400);
+    if( currentColor == FOREGROUND ) {
+      brushColor = colorChooser.getColorValue();
+      fgbgToggle.setColorForeground(brushColor);
+    } else {
+      bgColor = colorChooser.getColorValue();
+      shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
+      fgbgToggle.setColorBackground(bgColor);
+    }
+    
+    stroke( 255 );
+    float x = cp5.getPointer().getX();
+    float y = cp5.getPointer().getY();
+    line( x, y - 10, x, y + 10 );
+    line( x - 10, y, x + 10, y );
+  }
+  
+}
+
+
+/*************************************** UPDATE ***************************************/
+void update() {
+  if ( !handPicked && (millis() - startMillis) > logoDuration) {
+    handPicked = true;
+    d.clearStrokes();
+  }
+
+  if ( up ) {
+    rotation.x += rotationStep;
+  }
+  if ( down ) {
+    rotation.x -= rotationStep;
+  }
+  if ( right ) {
+    rotation.y += rotationStep;
+  }
+  if ( left ) {
+    rotation.y -= rotationStep;
+  }
+
+  if (deviceReady) {
+    kinect.update();
+    skeleton.update( drawingHand );
+    skeleton.getSecondaryHand( secondaryHand );
+    updateDrawingHand();
+        
+    
+    kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
+    shader.set("zPlane", cameraPos.z - drawingHand.z );
+    
+    
+    
+    if ( drawingNow ) {
+      d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
+    }
+    if ( rotatingNow ) {
+      rotationEnded.set(secondaryHand);
+      stroke(255, 0, 0);
+      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+      rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+    }
+    if ( moveDrawing && !drawingNow ) {
+      moveNow.set( secondaryHand );
+      PVector.sub( moveNow, moveStart, moveDelta );
+      moveDelta.set( moveDelta.x, moveDelta.y, moveDelta.z );
+      inverseTransform.mult( moveDelta, moveModel );
+      offset = PVector.add( oldOffset, moveModel );
+    }
+
   }
 }
 
 void mousePressed() {
-  if (mouseButton==LEFT) {
-    println( red(brushColor));
-    d.startStroke(new Brush( "", brushColor, brushSize ) );
-    drawingNow=true;
-    keyStatus += " Left mouse.";
-  }
-  if (mouseButton==RIGHT) {
-    rotationStarted.set(secondaryHand);
-    oldRotation.set( rotation );
-    rotatingNow=true;
-    keyStatus += " Right mouse.";
-  }
-  if (mouseButton==CENTER) {
-    moveDrawing=true;
-    moveStart.set( secondaryHand );
-    oldOffset.set( offset );
-    keyStatus += " Center mouse.";
+  if( pickingColor ) {
+    cp5.getPointer().pressed();
+  } else {
+    if (mouseButton==LEFT) {
+      println( red(brushColor));
+      d.startStroke(new Brush( "", brushColor, brushSize ) );
+      drawingNow=true;
+      keyStatus += " Left mouse.";
+    }
+    if (mouseButton==RIGHT) {
+      rotationStarted.set(secondaryHand);
+      oldRotation.set( rotation );
+      rotatingNow=true;
+      keyStatus += " Right mouse.";
+    }
+    if (mouseButton==CENTER) {
+      moveDrawing=true;
+      moveStart.set( secondaryHand );
+      oldOffset.set( offset );
+      keyStatus += " Center mouse.";
+    }
   }
 }
 
 void mouseReleased() {
-  if (mouseButton==LEFT) {
-    drawingNow=false;
-    d.endStroke();
+  if( pickingColor ) {
+    cp5.getPointer().released();    
+  } else {
+    if (mouseButton==LEFT) {
+      drawingNow=false;
+      d.endStroke();
+    }
+    if (mouseButton==RIGHT)
+      rotatingNow=false;
+    if (mouseButton==CENTER)
+      moveDrawing=false;
   }
-  if (mouseButton==RIGHT)
-    rotatingNow=false;
-  if (mouseButton==CENTER)
-    moveDrawing=false;
 } 
 
 void keyPressed() {
@@ -366,19 +403,11 @@ void keyPressed() {
         //Hide the x, y, z axis
         displayOrigin = !displayOrigin;
         break; 
-      case 'b':  
-      case 'B':
-        //Change background color
-        pickingBackground = true;
-        oldBgColorHSB.set( bgColorHSB );
-        startPosition.set( drawingHand );
-        break;
       case 'c': 
       case 'C':
         //Change stroke color
-        pickingColor = true;
-        oldBrushColorHSB.set( brushColorHSB );
-        startPosition.set( drawingHand );
+        pickingColor = !pickingColor;
+        colorGroup.setVisible( pickingColor );
         break;
       case 'd': 
       case 'D':
@@ -533,14 +562,6 @@ void keyReleased() {
   else {
     keyStatus = key + keyStatus;
     switch(key) {
-    case 'b': 
-    case 'B':
-      pickingBackground = false;
-      break;
-    case 'c': 
-    case 'C':
-      pickingColor = false;
-      break;
     case 'd': 
     case 'D':
       drawingNow=false;
@@ -615,44 +636,38 @@ void updateDrawingHand() {
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
 }
 
-//void createControllers() {
-//  //GUI
-//  cp5 = new ControlP5(this);
-//
-//  Group brushCtrl = cp5.addGroup("Brush")
-//    .setPosition(width- (270 + 25), 150)
-//    .setBackgroundHeight(100)
-//    .setBackgroundColor(color(100, 100))
-//    .setSize(270, 125)
-//    ;
-//
-//  cp5.addSlider("brushSize")
-//    .setGroup(brushCtrl)
-//      .setRange(1, 50)
-//        .setPosition(5, 20)
-//          .setSize(200, 20)
-//            .setValue(1)
-//              .setLabel("Stroke weight")
-//              ;
-//
-//  cp = cp5.addColorPicker("brushColor")
-//    .setPosition(5, 50)
-//      .setColorValue(color(0, 0, 0, 255))
-//        .setGroup(brushCtrl)
-//          ;
-//
-//  // reposition the Label for controller 'slider'
-//  cp5.getController("brushSize")
-//    .getValueLabel()
-//      .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
-//        .setPaddingX(0)
-//          ;
-//  cp5.getController("brushSize")
-//    .getCaptionLabel()
-//      .align(ControlP5.RIGHT, ControlP5.TOP_OUTSIDE)
-//        .setPaddingX(0)
-//          ;
-//}
+void createControllers(ControlP5 cp5) {
+
+  currentColor = FOREGROUND;
+  brushColor = color(0);
+  bgColor = color(255);
+  
+  colorGroup = cp5.addGroup("colorChooserGroup")
+    .setPosition( width / 2 - 200, height / 2 - 200 )
+    .setSize( 400, 460 )
+    .setBackgroundColor( color(100, 100, 100, 128) )
+    .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
+    .setLabel("")
+    .hide()
+    ; 
+
+  fgbgToggle = cp5.addToggle("currentColor")
+    .setGroup(colorGroup)
+    .setPosition( 20, 20 )
+    .setSize(360, 160)
+    .setView(new ColorToggleView())
+    .setState( FOREGROUND )
+    .setColorBackground( bgColor )
+    .setColorForeground( brushColor )
+    ;
+
+  colorChooser = new ColorChooserController( cp5, "colorChooser")
+    .setGroup(colorGroup)
+    .setPosition(20, 200)
+    .setSize(360, 240)
+    .setColorValue( brushColor );
+    ;
+}
 
 
 /************************************** SimpleOpenNI callbacks **************************************/
@@ -687,4 +702,15 @@ void onEndCalibration(int userId, boolean successful) {
     kinect.startPoseDetection("Psi", userId);
   }
 }
+
+void controlEvent(ControlEvent theEvent) {
+  if( theEvent.isFrom( fgbgToggle ) ) {
+    if( currentColor == FOREGROUND ) {
+      colorChooser.setColorValue( brushColor );
+    } else {
+      colorChooser.setColorValue( bgColor );
+    }
+  }
+}
+
 
