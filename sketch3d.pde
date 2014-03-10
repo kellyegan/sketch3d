@@ -411,6 +411,7 @@ void keyPressed() {
         break;
       case 'd': 
       case 'D':
+        cp5.getPointer().pressed(); 
         d.startStroke(new Brush( "", brushColor, brushSize ) );
         drawingNow=true;
         break;
@@ -564,6 +565,7 @@ void keyReleased() {
     switch(key) {
     case 'd': 
     case 'D':
+      cp5.getPointer().released();
       drawingNow=false;
       d.endStroke();
       break;
