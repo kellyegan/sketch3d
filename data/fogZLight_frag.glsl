@@ -25,11 +25,11 @@ void main() {
 
   float depth = 1.0 / gl_FragCoord.w;
   float hlFactor = 1.0 / (pow( zPlane - depth, 2.0) + 1.0); 
-  float fogFactor = smoothstep( fogNear, fogFar, depth );
+  float fogFactor = 0.9 * smoothstep( fogNear, fogFar, depth );
 
 
   vec4 lit = vec4(intensity, intensity, intensity, 1) * vertColor;
-  gl_FragColor = mix( lit, vertColor, 0.7 );
+  gl_FragColor = mix( lit, vertColor, 0.6 );
   gl_FragColor = mix(gl_FragColor, fogColor, fogFactor);
 
   
