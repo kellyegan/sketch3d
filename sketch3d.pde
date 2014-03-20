@@ -8,6 +8,7 @@ import processing.core.PApplet;
 import SimpleOpenNI.*;
 import java.awt.Color;
 import processing.dxf.*;
+import processing.pdf.*;
 
 PFont font;
 
@@ -41,6 +42,7 @@ boolean displayBackgroundImage;
 
 //Exporting dxf
 boolean exportDXF;
+boolean exportPDF;
 
 //View stuff
 ControlP5 cp5;
@@ -89,6 +91,7 @@ void setup() {
   pickingColor = false;
   pickingBackground = false;
   exportDXF = false;
+  exportPDF = false;
   
   deviceReady = false;
   handPicked = false;
@@ -100,7 +103,9 @@ void setup() {
   
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
-    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);
+    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI
+    
+//    kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
     kinectStatus = "Kinect found. Waiting for user...";
     println(kinectStatus);
     skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
@@ -189,22 +194,25 @@ void draw() {
   
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
   
-  if ( exportDXF ) {
+  if ( exportDXF ) {    
     beginRaw( DXF, "frame-####.dxf");
   }
+  if ( exportPDF ) {
+    beginRaw( PDF, "frame-####.pdf"); 
+  }
+  
   background(bgColor);
-  if ( displayBackgroundImage && !exportDXF) {
+  if ( displayBackgroundImage && !exportDXF && !exportPDF) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
 
-  if ( !exportDXF ) {
+  if ( !exportDXF && !exportPDF) {
     fill(100);
     text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
-
-  
+ 
   if( true ) {
     //lights();
   }
@@ -215,7 +223,7 @@ void draw() {
   cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
 
   
-  if ( deviceReady && !exportDXF) {
+  if ( deviceReady && !exportDXF && !exportPDF) {
     pushMatrix();
     rotateX(PI);
     rotateY(PI);
@@ -226,7 +234,7 @@ void draw() {
   rotateX(rotation.x);
   rotateY(rotation.y);
   
-  if ( displayOrigin && !exportDXF) {
+  if ( displayOrigin && !exportDXF  && !exportPDF) {
     strokeWeight(3);
     stroke(255, 0, 0);
     line( 0, 0, 0, 0, 0, 500);
@@ -241,9 +249,10 @@ void draw() {
   
   popMatrix();
   
-  if ( exportDXF ) {
+  if ( exportDXF || exportPDF ) {
     endRaw();
     exportDXF = false;
+    exportPDF = false;
   }
   
   hint(DISABLE_DEPTH_TEST);
@@ -304,8 +313,7 @@ void update() {
     kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
     shader.set("zPlane", cameraPos.z - drawingHand.z );
     
-    
-    
+       
     if ( drawingNow ) {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
@@ -454,6 +462,11 @@ void keyPressed() {
       case 'O':
         //Open a file
         selectInput("Please select a drawing to load", "loadDrawing" );
+        break;
+      case 'p': 
+      case 'P':
+        exportPDF = true;
+        break;
       case 'r': 
       case 'R':
         rotationStarted.set(secondaryHand);
@@ -499,26 +512,6 @@ void keyPressed() {
       case '+':
         brushSize += 5;
         println("Brush increased: " + brushSize);
-      case '0':
-        break;
-      case '1':
-        break;
-      case '2':
-        break;
-      case '3':
-        break;
-      case '4':
-        break;
-      case '5':
-        rotation.set(TAU / 4, 0, 0);
-        break;
-      case '6':
-        break;
-      case '7':
-        break;
-      case '8':
-        break;
-      case '9':
         break;
       }
     }
@@ -671,18 +664,20 @@ void createControllers(ControlP5 cp5) {
     ;
 }
 
-
 /************************************** SimpleOpenNI callbacks **************************************/
 
+/*************** For version 1.9.6 of simpleOpenNi ***************/
+//void onNewUser(SimpleOpenNI kinect,int userId) {
+//  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
+//  println( kinectStatus );
+//  kinect.startTrackingSkeleton(userId);
+//}
+
+/*************** For version 0.27 of simpleOpenNI ***************/
 void onNewUser(int userId) {
   kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
   println( kinectStatus );
   kinect.startPoseDetection("Psi", userId);
-}
-
-void onLostUser(int userId) {
-  kinectStatus = "User " + userId + " lost.";
-  println( kinectStatus);
 }
 
 void onStartPose(String pose, int userId) {
@@ -703,6 +698,12 @@ void onEndCalibration(int userId, boolean successful) {
     kinectStatus = "Calibration failed starting pose detection.";
     kinect.startPoseDetection("Psi", userId);
   }
+}
+
+//Common to both versions of simpleOpenNI
+void onLostUser(int userId) {
+  kinectStatus = "User " + userId + " lost.";
+  println( kinectStatus);
 }
 
 void controlEvent(ControlEvent theEvent) {
