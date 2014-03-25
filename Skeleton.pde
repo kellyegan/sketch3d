@@ -123,13 +123,13 @@ class Skeleton {
       noStroke();
       pushMatrix();
       translate(drawingHand.x, drawingHand.y, drawingHand.z);
-      sphere( 20 );
+      sphere( cursorSize );
       popMatrix();
-      fill( 150 );
-      pushMatrix();
-      translate(secondaryHand.x, secondaryHand.y, secondaryHand.z);
-      sphere( 20 );
-      popMatrix();
+//      fill( 150 );
+//      pushMatrix();
+//      translate(secondaryHand.x, secondaryHand.y, secondaryHand.z);
+//      sphere( 20 );
+//      popMatrix();
     }
   }
   
