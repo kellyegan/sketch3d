@@ -121,7 +121,7 @@ void setup() {
   d = new Drawing(this, "default.gml");
   brushSize = 30.0;
 
-  brushColorHSB = new PVector(0.0, 0.0, 0.2);
+  brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
   brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z);
   
