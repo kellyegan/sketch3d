@@ -473,14 +473,10 @@ void keyPressed() {
         rotationStarted.set(secondaryHand);
         oldRotation.set( rotation );
         rotatingNow=true;      
-        //Right view
-        //rotation.set(0, -TAU / 4, 0);
         break;     
       case 's': 
       case 'S':
         selectOutput("Save drawing:", "saveDrawing");
-        //      String timestamp = year() + nf(month(),2) + nf(day(),2) + "-"  + nf(hour(),2) + nf(minute(),2) + nf(second(),2);
-        //      d.save( "makerfaire/mf_" + timestamp + ".gml");
         break;
       case 't': 
       case 'T':
@@ -507,12 +503,10 @@ void keyPressed() {
       case '-': 
       case '_':
         brushSize -= 5;
-        println("Brush decreased: " + brushSize);
         break;
       case '=': 
       case '+':
         brushSize += 5;
-        println("Brush increased: " + brushSize);
         break;
       }
     }
@@ -603,6 +597,28 @@ void saveDrawing(File f) {
       e.printStackTrace();
     }
   }
+}
+
+void exportPDF(File f) {
+  if( f != null ) {
+    try {
+      d.save( f.getAbsolutePath() );
+    } 
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  } 
+}
+
+void exportDXF(File f) {
+  if( f != null ) {
+    try {
+      d.save( f.getAbsolutePath() );
+    } 
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  } 
 }
 
 void loadBackground( File f ) {
