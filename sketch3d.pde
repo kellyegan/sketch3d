@@ -657,30 +657,149 @@ void createControllers(ControlP5 cp5) {
 
   colorGroup = cp5.addGroup("colorChooserGroup")
     .setPosition( width / 2 - 200, height / 2 - 200 )
-      .setSize( 400, 460 )
-        .setBackgroundColor( color(100, 100, 100, 128) )
-          .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
-            .setLabel("")
-              .hide()
-                ; 
+    .setSize( 400, 460 )
+    .setBackgroundColor( color(100, 100, 100, 128) )
+    .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
+    .setLabel("")
+    .hide()
+    ; 
 
   fgbgToggle = cp5.addToggle("currentColor")
     .setGroup(colorGroup)
-      .setPosition( 20, 20 )
-        .setSize(360, 160)
-          .setView(new ColorToggleView())
-            .setState( FOREGROUND )
-              .setColorBackground( bgColor )
-                .setColorForeground( brushColor )
-                  ;
+    .setPosition( 20, 20 )
+    .setSize(360, 160)
+    .setView(new ColorToggleView())
+    .setState( FOREGROUND )
+    .setColorBackground( bgColor )
+    .setColorForeground( brushColor )
+    ;
 
   colorChooser = new ColorChooserController( cp5, "colorChooser")
     .setGroup(colorGroup)
-      .setPosition(20, 200)
-        .setSize(360, 240)
-          .setColorValue( brushColor );
-  ;
+    .setPosition(20, 200)
+    .setSize(360, 240)
+    .setColorValue( brushColor )
+    ;
+    
+  //Preference menu  
+  int menuWidth = 500;
+  int menuHeight = 570;
+  int margin = 20;
+  int barHeight = 40;
+  
+  Group preferenceMenu = cp5.addGroup("preferences")
+    .setPosition( (width - menuWidth) / 2, (height - menuWidth) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setLabel("")
+    .hide();
+    ;
+    
+  cp5.addButton("toggleHand")
+    .setLabel("Draw with left hand")
+    .setGroup("preferences")
+    .setPosition( margin, margin)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
+  cp5.addButton("toggleOrigin")
+    .setLabel("Hide origin")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight))
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
+  cp5.addButton("toggleSkeleton")
+    .setLabel("Hide skeleton")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 2)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+
+  cp5.addButton("openDrawing")
+    .setLabel("Open drawing")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 3)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
+  cp5.addButton("saveDrawing")
+    .setLabel("Save drawing")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 4)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+  
+  cp5.addButton("exportPDF")
+    .setLabel("Export PDF (2D)")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 5)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
+  cp5.addButton("exportDXF")
+    .setLabel("Export DXF (3D)")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 6)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+     
+  cp5.addButton("Load background image")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 7)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
+  cp5.addButton("toggleBackgroundImage")
+    .setLabel("Hide background image")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (margin + barHeight) * 8)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
 }
+
+/************************************** controlP5 callbacks **************************************/
+
+void toggleHand(ControlEvent theEvent) {
+  skeleton.changeHand();
+  theEvent.getController().setLabel( skeleton.getHand() ? "Draw with left hand" : "Draw with right hand" );
+}
+
+void toggleOrigin(ControlEvent theEvent) {
+  displayOrigin = !displayOrigin;
+  theEvent.getController().setLabel( displayOrigin ? "Hide origin" : "Show origin" );
+}
+
+void toggleSkeleton(ControlEvent theEvent) {
+  displaySkeleton = !displaySkeleton;
+}
+
+void openDrawing() {
+  selectInput("Please select a drawing to open", "loadDrawing" );
+}
+
+void saveDrawingPressed() {
+  selectOutput("Save drawing:", "saveDrawing");
+}
+
+void exportPDF() {
+  exportPDF = true;
+}
+
+void exportDXF() {
+  exportDXF = true;
+}
+
+void loadBackgroundImageButton() {
+  selectInput("Please select a background image", "loadBackground" );
+}
+
+void toggleBackgroundImage(ControlEvent theEvent) {
+  displayBackgroundImage = !displayBackgroundImage;
+  theEvent.getController().setLabel( displayBackgroundImage ? "Hide background image" : "Show background image" );
+}
+
+
 
 /************************************** SimpleOpenNI callbacks **************************************/
 
