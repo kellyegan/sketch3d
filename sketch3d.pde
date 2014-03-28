@@ -78,13 +78,13 @@ void setup() {
   createControllers( cp5 );
   cp5.setAutoDraw(false);
   cp5.getPointer().enable();
-  
+
   font = createFont("Helvetica", 20);
   textFont(font, 20);
-  
+
   displayOrigin = true;
   displaySkeleton = true;  
-  
+
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
@@ -92,19 +92,19 @@ void setup() {
   pickingBackground = false;
   exportDXF = false;
   exportPDF = false;
-  
+
   deviceReady = false;
   handPicked = false;
-  
+
   //Kinect
   kinect = new SimpleOpenNI(this);
   kinectStatus = "Looking for Kinect...";
   keyStatus = "...";
-  
+
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
-    
-//    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
+
+    //    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
     kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
 
     kinectStatus = "Kinect found. Waiting for user...";
@@ -116,7 +116,7 @@ void setup() {
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
-  
+
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 30.0;
@@ -124,14 +124,14 @@ void setup() {
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
   brushColor = Color.HSBtoRGB( brushColorHSB.x, brushColorHSB.y, brushColorHSB.z);
-  
+
   defaultBrush = new Brush("draw3d_default_00001", brushColor, brushSize);
   clickStarted = false;
-  
+
   bgColorHSB = new PVector( 0.0, 0.0, 0.9 );
   oldBgColorHSB = new PVector();
   bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z);
-  
+
   bgImage = loadImage("data/testBackground.jpg");
   displayBackgroundImage = false;
 
@@ -163,7 +163,7 @@ void setup() {
   rotationEnded = new PVector();
   rotationCenter = new PVector( 0, 0, 1000 );
   oldRotation = new PVector();
-  
+
   startPosition = new PVector();
   currentPosition = new PVector();
   positionDelta = new PVector();
@@ -192,16 +192,16 @@ void draw() {
 
   hint(ENABLE_DEPTH_TEST);
   pushMatrix();
-  
+
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
-  
+
   if ( exportDXF ) {    
     beginRaw( DXF, "frame-####.dxf");
   }
   if ( exportPDF ) {
-    beginRaw( PDF, "frame-####.pdf"); 
+    beginRaw( PDF, "frame-####.pdf");
   }
-  
+
   background(bgColor);
   if ( displayBackgroundImage && !exportDXF && !exportPDF) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
@@ -213,17 +213,17 @@ void draw() {
     text(kinectStatus, 40, height - 60);
     noFill();
   }
- 
-  if( true ) {
+
+  if ( true ) {
     //lights();
   }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
   //perspective();
-  
+
   //Set the cursor for the menus
   cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
 
-  
+
   if ( deviceReady && !exportDXF && !exportPDF) {
     pushMatrix();
     rotateX(PI);
@@ -231,10 +231,10 @@ void draw() {
     skeleton.display(displaySkeleton, brushSize, brushColor);
     popMatrix();
   }
-  
+
   rotateX(rotation.x);
   rotateY(rotation.y);
-  
+
   if ( displayOrigin && !exportDXF  && !exportPDF) {
     strokeWeight(3);
     stroke(255, 0, 0);
@@ -244,43 +244,43 @@ void draw() {
     stroke(0, 0, 255);
     line( 0, 0, 0, 500, 0, 0);
   }
-    
+
   translate(offset.x, offset.y, offset.z);
   d.display();
-  
+
   popMatrix();
-  
+
   if ( exportDXF || exportPDF ) {
     endRaw();
     exportDXF = false;
     exportPDF = false;
   }
-  
+
   hint(DISABLE_DEPTH_TEST);
   camera();
   noLights();
-  
+
   //Draw the user face 
   //This is manually drawn so that the custom pointer will be seen.
   cp5.draw();
-  
+
   if ( pickingColor ) {
-    if( currentColor == FOREGROUND ) {
+    if ( currentColor == FOREGROUND ) {
       brushColor = colorChooser.getColorValue();
       fgbgToggle.setColorForeground(brushColor);
-    } else {
+    } 
+    else {
       bgColor = colorChooser.getColorValue();
       shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
       fgbgToggle.setColorBackground(bgColor);
     }
-    
+
     stroke( 255 );
     float x = cp5.getPointer().getX();
     float y = cp5.getPointer().getY();
     line( x, y - 10, x, y + 10 );
     line( x - 10, y, x + 10, y );
   }
-  
 }
 
 
@@ -309,12 +309,12 @@ void update() {
     skeleton.update( drawingHand );
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
-        
-    
+
+
     kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
     shader.set("zPlane", cameraPos.z - drawingHand.z );
-    
-       
+
+
     if ( drawingNow ) {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
@@ -331,14 +331,14 @@ void update() {
       inverseTransform.mult( moveDelta, moveModel );
       offset = PVector.add( oldOffset, moveModel );
     }
-
   }
 }
 
 void mousePressed() {
-  if( pickingColor ) {
+  if ( pickingColor ) {
     cp5.getPointer().pressed();
-  } else {
+  } 
+  else {
     if (mouseButton==LEFT) {
       println( red(brushColor));
       d.startStroke(new Brush( "", brushColor, brushSize ) );
@@ -361,9 +361,10 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  if( pickingColor ) {
-    cp5.getPointer().released();    
-  } else {
+  if ( pickingColor ) {
+    cp5.getPointer().released();
+  } 
+  else {
     if (mouseButton==LEFT) {
       drawingNow=false;
       d.endStroke();
@@ -462,7 +463,7 @@ void keyPressed() {
       case 'o': 
       case 'O':
         //Open a file
-        selectInput("Please select a drawing to load", "loadDrawing" );
+        selectInput("Please select a drawing to open", "loadDrawing" );
         break;
       case 'p': 
       case 'P':
@@ -600,25 +601,25 @@ void saveDrawing(File f) {
 }
 
 void exportPDF(File f) {
-  if( f != null ) {
+  if ( f != null ) {
     try {
       d.save( f.getAbsolutePath() );
     } 
     catch (Exception e) {
       e.printStackTrace();
     }
-  } 
+  }
 }
 
 void exportDXF(File f) {
-  if( f != null ) {
+  if ( f != null ) {
     try {
       d.save( f.getAbsolutePath() );
     } 
     catch (Exception e) {
       e.printStackTrace();
     }
-  } 
+  }
 }
 
 void loadBackground( File f ) {
@@ -653,38 +654,38 @@ void createControllers(ControlP5 cp5) {
   currentColor = FOREGROUND;
   brushColor = color(0);
   bgColor = color(255);
-  
+
   colorGroup = cp5.addGroup("colorChooserGroup")
     .setPosition( width / 2 - 200, height / 2 - 200 )
-    .setSize( 400, 460 )
-    .setBackgroundColor( color(100, 100, 100, 128) )
-    .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
-    .setLabel("")
-    .hide()
-    ; 
+      .setSize( 400, 460 )
+        .setBackgroundColor( color(100, 100, 100, 128) )
+          .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
+            .setLabel("")
+              .hide()
+                ; 
 
   fgbgToggle = cp5.addToggle("currentColor")
     .setGroup(colorGroup)
-    .setPosition( 20, 20 )
-    .setSize(360, 160)
-    .setView(new ColorToggleView())
-    .setState( FOREGROUND )
-    .setColorBackground( bgColor )
-    .setColorForeground( brushColor )
-    ;
+      .setPosition( 20, 20 )
+        .setSize(360, 160)
+          .setView(new ColorToggleView())
+            .setState( FOREGROUND )
+              .setColorBackground( bgColor )
+                .setColorForeground( brushColor )
+                  ;
 
   colorChooser = new ColorChooserController( cp5, "colorChooser")
     .setGroup(colorGroup)
-    .setPosition(20, 200)
-    .setSize(360, 240)
-    .setColorValue( brushColor );
-    ;
+      .setPosition(20, 200)
+        .setSize(360, 240)
+          .setColorValue( brushColor );
+  ;
 }
 
 /************************************** SimpleOpenNI callbacks **************************************/
 
 /*************** For version 1.9.6 of simpleOpenNi ***************/
-void onNewUser(SimpleOpenNI kinect,int userId) {
+void onNewUser(SimpleOpenNI kinect, int userId) {
   kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
   println( kinectStatus );
   kinect.startTrackingSkeleton(userId);
@@ -724,13 +725,13 @@ void onLostUser(int userId) {
 }
 
 void controlEvent(ControlEvent theEvent) {
-  if( theEvent.isFrom( fgbgToggle ) ) {
-    if( currentColor == FOREGROUND ) {
+  if ( theEvent.isFrom( fgbgToggle ) ) {
+    if ( currentColor == FOREGROUND ) {
       colorChooser.setColorValue( brushColor );
-    } else {
+    } 
+    else {
       colorChooser.setColorValue( bgColor );
     }
   }
 }
-
 
