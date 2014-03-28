@@ -141,6 +141,10 @@ class Skeleton {
     handedness = hand;
   }
   
+  boolean getHand() {
+    return handedness;
+  }
+  
   void line( PVector a, PVector b ) {
     applet.line( a.x, a.y, a.z, b.x, b.y, b.z ); 
   }
