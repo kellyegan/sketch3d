@@ -12,7 +12,7 @@ import processing.pdf.*;
 
 PFont font;
 
-boolean drawingNow, moveDrawing, rotatingNow, pickingColor, pickingBackground;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -47,7 +47,7 @@ boolean exportPDF;
 //View stuff
 ControlP5 cp5;
 ColorChooserController colorChooser;
-Group colorGroup;
+Group colorGroup, preferenceMenu;
 Toggle fgbgToggle;
 
 PVector cameraPos, cameraFocus;
@@ -89,6 +89,7 @@ void setup() {
   moveDrawing = false;
   rotatingNow= false;
   pickingColor = false;
+  changingPreferences = false;
   pickingBackground = false;
   exportDXF = false;
   exportPDF = false;
@@ -275,12 +276,16 @@ void draw() {
       fgbgToggle.setColorBackground(bgColor);
     }
 
+  }
+  
+  if( pickingColor || changingPreferences) {
     stroke( 255 );
     float x = cp5.getPointer().getX();
     float y = cp5.getPointer().getY();
     line( x, y - 10, x, y + 10 );
     line( x - 10, y, x + 10, y );
   }
+
 }
 
 
@@ -335,8 +340,9 @@ void update() {
 }
 
 void mousePressed() {
-  if ( pickingColor ) {
+  if ( pickingColor || changingPreferences) {
     cp5.getPointer().pressed();
+    println("Mouse pressed");
   } 
   else {
     if (mouseButton==LEFT) {
@@ -361,8 +367,9 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  if ( pickingColor ) {
+  if ( pickingColor || changingPreferences) {
     cp5.getPointer().released();
+    println("Mouse pressed");
   } 
   else {
     if (mouseButton==LEFT) {
@@ -425,28 +432,10 @@ void keyPressed() {
         d.startStroke(new Brush( "", brushColor, brushSize ) );
         drawingNow=true;
         break;
-      case 'e': 
-      case 'E':
-        exportDXF = true;
-        break;
       case 'f': 
       case 'F':
         //Reset view rotation/translation
         rotation.set(0, 0, 0);
-        break;
-      case 'h':  
-      case 'H':
-        skeleton.changeHand();
-        break; 
-      case 'i':  
-      case 'I':
-        displayBackgroundImage = !displayBackgroundImage;
-        break;
-      case 'l':  
-      case 'L':
-        selectInput("Please select a background image", "loadBackground" );
-        //Left view
-        //      rotation.set(0, TAU / 4, 0);
         break; 
       case 'm': 
       case 'M':
@@ -460,14 +449,10 @@ void keyPressed() {
         kinect.init();
         setup();
         break;
-      case 'o': 
-      case 'O':
-        //Open a file
-        selectInput("Please select a drawing to open", "loadDrawing" );
-        break;
-      case 'p': 
+      case 'p':
       case 'P':
-        exportPDF = true;
+        changingPreferences = !changingPreferences;
+        preferenceMenu.setVisible( changingPreferences );
         break;
       case 'r': 
       case 'R':
@@ -475,19 +460,10 @@ void keyPressed() {
         oldRotation.set( rotation );
         rotatingNow=true;      
         break;     
-      case 's': 
-      case 'S':
-        selectOutput("Save drawing:", "saveDrawing");
-        break;
       case 't': 
       case 'T':
         //Top view
         rotation.set(-TAU / 4, 0, 0);
-        break;
-      case 'u': 
-      case 'U':
-        //Toggle user
-        displaySkeleton = !displaySkeleton;
         break;
       case 'q': 
       case 'Q':
@@ -684,10 +660,10 @@ void createControllers(ControlP5 cp5) {
   //Preference menu  
   int menuWidth = 500;
   int menuHeight = 570;
-  int margin = 20;
-  int barHeight = 40;
+  int margin = 15;
+  int barHeight = 30;
   
-  Group preferenceMenu = cp5.addGroup("preferences")
+  preferenceMenu = cp5.addGroup("preferences")
     .setPosition( (width - menuWidth) / 2, (height - menuWidth) / 2 )
     .setSize( menuWidth, menuHeight )
     .setBackgroundColor( color(240, 240, 240, 128) )
