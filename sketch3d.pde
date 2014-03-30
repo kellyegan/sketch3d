@@ -58,6 +58,8 @@ ColorChooserController colorChooser;
 Group colorGroup, preferenceMenu, fileMenu;
 Toggle fgbgToggle;
 
+PFont uiFont;
+
 PVector cameraPos, cameraFocus;
 
 PMatrix3D inverseTransform;
@@ -87,8 +89,8 @@ void setup() {
   cp5.setAutoDraw(false);
   cp5.getPointer().enable();
 
-  font = createFont("Helvetica", 20);
-  textFont(font, 20);
+  uiFont = createFont("Helvetica", 20);
+  textFont(uiFont, 20);
 
   displayOrigin = true;
   displaySkeleton = true;  
@@ -115,7 +117,7 @@ void setup() {
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
 
-    //    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
+    //kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
     kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
 
     kinectStatus = "Kinect found. Waiting for user...";
@@ -231,8 +233,11 @@ void draw() {
   //perspective();
 
   //Set the cursor for the menus
-  cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
-
+  if( menuState != FILE_MENU ) {
+    cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+  } else {
+    cp5.getPointer().set( mouseX, mouseY );    
+  }
 
   if ( deviceReady && !exportDXF && !exportPDF) {
     pushMatrix();
@@ -272,6 +277,10 @@ void draw() {
 
   //Draw the user face 
   //This is manually drawn so that the custom pointer will be seen.
+  fileMenu.setVisible( menuState == FILE_MENU );
+  colorGroup.setVisible( menuState == COLOR_MENU );
+  preferenceMenu.setVisible( menuState == PREFERENCE_MENU );
+  
   cp5.draw();
 
   if ( menuState == COLOR_MENU ) {
@@ -288,7 +297,7 @@ void draw() {
   }
   
   
-  if( menuState > MENUS_OFF ) {
+  if( menuState != MENUS_OFF && menuState != FILE_MENU ) {
     //Draw cursor
     stroke( 255 );
     float x = cp5.getPointer().getX();
@@ -451,9 +460,19 @@ void keyPressed() {
         break;
       case 'f': 
       case 'F':
-        //Reset view rotation/translation
+        if( menuState != FILE_MENU ) {
+          menuState = FILE_MENU;
+          fileMenu.setVisible( true );
+        } else {
+          menuState = MENUS_OFF;
+          fileMenu.setVisible( false );
+        }
+        break;
+      case 'h':
+      case 'H':
+        //Home rotation and translation
         rotation.set(0, 0, 0);
-        break; 
+        break;
       case 'm': 
       case 'M':
         moveDrawing=true;
@@ -640,6 +659,10 @@ void createControllers(ControlP5 cp5) {
   currentColor = FOREGROUND;
   brushColor = color(0);
   bgColor = color(255);
+  
+  int fontSize = 18;
+  PFont pfont = createFont("Arial",fontSize,true); // use true/false for smooth/no-smooth
+  ControlFont font = new ControlFont(pfont,fontSize);
 
   colorGroup = cp5.addGroup("colorChooserGroup")
     .setPosition( width / 2 - 200, height / 2 - 200 )
@@ -671,7 +694,7 @@ void createControllers(ControlP5 cp5) {
   int menuWidth = 300;
   int margin = 10;
   int spacing = 5;
-  int barHeight = 25;
+  int barHeight = 30;
   int menuHeight = 2 * margin + (spacing + barHeight) * 4;
   
   preferenceMenu = cp5.addGroup("preferences")
@@ -687,6 +710,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("preferences")
     .setPosition( margin, margin)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   cp5.addButton("toggleOrigin")
@@ -694,6 +720,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight))
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   cp5.addButton("toggleSkeleton")
@@ -701,6 +730,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 2)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   cp5.addButton("toggleBackgroundImage")
@@ -708,6 +740,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   menuHeight = 2 * margin + (spacing + barHeight) * 5;
@@ -725,6 +760,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("file")
     .setPosition( margin, margin)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   cp5.addButton("saveDrawingPressed")
@@ -732,6 +770,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight))
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
   
   cp5.addButton("exportPDFPressed")
@@ -739,6 +780,9 @@ void createControllers(ControlP5 cp5) {
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight) * 2)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
     
   cp5.addButton("exportDXFPressed")
@@ -746,12 +790,18 @@ void createControllers(ControlP5 cp5) {
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
      
   cp5.addButton("loadBackgroundImage")
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
     ;
 }
 
@@ -780,12 +830,12 @@ void saveDrawingPressed() {
 }
 
 void exportPDFPressed() {
-  selectOutput("Save drawing:", "exportPDF");
+  selectOutput("Export PDF:", "exportPDF");
 
 }
 
 void exportDXFPressed() {
-  selectOutput("Save drawing:", "exportDXF");
+  selectOutput("Export DXF:", "exportDXF");
   
 }
 
@@ -810,7 +860,7 @@ void onNewUser(SimpleOpenNI kinect, int userId) {
 }
 
 /*************** For version 0.27 of simpleOpenNI ***************/
-//void onNewUser(int userId) {
+//void onNewUser(SimpleOpenNI kinect, int userId) {
 //  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
 //  println( kinectStatus );
 //  kinect.startPoseDetection("Psi", userId);
