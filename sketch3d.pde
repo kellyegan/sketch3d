@@ -12,6 +12,13 @@ import processing.pdf.*;
 
 PFont font;
 
+public static int MENUS_OFF = 0;
+public static int COLOR_MENU = 1;
+public static int PREFERENCE_MENU = 2;
+public static int FILE_MENU = 3;
+
+int menuState;
+
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
@@ -48,7 +55,7 @@ String dxfName, pdfName;
 //View stuff
 ControlP5 cp5;
 ColorChooserController colorChooser;
-Group colorGroup, preferenceMenu;
+Group colorGroup, preferenceMenu, fileMenu;
 Toggle fgbgToggle;
 
 PVector cameraPos, cameraFocus;
@@ -85,6 +92,8 @@ void setup() {
 
   displayOrigin = true;
   displaySkeleton = true;  
+
+  menuState = MENUS_OFF;
 
   drawingNow = false;
   moveDrawing = false;
@@ -194,14 +203,14 @@ void draw() {
   hint(ENABLE_DEPTH_TEST);
   pushMatrix();
 
-  directionalLight(255, 255, 255, 0, 0.5, 0.5);
-
   if ( exportDXF ) {    
     beginRaw( DXF, dxfName);
   }
   if ( exportPDF ) {
     beginRaw( PDF, pdfName);
   }
+  
+  directionalLight(255, 255, 255, 0, 0.5, 0.5);
 
   background(bgColor);
   if ( displayBackgroundImage && !exportDXF && !exportPDF) {
@@ -265,7 +274,7 @@ void draw() {
   //This is manually drawn so that the custom pointer will be seen.
   cp5.draw();
 
-  if ( pickingColor ) {
+  if ( menuState == COLOR_MENU ) {
     if ( currentColor == FOREGROUND ) {
       brushColor = colorChooser.getColorValue();
       fgbgToggle.setColorForeground(brushColor);
@@ -278,12 +287,14 @@ void draw() {
 
   }
   
-  if( pickingColor || changingPreferences) {
+  
+  if( menuState > MENUS_OFF ) {
+    //Draw cursor
     stroke( 255 );
     float x = cp5.getPointer().getX();
     float y = cp5.getPointer().getY();
     line( x, y - 10, x, y + 10 );
-    line( x - 10, y, x + 10, y );
+    line( x - 10, y, x + 10, y );    
   }
 
 }
@@ -339,12 +350,10 @@ void update() {
   }
 }
 
-void mousePressed() {
-  if ( pickingColor || changingPreferences) {
-    cp5.getPointer().pressed();
-    println("Mouse pressed");
-  } 
-  else {
+void mousePressed() {    
+  if ( menuState != MENUS_OFF) {
+      cp5.getPointer().pressed();
+  } else {
     if (mouseButton==LEFT) {
       println( red(brushColor));
       d.startStroke(new Brush( "", brushColor, brushSize ) );
@@ -367,7 +376,7 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  if ( pickingColor || changingPreferences) {
+  if ( menuState != MENUS_OFF ) {
     cp5.getPointer().released();
     println("Mouse pressed");
   } 
@@ -423,8 +432,16 @@ void keyPressed() {
       case 'c': 
       case 'C':
         //Change stroke color
-        pickingColor = !pickingColor;
-        colorGroup.setVisible( pickingColor );
+        if( menuState != COLOR_MENU ) {
+          menuState = COLOR_MENU;
+          colorGroup.setVisible( true );
+        } else {
+          menuState = MENUS_OFF;
+          colorGroup.setVisible( false );
+        }
+        
+//        pickingColor = !pickingColor;
+//        colorGroup.setVisible( pickingColor );
         break;
       case 'd': 
       case 'D':
@@ -450,9 +467,14 @@ void keyPressed() {
         setup();
         break;
       case 'p':
-      case 'P':
-        changingPreferences = !changingPreferences;
-        preferenceMenu.setVisible( changingPreferences );
+      case 'P':      
+        if( menuState != PREFERENCE_MENU ) {
+          menuState = PREFERENCE_MENU;
+          preferenceMenu.setVisible( true );
+        } else {
+          menuState = MENUS_OFF;
+          preferenceMenu.setVisible( false );
+        }
         break;
       case 'r': 
       case 'R':
@@ -650,7 +672,7 @@ void createControllers(ControlP5 cp5) {
   int margin = 10;
   int spacing = 5;
   int barHeight = 25;
-  int menuHeight = 2 * margin + (spacing + barHeight) * 9;
+  int menuHeight = 2 * margin + (spacing + barHeight) * 4;
   
   preferenceMenu = cp5.addGroup("preferences")
     .setPosition( (width - menuWidth) / 2, 50 + (height - menuWidth) / 2 )
@@ -680,45 +702,55 @@ void createControllers(ControlP5 cp5) {
     .setPosition( margin, margin + (spacing + barHeight) * 2)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
-
-  cp5.addButton("openDrawingPressed")
-    .setLabel("Open drawing")
+    
+  cp5.addButton("toggleBackgroundImage")
+    .setLabel("Hide background image")
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
+  menuHeight = 2 * margin + (spacing + barHeight) * 5;
+  
+  fileMenu = cp5.addGroup("file")
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuWidth) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setLabel("")
+    .hide();
+    ;  
+  
+  cp5.addButton("openDrawingPressed")
+    .setLabel("Open drawing")
+    .setGroup("file")
+    .setPosition( margin, margin)
+    .setSize( menuWidth - margin * 2, barHeight )
+    ;
+    
   cp5.addButton("saveDrawingPressed")
     .setLabel("Save drawing")
-    .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 4)
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight))
     .setSize( menuWidth - margin * 2, barHeight )
     ;
   
   cp5.addButton("exportPDFPressed")
     .setLabel("Export PDF (2D)")
-    .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 5)
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 2)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
   cp5.addButton("exportDXFPressed")
     .setLabel("Export DXF (3D)")
-    .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 6)
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
      
-  cp5.addButton("Load background image")
-    .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 7)
-    .setSize( menuWidth - margin * 2, barHeight )
-    ;
-    
-  cp5.addButton("toggleBackgroundImage")
-    .setLabel("Hide background image")
-    .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 8)
+  cp5.addButton("loadBackgroundImage")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
 }
