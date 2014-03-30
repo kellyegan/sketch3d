@@ -658,13 +658,14 @@ void createControllers(ControlP5 cp5) {
     ;
     
   //Preference menu  
-  int menuWidth = 500;
-  int menuHeight = 570;
-  int margin = 15;
-  int barHeight = 30;
+  int menuWidth = 300;
+  int margin = 10;
+  int spacing = 5;
+  int barHeight = 25;
+  int menuHeight = 2 * margin + (spacing + barHeight) * 9;
   
   preferenceMenu = cp5.addGroup("preferences")
-    .setPosition( (width - menuWidth) / 2, (height - menuWidth) / 2 )
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuWidth) / 2 )
     .setSize( menuWidth, menuHeight )
     .setBackgroundColor( color(240, 240, 240, 128) )
     .setLabel("")
@@ -681,55 +682,55 @@ void createControllers(ControlP5 cp5) {
   cp5.addButton("toggleOrigin")
     .setLabel("Hide origin")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight))
+    .setPosition( margin, margin + (spacing + barHeight))
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
   cp5.addButton("toggleSkeleton")
     .setLabel("Hide skeleton")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 2)
+    .setPosition( margin, margin + (spacing + barHeight) * 2)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
 
   cp5.addButton("openDrawing")
     .setLabel("Open drawing")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 3)
+    .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
   cp5.addButton("saveDrawing")
     .setLabel("Save drawing")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 4)
+    .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
   
   cp5.addButton("exportPDF")
     .setLabel("Export PDF (2D)")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 5)
+    .setPosition( margin, margin + (spacing + barHeight) * 5)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
   cp5.addButton("exportDXF")
     .setLabel("Export DXF (3D)")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 6)
+    .setPosition( margin, margin + (spacing + barHeight) * 6)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
      
   cp5.addButton("Load background image")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 7)
+    .setPosition( margin, margin + (spacing + barHeight) * 7)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
   cp5.addButton("toggleBackgroundImage")
     .setLabel("Hide background image")
     .setGroup("preferences")
-    .setPosition( margin, margin + (margin + barHeight) * 8)
+    .setPosition( margin, margin + (spacing + barHeight) * 8)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
 }
