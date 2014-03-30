@@ -40,9 +40,10 @@ int startMillis, logoDuration;
 PImage bgImage;
 boolean displayBackgroundImage;
 
-//Exporting dxf
+//Exporting
 boolean exportDXF;
 boolean exportPDF;
+String dxfName, pdfName;
 
 //View stuff
 ControlP5 cp5;
@@ -112,8 +113,7 @@ void setup() {
     println(kinectStatus);
     skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
     deviceReady = true;
-  } 
-  else {
+  } else {
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
@@ -197,10 +197,10 @@ void draw() {
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
 
   if ( exportDXF ) {    
-    beginRaw( DXF, "frame-####.dxf");
+    beginRaw( DXF, dxfName);
   }
   if ( exportPDF ) {
-    beginRaw( PDF, "frame-####.pdf");
+    beginRaw( PDF, pdfName);
   }
 
   background(bgColor);
@@ -553,7 +553,7 @@ void keyReleased() {
 void stop() {
 }
 
-void loadDrawing( File f ) {
+void openDrawing( File f ) {
   if ( f != null ) {
     try {
       d.clearStrokes();
@@ -577,25 +577,13 @@ void saveDrawing(File f) {
 }
 
 void exportPDF(File f) {
-  if ( f != null ) {
-    try {
-      d.save( f.getAbsolutePath() );
-    } 
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  pdfName = f.getAbsolutePath();
+  exportPDF= true;
 }
 
 void exportDXF(File f) {
-  if ( f != null ) {
-    try {
-      d.save( f.getAbsolutePath() );
-    } 
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  dxfName = f.getAbsolutePath();
+  exportDXF= true;
 }
 
 void loadBackground( File f ) {
@@ -693,28 +681,28 @@ void createControllers(ControlP5 cp5) {
     .setSize( menuWidth - margin * 2, barHeight )
     ;
 
-  cp5.addButton("openDrawing")
+  cp5.addButton("openDrawingPressed")
     .setLabel("Open drawing")
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 3)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
-  cp5.addButton("saveDrawing")
+  cp5.addButton("saveDrawingPressed")
     .setLabel("Save drawing")
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
   
-  cp5.addButton("exportPDF")
+  cp5.addButton("exportPDFPressed")
     .setLabel("Export PDF (2D)")
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 5)
     .setSize( menuWidth - margin * 2, barHeight )
     ;
     
-  cp5.addButton("exportDXF")
+  cp5.addButton("exportDXFPressed")
     .setLabel("Export DXF (3D)")
     .setGroup("preferences")
     .setPosition( margin, margin + (spacing + barHeight) * 6)
@@ -751,20 +739,22 @@ void toggleSkeleton(ControlEvent theEvent) {
   displaySkeleton = !displaySkeleton;
 }
 
-void openDrawing() {
-  selectInput("Please select a drawing to open", "loadDrawing" );
+void openDrawingPressed() {
+  selectInput("Please select a drawing to open", "openDrawing" );
 }
 
 void saveDrawingPressed() {
   selectOutput("Save drawing:", "saveDrawing");
 }
 
-void exportPDF() {
-  exportPDF = true;
+void exportPDFPressed() {
+  selectOutput("Save drawing:", "exportPDF");
+
 }
 
-void exportDXF() {
-  exportDXF = true;
+void exportDXFPressed() {
+  selectOutput("Save drawing:", "exportDXF");
+  
 }
 
 void loadBackgroundImageButton() {
