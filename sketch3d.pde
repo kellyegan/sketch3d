@@ -10,15 +10,6 @@ import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
 
-PFont font;
-
-public static int MENUS_OFF = 0;
-public static int COLOR_MENU = 1;
-public static int PREFERENCE_MENU = 2;
-public static int FILE_MENU = 3;
-
-int menuState;
-
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
@@ -55,8 +46,18 @@ String dxfName, pdfName;
 //View stuff
 ControlP5 cp5;
 ColorChooserController colorChooser;
-Group colorGroup, preferenceMenu, fileMenu;
+Group colorGroup, preferenceMenu, fileMenu, helpMenu;
 Toggle fgbgToggle;
+
+PFont font;
+
+public static int MENUS_OFF = 0;
+public static int COLOR_MENU = 1;
+public static int PREFERENCE_MENU = 2;
+public static int FILE_MENU = 3;
+public static int HELP_MENU = 4;
+
+int menuState;
 
 PFont uiFont;
 
@@ -148,7 +149,7 @@ void setup() {
   displayBackgroundImage = false;
 
   //View
-  cameraPos = new PVector( 0, 0, 3500 );
+  cameraPos = new PVector( 0, 0, 3000 );
   cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
   offset = new PVector( 0, 0, 0 );
@@ -161,7 +162,7 @@ void setup() {
   rotation = new PVector();
 
   shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
-  shader.set("fogNear", cameraPos.z - 1500.0 );
+  shader.set("fogNear", cameraPos.z - 2000.0 );
   shader.set("fogFar", cameraPos.z + 0.0 );
   shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
   shader.set("zPlaneIndicatorOn", true);
@@ -221,7 +222,7 @@ void draw() {
 
   if ( !exportDXF && !exportPDF) {
     fill(100);
-    text(keyStatus, 40, height - 80);
+//    text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
@@ -610,6 +611,7 @@ void saveDrawing(File f) {
   if ( f != null ) {
     try {
       d.save( f.getAbsolutePath() );
+      println(f.getAbsolutePath());
     } 
     catch (Exception e) {
       e.printStackTrace();
@@ -661,7 +663,7 @@ void createControllers(ControlP5 cp5) {
   bgColor = color(255);
   
   int fontSize = 18;
-  PFont pfont = createFont("Arial",fontSize,true); // use true/false for smooth/no-smooth
+  PFont pfont = createFont("Arial", fontSize, true); // use true/false for smooth/no-smooth
   ControlFont font = new ControlFont(pfont,fontSize);
 
   colorGroup = cp5.addGroup("colorChooserGroup")
@@ -745,6 +747,8 @@ void createControllers(ControlP5 cp5) {
     .setSize(fontSize)
     ;
     
+    
+  //File menu
   menuHeight = 2 * margin + (spacing + barHeight) * 5;
   
   fileMenu = cp5.addGroup("file")
@@ -823,19 +827,23 @@ void toggleSkeleton(ControlEvent theEvent) {
 
 void openDrawingPressed() {
   selectInput("Please select a drawing to open", "openDrawing" );
+  menuState = MENUS_OFF;
 }
 
 void saveDrawingPressed() {
   selectOutput("Save drawing:", "saveDrawing");
+  menuState = MENUS_OFF;
 }
 
 void exportPDFPressed() {
   selectOutput("Export PDF:", "exportPDF");
+  menuState = MENUS_OFF;
 
 }
 
 void exportDXFPressed() {
   selectOutput("Export DXF:", "exportDXF");
+  menuState = MENUS_OFF;
   
 }
 
