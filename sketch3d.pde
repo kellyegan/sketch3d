@@ -811,63 +811,43 @@ void createControllers(ControlP5 cp5) {
     
   menuWidth = 400; 
   menuHeight = 500;
-   
+  
+  String [] helpItems = {
+    "D    Draw",
+    "R    Rotate",
+    "M    Move",
+    "Z    Undo",
+    "X    Clear strokes",
+    "+/-  Change stroke size",
+    "H    Reset rotation",
+    "C    Color picker",
+    "P    Preference menu",
+    "F    File save, open and export",
+    "?    This help menu"
+  };
+  
+     
   helpMenu = cp5.addGroup("help")
     .setPosition( (width - menuWidth) / 2, (height - menuHeight) / 2 )
     .setSize( menuWidth, menuHeight )
-    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setBackgroundColor( color(240, 240, 240, 200) )
     .setLabel("")
     .hide();
     ;
-    
-  cp5.addTextlabel("label")
-    .setText("Lorem ipsim.")
-    .setGroup("help")
-    .setPosition( margin, margin )
-    .setFont(font)
-    .setColorValue(0xff000000)
-    ;
-    
-  cp5.addTextlabel("label")
-    .setText("Lorem ipsim.")
-    .setGroup("help")
-    .setPosition( margin, margin )
-    .setFont(font)
-    .setColorValue(0xff000000)
-    ;
-    
-  cp5.addTextlabel("label")
-    .setText("Lorem ipsim.")
-    .setGroup("help")
-    .setPosition( margin, margin )
-    .setFont(font)
-    .setColorValue(0xff000000)
-    ;
+  
+  int index = 0;
+  for( String item : helpItems ) {
+     cp5.addTextlabel("Help" + index)
+      .setText(item)
+      .setGroup("help")
+      .setPosition( margin, margin + (spacing + barHeight) * index )
+      .setFont(font)
+      .setColorValue(0xff000000)
+      ;
+      index++;
+  }
 
-  cp5.addTextlabel("label")
-    .setText("Lorem ipsim.")
-    .setGroup("help")
-    .setPosition( margin, margin )
-    .setFont(font)
-    .setColorValue(0xff000000)
-    ;
-
-  cp5.addTextlabel("label")
-    .setText("Lorem ipsim.")
-    .setGroup("help")
-    .setPosition( margin, margin )
-    .setFont(font)
-    .setColorValue(0xff000000)
-    ;
     
-    cp5.addButton("loadBackgroundImage")
-    .setGroup("file")
-    .setPosition( margin, margin + (spacing + barHeight) * 4)
-    .setSize( menuWidth - margin * 2, barHeight )
-    .getCaptionLabel()
-    .setFont(font)
-    .setSize(fontSize)
-    ;
 }
 
 /************************************** controlP5 callbacks **************************************/
