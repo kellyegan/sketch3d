@@ -10,9 +10,7 @@ import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
 
-PFont font;
-
-boolean drawingNow, moveDrawing, rotatingNow, pickingColor, pickingBackground;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -40,15 +38,28 @@ int startMillis, logoDuration;
 PImage bgImage;
 boolean displayBackgroundImage;
 
-//Exporting dxf
+//Exporting
 boolean exportDXF;
 boolean exportPDF;
+String dxfName, pdfName;
 
 //View stuff
 ControlP5 cp5;
 ColorChooserController colorChooser;
-Group colorGroup;
+Group colorGroup, preferenceMenu, fileMenu, helpMenu;
 Toggle fgbgToggle;
+
+PFont font;
+
+public static int MENUS_OFF = 0;
+public static int COLOR_MENU = 1;
+public static int PREFERENCE_MENU = 2;
+public static int FILE_MENU = 3;
+public static int HELP_MENU = 4;
+
+int menuState;
+
+PFont uiFont;
 
 PVector cameraPos, cameraFocus;
 
@@ -79,16 +90,19 @@ void setup() {
   cp5.setAutoDraw(false);
   cp5.getPointer().enable();
 
-  font = createFont("Helvetica", 20);
-  textFont(font, 20);
+  uiFont = createFont("Helvetica", 20);
+  textFont(uiFont, 20);
 
   displayOrigin = true;
   displaySkeleton = true;  
+
+  menuState = MENUS_OFF;
 
   drawingNow = false;
   moveDrawing = false;
   rotatingNow= false;
   pickingColor = false;
+  changingPreferences = false;
   pickingBackground = false;
   exportDXF = false;
   exportPDF = false;
@@ -104,15 +118,14 @@ void setup() {
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
 
-    //    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
+    //kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
     kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
 
     kinectStatus = "Kinect found. Waiting for user...";
     println(kinectStatus);
     skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
     deviceReady = true;
-  } 
-  else {
+  } else {
     kinectStatus = "No Kinect found. ";
     println(kinectStatus);
   }
@@ -136,7 +149,7 @@ void setup() {
   displayBackgroundImage = false;
 
   //View
-  cameraPos = new PVector( 0, 0, 3500 );
+  cameraPos = new PVector( 0, 0, 3000 );
   cameraFocus = new PVector();
   inverseTransform = new PMatrix3D();
   offset = new PVector( 0, 0, 0 );
@@ -149,7 +162,7 @@ void setup() {
   rotation = new PVector();
 
   shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
-  shader.set("fogNear", cameraPos.z - 1500.0 );
+  shader.set("fogNear", cameraPos.z - 2000.0 );
   shader.set("fogFar", cameraPos.z + 0.0 );
   shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
   shader.set("zPlaneIndicatorOn", true);
@@ -193,14 +206,14 @@ void draw() {
   hint(ENABLE_DEPTH_TEST);
   pushMatrix();
 
-  directionalLight(255, 255, 255, 0, 0.5, 0.5);
-
   if ( exportDXF ) {    
-    beginRaw( DXF, "frame-####.dxf");
+    beginRaw( DXF, dxfName);
   }
   if ( exportPDF ) {
-    beginRaw( PDF, "frame-####.pdf");
+    beginRaw( PDF, pdfName);
   }
+  
+  directionalLight(255, 255, 255, 0, 0.5, 0.5);
 
   background(bgColor);
   if ( displayBackgroundImage && !exportDXF && !exportPDF) {
@@ -209,7 +222,7 @@ void draw() {
 
   if ( !exportDXF && !exportPDF) {
     fill(100);
-    text(keyStatus, 40, height - 80);
+//    text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
@@ -221,8 +234,11 @@ void draw() {
   //perspective();
 
   //Set the cursor for the menus
-  cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
-
+  if( menuState != FILE_MENU ) {
+    cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+  } else {
+    cp5.getPointer().set( mouseX, mouseY );    
+  }
 
   if ( deviceReady && !exportDXF && !exportPDF) {
     pushMatrix();
@@ -262,9 +278,14 @@ void draw() {
 
   //Draw the user face 
   //This is manually drawn so that the custom pointer will be seen.
+  fileMenu.setVisible( menuState == FILE_MENU );
+  colorGroup.setVisible( menuState == COLOR_MENU );
+  preferenceMenu.setVisible( menuState == PREFERENCE_MENU );
+  helpMenu.setVisible( menuState == HELP_MENU );
+  
   cp5.draw();
 
-  if ( pickingColor ) {
+  if ( menuState == COLOR_MENU ) {
     if ( currentColor == FOREGROUND ) {
       brushColor = colorChooser.getColorValue();
       fgbgToggle.setColorForeground(brushColor);
@@ -275,12 +296,18 @@ void draw() {
       fgbgToggle.setColorBackground(bgColor);
     }
 
+  }
+  
+  
+  if( menuState != MENUS_OFF && menuState != FILE_MENU ) {
+    //Draw cursor
     stroke( 255 );
     float x = cp5.getPointer().getX();
     float y = cp5.getPointer().getY();
     line( x, y - 10, x, y + 10 );
-    line( x - 10, y, x + 10, y );
+    line( x - 10, y, x + 10, y );    
   }
+
 }
 
 
@@ -334,11 +361,10 @@ void update() {
   }
 }
 
-void mousePressed() {
-  if ( pickingColor ) {
-    cp5.getPointer().pressed();
-  } 
-  else {
+void mousePressed() {    
+  if ( menuState != MENUS_OFF) {
+      cp5.getPointer().pressed();
+  } else {
     if (mouseButton==LEFT) {
       println( red(brushColor));
       d.startStroke(new Brush( "", brushColor, brushSize ) );
@@ -361,8 +387,9 @@ void mousePressed() {
 }
 
 void mouseReleased() {
-  if ( pickingColor ) {
+  if ( menuState != MENUS_OFF ) {
     cp5.getPointer().released();
+    println("Mouse pressed");
   } 
   else {
     if (mouseButton==LEFT) {
@@ -416,8 +443,14 @@ void keyPressed() {
       case 'c': 
       case 'C':
         //Change stroke color
-        pickingColor = !pickingColor;
-        colorGroup.setVisible( pickingColor );
+        if( menuState != COLOR_MENU ) {
+          menuState = COLOR_MENU;
+        } else {
+          menuState = MENUS_OFF;
+        }
+        
+//        pickingColor = !pickingColor;
+//        colorGroup.setVisible( pickingColor );
         break;
       case 'd': 
       case 'D':
@@ -425,29 +458,19 @@ void keyPressed() {
         d.startStroke(new Brush( "", brushColor, brushSize ) );
         drawingNow=true;
         break;
-      case 'e': 
-      case 'E':
-        exportDXF = true;
-        break;
       case 'f': 
       case 'F':
-        //Reset view rotation/translation
+        if( menuState != FILE_MENU ) {
+          menuState = FILE_MENU;
+        } else {
+          menuState = MENUS_OFF;
+        }
+        break;
+      case 'h':
+      case 'H':
+        //Home rotation and translation
         rotation.set(0, 0, 0);
         break;
-      case 'h':  
-      case 'H':
-        skeleton.changeHand();
-        break; 
-      case 'i':  
-      case 'I':
-        displayBackgroundImage = !displayBackgroundImage;
-        break;
-      case 'l':  
-      case 'L':
-        selectInput("Please select a background image", "loadBackground" );
-        //Left view
-        //      rotation.set(0, TAU / 4, 0);
-        break; 
       case 'm': 
       case 'M':
         moveDrawing=true;
@@ -460,14 +483,13 @@ void keyPressed() {
         kinect.init();
         setup();
         break;
-      case 'o': 
-      case 'O':
-        //Open a file
-        selectInput("Please select a drawing to open", "loadDrawing" );
-        break;
-      case 'p': 
-      case 'P':
-        exportPDF = true;
+      case 'p':
+      case 'P': 
+        if( menuState != PREFERENCE_MENU ) {
+          menuState = PREFERENCE_MENU;
+        } else {
+          menuState = MENUS_OFF;
+        }
         break;
       case 'r': 
       case 'R':
@@ -475,19 +497,10 @@ void keyPressed() {
         oldRotation.set( rotation );
         rotatingNow=true;      
         break;     
-      case 's': 
-      case 'S':
-        selectOutput("Save drawing:", "saveDrawing");
-        break;
       case 't': 
       case 'T':
         //Top view
         rotation.set(-TAU / 4, 0, 0);
-        break;
-      case 'u': 
-      case 'U':
-        //Toggle user
-        displaySkeleton = !displaySkeleton;
         break;
       case 'q': 
       case 'Q':
@@ -509,6 +522,12 @@ void keyPressed() {
       case '+':
         brushSize += 5;
         break;
+      case '?':
+        if( menuState != HELP_MENU ) {
+          menuState = HELP_MENU;
+        } else {
+          menuState = MENUS_OFF;
+        }
       }
     }
   } 
@@ -577,7 +596,7 @@ void keyReleased() {
 void stop() {
 }
 
-void loadDrawing( File f ) {
+void openDrawing( File f ) {
   if ( f != null ) {
     try {
       d.clearStrokes();
@@ -593,6 +612,7 @@ void saveDrawing(File f) {
   if ( f != null ) {
     try {
       d.save( f.getAbsolutePath() );
+      println(f.getAbsolutePath());
     } 
     catch (Exception e) {
       e.printStackTrace();
@@ -601,25 +621,13 @@ void saveDrawing(File f) {
 }
 
 void exportPDF(File f) {
-  if ( f != null ) {
-    try {
-      d.save( f.getAbsolutePath() );
-    } 
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  pdfName = f.getAbsolutePath();
+  exportPDF= true;
 }
 
 void exportDXF(File f) {
-  if ( f != null ) {
-    try {
-      d.save( f.getAbsolutePath() );
-    } 
-    catch (Exception e) {
-      e.printStackTrace();
-    }
-  }
+  dxfName = f.getAbsolutePath();
+  exportDXF= true;
 }
 
 void loadBackground( File f ) {
@@ -654,33 +662,242 @@ void createControllers(ControlP5 cp5) {
   currentColor = FOREGROUND;
   brushColor = color(0);
   bgColor = color(255);
+  
+  int fontSize = 18;
+  PFont pfont = createFont("Arial", fontSize, true); // use true/false for smooth/no-smooth
+  ControlFont font = new ControlFont(pfont,fontSize);
 
   colorGroup = cp5.addGroup("colorChooserGroup")
     .setPosition( width / 2 - 200, height / 2 - 200 )
-      .setSize( 400, 460 )
-        .setBackgroundColor( color(100, 100, 100, 128) )
-          .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
-            .setLabel("")
-              .hide()
-                ; 
+    .setSize( 400, 460 )
+    .setBackgroundColor( color(100, 100, 100, 128) )
+    .setColor( new CColor(0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00, 0xFFFFFF00) )
+    .setLabel("")
+    .hide()
+    ; 
 
   fgbgToggle = cp5.addToggle("currentColor")
     .setGroup(colorGroup)
-      .setPosition( 20, 20 )
-        .setSize(360, 160)
-          .setView(new ColorToggleView())
-            .setState( FOREGROUND )
-              .setColorBackground( bgColor )
-                .setColorForeground( brushColor )
-                  ;
+    .setPosition( 20, 20 )
+    .setSize(360, 160)
+    .setView(new ColorToggleView())
+    .setState( FOREGROUND )
+    .setColorBackground( bgColor )
+    .setColorForeground( brushColor )
+    ;
 
   colorChooser = new ColorChooserController( cp5, "colorChooser")
     .setGroup(colorGroup)
-      .setPosition(20, 200)
-        .setSize(360, 240)
-          .setColorValue( brushColor );
-  ;
+    .setPosition(20, 200)
+    .setSize(360, 240)
+    .setColorValue( brushColor )
+    ;
+    
+  //Preference menu  
+  int menuWidth = 300;
+  int margin = 10;
+  int spacing = 5;
+  int barHeight = 30;
+  int menuHeight = 2 * margin + (spacing + barHeight) * 4;
+  
+  preferenceMenu = cp5.addGroup("preferences")
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setLabel("")
+    .hide();
+    ;
+    
+  cp5.addButton("toggleHand")
+    .setLabel("Draw with left hand")
+    .setGroup("preferences")
+    .setPosition( margin, margin)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addButton("toggleOrigin")
+    .setLabel("Hide origin")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (spacing + barHeight))
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addButton("toggleSkeleton")
+    .setLabel("Hide skeleton")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (spacing + barHeight) * 2)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addButton("toggleBackgroundImage")
+    .setLabel("Hide background image")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (spacing + barHeight) * 3)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+    
+  //File menu
+  menuHeight = 2 * margin + (spacing + barHeight) * 5;
+  
+  fileMenu = cp5.addGroup("file")
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setLabel("")
+    .hide();
+    ;  
+  
+  cp5.addButton("openDrawingPressed")
+    .setLabel("Open drawing")
+    .setGroup("file")
+    .setPosition( margin, margin)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addButton("saveDrawingPressed")
+    .setLabel("Save drawing")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight))
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+  
+  cp5.addButton("exportPDFPressed")
+    .setLabel("Export PDF (2D)")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 2)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addButton("exportDXFPressed")
+    .setLabel("Export DXF (3D)")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 3)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+     
+  cp5.addButton("loadBackgroundImage")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 4)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  menuWidth = 400; 
+  menuHeight = 500;
+  
+  String [] helpItems = {
+    "D    Draw",
+    "R    Rotate",
+    "M    Move",
+    "Z    Undo",
+    "X    Clear strokes",
+    "+/-  Change stroke size",
+    "H    Reset rotation",
+    "C    Color picker",
+    "P    Preference menu",
+    "F    File save, open and export",
+    "?    This help menu"
+  };
+  
+     
+  helpMenu = cp5.addGroup("help")
+    .setPosition( (width - menuWidth) / 2, (height - menuHeight) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 200) )
+    .setLabel("")
+    .hide();
+    ;
+  
+  int index = 0;
+  for( String item : helpItems ) {
+     cp5.addTextlabel("Help" + index)
+      .setText(item)
+      .setGroup("help")
+      .setPosition( margin, margin + (spacing + barHeight) * index )
+      .setFont(font)
+      .setColorValue(0xff000000)
+      ;
+      index++;
+  }
+
+    
 }
+
+/************************************** controlP5 callbacks **************************************/
+
+void toggleHand(ControlEvent theEvent) {
+  skeleton.changeHand();
+  theEvent.getController().setLabel( skeleton.getHand() ? "Draw with left hand" : "Draw with right hand" );
+}
+
+void toggleOrigin(ControlEvent theEvent) {
+  displayOrigin = !displayOrigin;
+  theEvent.getController().setLabel( displayOrigin ? "Hide origin" : "Show origin" );
+}
+
+void toggleSkeleton(ControlEvent theEvent) {
+  displaySkeleton = !displaySkeleton;
+}
+
+void openDrawingPressed() {
+  selectInput("Please select a drawing to open", "openDrawing" );
+  menuState = MENUS_OFF;
+}
+
+void saveDrawingPressed() {
+  selectOutput("Save drawing:", "saveDrawing");
+  menuState = MENUS_OFF;
+}
+
+void exportPDFPressed() {
+  selectOutput("Export PDF:", "exportPDF");
+  menuState = MENUS_OFF;
+
+}
+
+void exportDXFPressed() {
+  selectOutput("Export DXF:", "exportDXF");
+  menuState = MENUS_OFF;
+  
+}
+
+void loadBackgroundImageButton() {
+  selectInput("Please select a background image", "loadBackground" );
+}
+
+void toggleBackgroundImage(ControlEvent theEvent) {
+  displayBackgroundImage = !displayBackgroundImage;
+  theEvent.getController().setLabel( displayBackgroundImage ? "Hide background image" : "Show background image" );
+}
+
+
 
 /************************************** SimpleOpenNI callbacks **************************************/
 
@@ -692,7 +909,7 @@ void onNewUser(SimpleOpenNI kinect, int userId) {
 }
 
 /*************** For version 0.27 of simpleOpenNI ***************/
-//void onNewUser(int userId) {
+//void onNewUser(SimpleOpenNI kinect, int userId) {
 //  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
 //  println( kinectStatus );
 //  kinect.startPoseDetection("Psi", userId);
