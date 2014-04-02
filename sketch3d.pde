@@ -281,6 +281,7 @@ void draw() {
   fileMenu.setVisible( menuState == FILE_MENU );
   colorGroup.setVisible( menuState == COLOR_MENU );
   preferenceMenu.setVisible( menuState == PREFERENCE_MENU );
+  helpMenu.setVisible( menuState == HELP_MENU );
   
   cp5.draw();
 
@@ -444,10 +445,8 @@ void keyPressed() {
         //Change stroke color
         if( menuState != COLOR_MENU ) {
           menuState = COLOR_MENU;
-          colorGroup.setVisible( true );
         } else {
           menuState = MENUS_OFF;
-          colorGroup.setVisible( false );
         }
         
 //        pickingColor = !pickingColor;
@@ -463,10 +462,8 @@ void keyPressed() {
       case 'F':
         if( menuState != FILE_MENU ) {
           menuState = FILE_MENU;
-          fileMenu.setVisible( true );
         } else {
           menuState = MENUS_OFF;
-          fileMenu.setVisible( false );
         }
         break;
       case 'h':
@@ -487,13 +484,11 @@ void keyPressed() {
         setup();
         break;
       case 'p':
-      case 'P':      
+      case 'P': 
         if( menuState != PREFERENCE_MENU ) {
           menuState = PREFERENCE_MENU;
-          preferenceMenu.setVisible( true );
         } else {
           menuState = MENUS_OFF;
-          preferenceMenu.setVisible( false );
         }
         break;
       case 'r': 
@@ -527,6 +522,12 @@ void keyPressed() {
       case '+':
         brushSize += 5;
         break;
+      case '?':
+        if( menuState != HELP_MENU ) {
+          menuState = HELP_MENU;
+        } else {
+          menuState = MENUS_OFF;
+        }
       }
     }
   } 
@@ -700,7 +701,7 @@ void createControllers(ControlP5 cp5) {
   int menuHeight = 2 * margin + (spacing + barHeight) * 4;
   
   preferenceMenu = cp5.addGroup("preferences")
-    .setPosition( (width - menuWidth) / 2, 50 + (height - menuWidth) / 2 )
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
     .setSize( menuWidth, menuHeight )
     .setBackgroundColor( color(240, 240, 240, 128) )
     .setLabel("")
@@ -752,7 +753,7 @@ void createControllers(ControlP5 cp5) {
   menuHeight = 2 * margin + (spacing + barHeight) * 5;
   
   fileMenu = cp5.addGroup("file")
-    .setPosition( (width - menuWidth) / 2, 50 + (height - menuWidth) / 2 )
+    .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
     .setSize( menuWidth, menuHeight )
     .setBackgroundColor( color(240, 240, 240, 128) )
     .setLabel("")
@@ -800,6 +801,66 @@ void createControllers(ControlP5 cp5) {
     ;
      
   cp5.addButton("loadBackgroundImage")
+    .setGroup("file")
+    .setPosition( margin, margin + (spacing + barHeight) * 4)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  menuWidth = 400; 
+  menuHeight = 500;
+   
+  helpMenu = cp5.addGroup("help")
+    .setPosition( (width - menuWidth) / 2, (height - menuHeight) / 2 )
+    .setSize( menuWidth, menuHeight )
+    .setBackgroundColor( color(240, 240, 240, 128) )
+    .setLabel("")
+    .hide();
+    ;
+    
+  cp5.addTextlabel("label")
+    .setText("Lorem ipsim.")
+    .setGroup("help")
+    .setPosition( margin, margin )
+    .setFont(font)
+    .setColorValue(0xff000000)
+    ;
+    
+  cp5.addTextlabel("label")
+    .setText("Lorem ipsim.")
+    .setGroup("help")
+    .setPosition( margin, margin )
+    .setFont(font)
+    .setColorValue(0xff000000)
+    ;
+    
+  cp5.addTextlabel("label")
+    .setText("Lorem ipsim.")
+    .setGroup("help")
+    .setPosition( margin, margin )
+    .setFont(font)
+    .setColorValue(0xff000000)
+    ;
+
+  cp5.addTextlabel("label")
+    .setText("Lorem ipsim.")
+    .setGroup("help")
+    .setPosition( margin, margin )
+    .setFont(font)
+    .setColorValue(0xff000000)
+    ;
+
+  cp5.addTextlabel("label")
+    .setText("Lorem ipsim.")
+    .setGroup("help")
+    .setPosition( margin, margin )
+    .setFont(font)
+    .setColorValue(0xff000000)
+    ;
+    
+    cp5.addButton("loadBackgroundImage")
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
