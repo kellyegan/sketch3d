@@ -242,6 +242,13 @@ void draw() {
     popMatrix();
   }
 
+  if( exportDXF ) {
+    //Adjust output to easily fit in Blender window
+    translate(cameraPos.x, cameraPos.y, cameraPos.z);
+    rotateX( TAU / 4 );
+    scale( 0.001, -0.001, 0.001 ); 
+  }
+
   rotateX(rotation.x);
   rotateY(rotation.y);
 
