@@ -207,10 +207,10 @@ void draw() {
   pushMatrix();
 
   if ( exportDXF ) {    
-    beginRaw( DXF, dxfName);
+    beginRaw( DXF, dxfName + ".dxf");
   }
   if ( exportPDF ) {
-    beginRaw( PDF, pdfName);
+    beginRaw( PDF, pdfName + ".pdf");
   }
   
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
@@ -222,16 +222,10 @@ void draw() {
 
   if ( !exportDXF && !exportPDF) {
     fill(100);
-//    text(keyStatus, 40, height - 80);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
-
-  if ( true ) {
-    //lights();
-  }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
-  //perspective();
 
   //Set the cursor for the menus
   if( menuState != FILE_MENU ) {
