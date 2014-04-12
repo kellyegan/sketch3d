@@ -216,6 +216,11 @@ void draw() {
   directionalLight(255, 255, 255, 0, 0.5, 0.5);
 
   background(bgColor);
+  if( exportPDF ) {
+    noStroke();
+    fill(bgColor);
+    rect(0, 0, width, height);
+  }
   if ( displayBackgroundImage && !exportDXF && !exportPDF) {
     image( bgImage, width/2-bgImage.width/2, height/2-bgImage.height/2 );
   }
