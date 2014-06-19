@@ -79,8 +79,8 @@ boolean displaySkeleton;  //Display the origin
 float rotationStep = TAU / 180;
 
 void setup() {
-  size(1280, 768, P3D);
-  //size(displayWidth, displayHeight, P3D);
+  //size(1280, 768, P3D);
+  size(displayWidth, displayHeight, P3D);
 
   //smooth();
 
@@ -595,9 +595,9 @@ void keyReleased() {
   }
 }
 
-//boolean sketchFullScreen() {
-//  return true;
-//}
+boolean sketchFullScreen() {
+  return true;
+}
 
 void stop() {
 }
