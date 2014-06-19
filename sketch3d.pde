@@ -118,8 +118,8 @@ void setup() {
   if ( SimpleOpenNI.deviceCount() > 0 ) {
     kinect.enableDepth();
 
-    //kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Older Version of simpleOpenNI   
-    kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
+    kinect.enableUser(SimpleOpenNI.SKEL_PROFILE_ALL);     //Version 0.27 of simpleOpenNI   
+    //kinect.enableUser();                                //Version 1.9.6 of simpleOpenNI
 
     kinectStatus = "Kinect found. Waiting for user...";
     println(kinectStatus);
@@ -226,7 +226,7 @@ void draw() {
   }
 
   if ( !exportDXF && !exportPDF) {
-    fill(100);
+    fill(0);
     text(kinectStatus, 40, height - 60);
     noFill();
   }
@@ -344,7 +344,7 @@ void update() {
     updateDrawingHand();
 
 
-    kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
+    //kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
     shader.set("zPlane", cameraPos.z - drawingHand.z );
 
 
@@ -908,38 +908,38 @@ void toggleBackgroundImage(ControlEvent theEvent) {
 /************************************** SimpleOpenNI callbacks **************************************/
 
 /*************** For version 1.9.6 of simpleOpenNi ***************/
-void onNewUser(SimpleOpenNI kinect, int userId) {
-  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
-  println( kinectStatus );
-  kinect.startTrackingSkeleton(userId);
-}
-
-/*************** For version 0.27 of simpleOpenNI ***************/
 //void onNewUser(SimpleOpenNI kinect, int userId) {
 //  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
 //  println( kinectStatus );
-//  kinect.startPoseDetection("Psi", userId);
+//  kinect.startTrackingSkeleton(userId);
 //}
-//
-//void onStartPose(String pose, int userId) {
-//  kinectStatus = pose + " pose detected for user " + userId + ". Requesting calibration skeleton.";
-//  println( kinectStatus);
-//  kinect.stopPoseDetection(userId); 
-//  kinect.requestCalibrationSkeleton(userId, true);
-//}
-//
-//void onEndCalibration(int userId, boolean successful) {
-//  if (successful) { 
-//    kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
-//    println( kinectStatus );
-//    kinect.startTrackingSkeleton(userId);
-//    skeleton.setUser(userId);
-//  } 
-//  else { 
-//    kinectStatus = "Calibration failed starting pose detection.";
-//    kinect.startPoseDetection("Psi", userId);
-//  }
-//}
+
+/*************** For version 0.27 of simpleOpenNI ***************/
+void onNewUser(int userId) {
+  kinectStatus = "User " + userId + " found.  Please assume Psi pose.";
+  println( kinectStatus );
+  kinect.startPoseDetection("Psi", userId);
+}
+
+void onStartPose(String pose, int userId) {
+  kinectStatus = pose + " pose detected for user " + userId + ". Requesting calibration skeleton.";
+  println( kinectStatus);
+  kinect.stopPoseDetection(userId); 
+  kinect.requestCalibrationSkeleton(userId, true);
+}
+
+void onEndCalibration(int userId, boolean successful) {
+  if (successful) { 
+    kinectStatus = "Calibration ended successfully for user " + userId + " Tracking user.";
+    println( kinectStatus );
+    kinect.startTrackingSkeleton(userId);
+    skeleton.setUser(userId);
+  } 
+  else { 
+    kinectStatus = "Calibration failed starting pose detection.";
+    kinect.startPoseDetection("Psi", userId);
+  }
+}
 
 /*************** Common to both versions of simpleOpenNI ***************/
 void onLostUser(int userId) {
