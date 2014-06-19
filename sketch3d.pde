@@ -141,7 +141,7 @@ void setup() {
   defaultBrush = new Brush("draw3d_default_00001", brushColor, brushSize);
   clickStarted = false;
 
-  bgColorHSB = new PVector( 0.0, 0.0, 0.9 );
+  bgColorHSB = new PVector( 0.0, 0.0, 0.2 );
   oldBgColorHSB = new PVector();
   bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z);
 
