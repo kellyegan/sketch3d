@@ -84,18 +84,6 @@ void setup() {
 
   //smooth();
 
-  //GUI
-  cp5 = new ControlP5(this);
-  createControllers( cp5 );
-  cp5.setAutoDraw(false);
-  cp5.getPointer().enable();
-
-  uiFont = createFont("Helvetica", 20);
-  textFont(uiFont, 20);
-
-  displayOrigin = true;
-  displaySkeleton = true;  
-
   menuState = MENUS_OFF;
 
   drawingNow = false;
@@ -144,6 +132,18 @@ void setup() {
   bgColorHSB = new PVector( 0.0, 0.0, 0.2 );
   oldBgColorHSB = new PVector();
   bgColor = Color.HSBtoRGB( bgColorHSB.x, bgColorHSB.y, bgColorHSB.z);
+  
+  //GUI
+  cp5 = new ControlP5(this);
+  createControllers( cp5 );
+  cp5.setAutoDraw(false);
+  cp5.getPointer().enable();
+
+  uiFont = createFont("Helvetica", 20);
+  textFont(uiFont, 20);
+
+  displayOrigin = true;
+  displaySkeleton = true;  
 
   bgImage = loadImage("data/testBackground.jpg");
   displayBackgroundImage = false;
@@ -290,8 +290,7 @@ void draw() {
     if ( currentColor == FOREGROUND ) {
       brushColor = colorChooser.getColorValue();
       fgbgToggle.setColorForeground(brushColor);
-    } 
-    else {
+    } else {
       bgColor = colorChooser.getColorValue();
       shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
       fgbgToggle.setColorBackground(bgColor);
@@ -659,8 +658,8 @@ void updateDrawingHand() {
 void createControllers(ControlP5 cp5) {
 
   currentColor = FOREGROUND;
-  brushColor = color(0);
-  bgColor = color(255);
+  //brushColor = color(0);
+  //bgColor = color(255);
   
   int fontSize = 18;
   PFont pfont = createFont("Arial", fontSize, true); // use true/false for smooth/no-smooth
