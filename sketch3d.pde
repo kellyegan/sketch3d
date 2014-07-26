@@ -181,8 +181,6 @@ void setup() {
   currentPosition = new PVector();
   positionDelta = new PVector();
 
-  //hint(DISABLE_DEPTH_MASK);
-
   //
   //  File path = new File(sketchPath + "/data");  
   //
@@ -195,17 +193,16 @@ void setup() {
   //  println(this);
   startMillis = millis();
   logoDuration = 10000; //10 seconds to display logo and pick hand.
-  shader(shader);
+  
 }
 
 void draw() {
+  shader(shader);
   update();
-
   /*************************************** DISPLAY **************************************/
 
-  hint(ENABLE_DEPTH_TEST);
   pushMatrix();
-
+  
   if ( exportDXF ) {    
     beginRaw( DXF, dxfName + ".dxf");
   }
@@ -269,16 +266,14 @@ void draw() {
 
   translate(offset.x, offset.y, offset.z);
   d.display();
-
   popMatrix();
-
+  
   if ( exportDXF || exportPDF ) {
     endRaw();
     exportDXF = false;
     exportPDF = false;
   }
 
-  hint(DISABLE_DEPTH_TEST);
   camera();
   noLights();
 
@@ -290,7 +285,7 @@ void draw() {
   helpMenu.setVisible( menuState == HELP_MENU );
   
   cp5.draw();
-
+  
   if ( menuState == COLOR_MENU ) {
     if ( currentColor == FOREGROUND ) {
       brushColor = colorChooser.getColorValue();
@@ -313,7 +308,6 @@ void draw() {
     line( x, y - 10, x, y + 10 );
     line( x - 10, y, x + 10, y );    
   }
-
 }
 
 
@@ -395,7 +389,6 @@ void mousePressed() {
 void mouseReleased() {
   if ( menuState != MENUS_OFF ) {
     cp5.getPointer().released();
-    println("Mouse pressed");
   } 
   else {
     if (mouseButton==LEFT) {
@@ -807,6 +800,7 @@ void createControllers(ControlP5 cp5) {
     ;
      
   cp5.addButton("loadBackgroundImage")
+    .setLabel("Load background image")
     .setGroup("file")
     .setPosition( margin, margin + (spacing + barHeight) * 4)
     .setSize( menuWidth - margin * 2, barHeight )
@@ -891,10 +885,9 @@ void exportPDFPressed() {
 void exportDXFPressed() {
   selectOutput("Export DXF:", "exportDXF");
   menuState = MENUS_OFF;
-  
 }
 
-void loadBackgroundImageButton() {
+void loadBackgroundImage() {
   selectInput("Please select a background image", "loadBackground" );
 }
 

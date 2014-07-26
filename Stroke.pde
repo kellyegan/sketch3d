@@ -14,13 +14,13 @@ class Stroke implements I_PathGen {
   color strokeColor;
   float strokeWeight;
   Point lastPoint;
-  
+
   Brush style;
- 
+
   PApplet app; 
   PathTube mesh;
   boolean meshCreated;
-  
+
   /**
    * Create an empty Stroke with a specific Brush
    * @param b Brush to attach to this Stroke
@@ -32,7 +32,7 @@ class Stroke implements I_PathGen {
     lastPoint = null;
     meshCreated = false;
   }
-  
+
   /**
    * Create an empty Stroke and a new Brush
    * @param n Name of the new Brush
@@ -42,14 +42,14 @@ class Stroke implements I_PathGen {
   Stroke(PApplet a, String n, int c, int w) {
     this(a, new Brush(n, c, w));
   }
-  
+
   /**
    * Create an empty Stroke with a default Brush
-   */  
+   */
   Stroke(PApplet a) {
     this( a, new Brush() );
   }
-  
+
   /**
    * Add a point to the Stroke.
    * @param Point to add
@@ -59,18 +59,18 @@ class Stroke implements I_PathGen {
     lastPoint = p;
     createMesh();
   }
-  
+
   /** Creates a mesh for the given stroke
    *  Not sure if this is needed or should just be implemented for the drawing class
    */
   void createMesh() {
-    if( points != null && points.size() >= 2) {
+    if ( points != null && points.size() >= 2) {
       PVector[] pts = new PVector[points.size()];
-      
-      for( int i = 0; i < points.size(); i++ ) {
-        pts[i] = points.get(i).location; 
+
+      for ( int i = 0; i < points.size (); i++ ) {
+        pts[i] = points.get(i).location;
       }
-      
+
       mesh = new PathTube( app, this, style.getWeight(), points.size(), 6, false );
       mesh.drawMode( Shape3D.SOLID );
       mesh.fill( style.getColor() );
@@ -78,51 +78,51 @@ class Stroke implements I_PathGen {
       meshCreated = true;
     }
   }
-  
+
   /**
    * Display the stroke
    */
   void display() { 
-    if( meshCreated ) {
+    if ( meshCreated ) {
       mesh.draw();
     } else {
       style.apply();
       beginShape();
-      for( Point point : points ) {
+      for ( Point point : points ) {
         vertex( point.location.x, point.location.y, point.location.z );
       }
       endShape();
     }
   }
-  
+
   /**
    * List the points within the Stroke
    */
   void list() {
-    for( Point point : points ) {
+    for ( Point point : points ) {
       point.list();
     }
     println();
   }
-  
+
   Point getLastPoint() {
-    return lastPoint; 
+    return lastPoint;
   }
-  
+
   float distanceToLast( float x, float y, float z ) {
-    if( lastPoint != null ) {
+    if ( lastPoint != null ) {
       return dist( lastPoint.location.x, lastPoint.location.y, lastPoint.location.z, x, y, z );
     } else {
       return -1;
     }
   }
-  
+
   /**
    * Return x position along stroke length
    */
   public float x( float t ) {
     float xPos = 0;
-    if( t < 1.0 ) {
+    if ( t < 1.0 ) {
       float pathPos = t * (points.size() - 1);
       int startPt = floor(pathPos);
       int endPt = startPt + 1;
@@ -133,13 +133,13 @@ class Stroke implements I_PathGen {
     }    
     return xPos;
   }
-  
+
   /**
    * Return x position along stroke
    */
   public float y( float t ) {
     float yPos = 0;
-    if( t < 1.0 ) {
+    if ( t < 1.0 ) {
       float pathPos = t * (points.size() - 1);
       int startPt = floor(pathPos);
       int endPt = startPt + 1;
@@ -150,13 +150,13 @@ class Stroke implements I_PathGen {
     }    
     return yPos;
   }
-  
+
   /**
    * Return x position along stroke
    */
   public float z( float t ) {
     float zPos = 0;
-    if( t < 1.0 ) {
+    if ( t < 1.0 ) {
       float pathPos = t * (points.size() - 1);
       int startPt = floor(pathPos);
       int endPt = startPt + 1;
@@ -167,5 +167,5 @@ class Stroke implements I_PathGen {
     }    
     return zPos;
   }
-   
 }
+
