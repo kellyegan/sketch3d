@@ -1,6 +1,7 @@
 /*
- draw3d
- Copyright Kelly Egan 2013-2014
+ sketch3D
+ Copyright 2013-14 Kelly Egan
+ Full license contained in LICENSE.txt
  */
 
 import controlP5.*;
