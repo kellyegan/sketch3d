@@ -823,7 +823,8 @@ void createControllers(ControlP5 cp5) {
     "C    Color picker",
     "P    Preference menu",
     "F    File save, open and export",
-    "?    This help menu"
+    "?    This help menu",
+    "Q    Exit sketch3D"
   };
   
      
