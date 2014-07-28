@@ -1,3 +1,4 @@
+import controlP5.*;
 import java.awt.Color;
 
 class ColorToggleView implements ControllerView<Toggle> {
