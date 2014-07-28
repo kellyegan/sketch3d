@@ -39,7 +39,3 @@ class  MessageCenter {
   }
 }
 
-void keyPressed() {
-  mc.saveLog(); 
-}
-

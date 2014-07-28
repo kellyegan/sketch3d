@@ -16,7 +16,8 @@ MessageCenter mc;
 
  
 void setup() {
-  size(displayWidth, displayHeight, P3D);
+  //size(displayWidth, displayHeight, P3D);
+  size(1280, 768, P3D);
   
   mc = new MessageCenter(this);
   kinectReady = initializeKinect();
@@ -45,7 +46,7 @@ boolean initializeKinect() {
     skeleton = new Skeleton(this, kinect, 1, Skeleton.RIGHT_HANDED );
     return true;
   } else {
-    mc.updateStatus( "No Kinect found. " );
+    mc.updateStatus( "No Kinect found." );
     return false;
   }
 }
