@@ -13,8 +13,6 @@ boolean kinectReady;
 
 MessageCenter mc;
 
-
- 
 void setup() {
   //size(displayWidth, displayHeight, P3D);
   size(1280, 768, P3D);
@@ -24,8 +22,13 @@ void setup() {
 }
 
 void draw() {
+  background(0);
   
   if( kinectReady )  {
+    //Update
+    kinect.update();
+    
+    //Draw
     
   } 
   
