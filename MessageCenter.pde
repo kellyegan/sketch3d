@@ -10,6 +10,8 @@ import processing.core.PApplet;
 class  MessageCenter {
   String status;
   StringList log;
+  
+  boolean showInConsole;
 
   PApplet app;
 
@@ -17,6 +19,7 @@ class  MessageCenter {
     app = a;
     log = new StringList();
     status = "";
+    showInConsole = true;
   }
 
   void updateStatus( String newStatus ) {
@@ -26,7 +29,9 @@ class  MessageCenter {
 
   void updateLog( String newLog ) {
     String logEntry = hour() + ":" + nf(minute(), 2) + ":" + nf(second(), 2) + " " + newLog;
-    println( logEntry );
+    if( showInConsole ) {
+      println( logEntry );
+    }
     log.append( logEntry );
   }
 
