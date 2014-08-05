@@ -5,6 +5,8 @@
  */
 
 import SimpleOpenNI.*;
+import draw3D.drawing.*;
+
 //Controller interface
 MessageCenter mc;
 
@@ -13,6 +15,11 @@ SimpleOpenNI kinect;
 Skeleton skeleton;
 boolean kinectReady;
 
+//Drawing
+Drawing drawing;
+Brush defaultBrush;
+
+PVector cameraPos, cameraFocus;
 
 void setup() {
   //size(displayWidth, displayHeight, P3D);
@@ -20,18 +27,34 @@ void setup() {
   
   //Controller interface
   mc = new MessageCenter(this);
+  
+  //Kinect
   kinectReady = initializeKinect();
+  
+  cameraPos = new PVector( 0, 0, 3000 );
+  cameraFocus = new PVector();  
 }
 
 void draw() {
-  background(0);
+  background(100);
   
   if( kinectReady )  {
     //Update
     kinect.update();
+    skeleton.update(new PVector());
     
     //Draw
+    pushMatrix();
     
+    camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
+    
+    pushMatrix();
+    rotateX(PI);
+    rotateY(PI);
+    skeleton.display(true, 30.0, color(0, 0, 50) );
+    popMatrix();
+    
+    popMatrix();
   } 
   
   mc.display();
