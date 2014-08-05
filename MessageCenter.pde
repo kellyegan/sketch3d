@@ -6,8 +6,9 @@
  */
 
 import processing.core.PApplet;
+import java.util.ArrayList;
 
-class  MessageCenter {
+class  MessageCenter {  
   String status;
   StringList log;
   

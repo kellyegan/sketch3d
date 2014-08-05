@@ -5,18 +5,20 @@
  */
 
 import SimpleOpenNI.*;
+//Controller interface
+MessageCenter mc;
 
 //Kinect
 SimpleOpenNI kinect;
 Skeleton skeleton;
 boolean kinectReady;
 
-MessageCenter mc;
 
 void setup() {
   //size(displayWidth, displayHeight, P3D);
   size(1280, 768, P3D);
   
+  //Controller interface
   mc = new MessageCenter(this);
   kinectReady = initializeKinect();
 }
