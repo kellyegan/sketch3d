@@ -6,8 +6,10 @@
 
 import SimpleOpenNI.*;
 import draw3D.drawing.*;
+import draw3D.controller.*;
 
 //Controller interface
+DrawingController drawingController;
 MessageCenter mc;
 
 //Kinect
@@ -26,6 +28,7 @@ void setup() {
   size(1280, 768, P3D);
   
   //Controller interface
+  drawingController = new DrawingController(this);
   mc = new MessageCenter(this);
   
   //Kinect
