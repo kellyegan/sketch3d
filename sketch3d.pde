@@ -10,6 +10,10 @@ import SimpleOpenNI.*;
 import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
+import draw3D.geo.*;
+import draw3D.drawing.*;
+import draw3D.controller.*;
+
 
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
@@ -21,6 +25,9 @@ boolean handPicked;
 Skeleton skeleton;
 String kinectStatus, keyStatus;
 int keyCount = 0;
+
+//Controller
+ArcBall arcBall;
 
 //Drawing
 Drawing d;
@@ -122,6 +129,9 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 30.0;
+  
+  //Controller
+  arcBall = new ArcBall(this, width/2 height/2, 150);
 
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
