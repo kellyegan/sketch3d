@@ -131,7 +131,7 @@ void setup() {
   brushSize = 30.0;
   
   //Controller
-  arcBall = new ArcBall(this, width/2 height/2, 150);
+  arcBall = new ArcBall(this, width/2, height/2, 150);
 
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
@@ -262,6 +262,7 @@ void draw() {
     scale( 0.001, -0.001, 0.001 ); 
   }
 
+  //ROTATION
   rotateX(rotation.x);
   rotateY(rotation.y);
 
@@ -356,6 +357,7 @@ void update() {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
     if ( rotatingNow ) {
+      arcBall.dragging( mouseX, mouseY );
       rotationEnded.set(secondaryHand);
       stroke(255, 0, 0);
       rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
@@ -382,6 +384,7 @@ void mousePressed() {
       keyStatus += " Left mouse.";
     }
     if (mouseButton==RIGHT) {
+      arcBall.dragStart(mouseX, mouseY);
       rotationStarted.set(secondaryHand);
       oldRotation.set( rotation );
       rotatingNow=true;
@@ -405,8 +408,10 @@ void mouseReleased() {
       drawingNow=false;
       d.endStroke();
     }
-    if (mouseButton==RIGHT)
+    if (mouseButton==RIGHT) {
       rotatingNow=false;
+      arcBall.dragEnd(); 
+    }
     if (mouseButton==CENTER)
       moveDrawing=false;
   }
