@@ -263,8 +263,8 @@ void draw() {
   }
 
   //ROTATION
-  rotateX(rotation.x);
-  rotateY(rotation.y);
+//  rotateX(rotation.x);
+//  rotateY(rotation.y);
 
   if ( displayOrigin && !exportDXF  && !exportPDF) {
     strokeWeight(3);
@@ -329,18 +329,18 @@ void update() {
     d.clearStrokes();
   }
 
-  if ( up ) {
-    rotation.x += rotationStep;
-  }
-  if ( down ) {
-    rotation.x -= rotationStep;
-  }
-  if ( right ) {
-    rotation.y += rotationStep;
-  }
-  if ( left ) {
-    rotation.y -= rotationStep;
-  }
+//  if ( up ) {
+//    rotation.x += rotationStep;
+//  }
+//  if ( down ) {
+//    rotation.x -= rotationStep;
+//  }
+//  if ( right ) {
+//    rotation.y += rotationStep;
+//  }
+//  if ( left ) {
+//    rotation.y -= rotationStep;
+//  }
 
   if (deviceReady) {
     kinect.update();
@@ -358,10 +358,10 @@ void update() {
     }
     if ( rotatingNow ) {
       arcBall.dragging( mouseX, mouseY );
-      rotationEnded.set(secondaryHand);
-      stroke(255, 0, 0);
-      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-      rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+//      rotationEnded.set(secondaryHand);
+//      stroke(255, 0, 0);
+//      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
+//      rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
     }
     if ( moveDrawing && !drawingNow ) {
       moveNow.set( secondaryHand );
@@ -385,9 +385,9 @@ void mousePressed() {
     }
     if (mouseButton==RIGHT) {
       arcBall.dragStart(mouseX, mouseY);
-      rotationStarted.set(secondaryHand);
-      oldRotation.set( rotation );
-      rotatingNow=true;
+//      rotationStarted.set(secondaryHand);
+//      oldRotation.set( rotation );
+//      rotatingNow=true;
       keyStatus += " Right mouse.";
     }
     if (mouseButton==CENTER) {
@@ -507,9 +507,9 @@ void keyPressed() {
         break;
       case 'r': 
       case 'R':
-        rotationStarted.set(secondaryHand);
-        oldRotation.set( rotation );
-        rotatingNow=true;      
+//        rotationStarted.set(secondaryHand);
+//        oldRotation.set( rotation );
+//        rotatingNow=true;      
         break;     
       case 't': 
       case 'T':
@@ -664,8 +664,13 @@ void updateDrawingHand() {
   if ( !moveDrawing ) {
     inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   }
-  inverseTransform.rotateY( PI - rotation.y );
-  inverseTransform.rotateX( PI + rotation.x );
+  
+  inverseTransform.rotateY( PI );
+  inverseTransform.rotateX( PI );
+  
+//  //Pre-arcball rotation 
+//  inverseTransform.rotateY( PI - rotation.y );
+//  inverseTransform.rotateX( PI + rotation.x );
 
   inverseTransform.mult( drawingHand, drawingHandTransformed );
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
