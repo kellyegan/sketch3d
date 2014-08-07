@@ -266,6 +266,8 @@ void draw() {
 //  rotateX(rotation.x);
 //  rotateY(rotation.y);
 
+  arcBall.update( );
+
   if ( displayOrigin && !exportDXF  && !exportPDF) {
     strokeWeight(3);
     stroke(255, 0, 0);
@@ -397,6 +399,10 @@ void mousePressed() {
       keyStatus += " Center mouse.";
     }
   }
+}
+
+void mouseDragged() {
+  arcBall.dragging(mouseX, mouseY);
 }
 
 void mouseReleased() {
@@ -664,10 +670,14 @@ void updateDrawingHand() {
   if ( !moveDrawing ) {
     inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   }
+
+  
+  float[] inverseRotation = arcBall.getInverseRotation();
+  inverseTransform.rotate( inverseRotation[0], inverseRotation[1], inverseRotation[2], inverseRotation[3] );
   
   inverseTransform.rotateY( PI );
   inverseTransform.rotateX( PI );
-  
+ 
 //  //Pre-arcball rotation 
 //  inverseTransform.rotateY( PI - rotation.y );
 //  inverseTransform.rotateX( PI + rotation.x );
