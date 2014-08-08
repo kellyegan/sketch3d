@@ -75,7 +75,7 @@ PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 
-PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
+PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, drawingHandScreen, secondaryHandScreen;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PVector startPosition, currentPosition, positionDelta;
 PShader fogShader, shader;
@@ -131,7 +131,7 @@ void setup() {
   brushSize = 30.0;
   
   //Controller
-  arcBall = new ArcBall(this, width/2, height/2, 150);
+  arcBall = new ArcBall(this, width/2, height/2, 300);
 
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
@@ -179,6 +179,8 @@ void setup() {
   shader.set("zPlaneIndicatorOn", true);
 
   drawingHand = new PVector();
+  drawingHandScreen = new PVector();
+  secondaryHandScreen = new PVector();
   drawingHandTransformed = new PVector();
   secondaryHand = new PVector();
   secondaryHandTransformed = new PVector();
@@ -240,9 +242,12 @@ void draw() {
   }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
 
+  drawingHandScreen.set( width - screenX( drawingHand.x, drawingHand.y, drawingHand.z), height - screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+  secondaryHandScreen.set( width - screenX( secondaryHand.x, secondaryHand.y, secondaryHand.z), height - screenY( secondaryHand.x, secondaryHand.y, secondaryHand.z) );
+
   //Set the cursor for the menus
   if( menuState != FILE_MENU ) {
-    cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+    cp5.getPointer().set( (int)drawingHandScreen.x, (int)drawingHandScreen.y );
   } else {
     cp5.getPointer().set( mouseX, mouseY );    
   }
@@ -359,7 +364,8 @@ void update() {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
     if ( rotatingNow ) {
-      arcBall.dragging( mouseX, mouseY );
+        arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );
+        //arcBall.dragging( mouseX, mouseY );
 //      rotationEnded.set(secondaryHand);
 //      stroke(255, 0, 0);
 //      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
@@ -386,10 +392,11 @@ void mousePressed() {
       keyStatus += " Left mouse.";
     }
     if (mouseButton==RIGHT) {
-      arcBall.dragStart(mouseX, mouseY);
+      //arcBall.dragStart(mouseX, mouseY);
+      arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
 //      rotationStarted.set(secondaryHand);
 //      oldRotation.set( rotation );
-//      rotatingNow=true;
+      rotatingNow=true;
       keyStatus += " Right mouse.";
     }
     if (mouseButton==CENTER) {
@@ -608,10 +615,10 @@ void keyReleased() {
     }
   }
 }
-
-boolean sketchFullScreen() {
-  return true;
-}
+//
+//boolean sketchFullScreen() {
+//  return true;
+//}
 
 void stop() {
 }
@@ -664,6 +671,8 @@ void loadBackground( File f ) {
 
 void updateDrawingHand() {
   //drawingHand.set( mouseX, mouseY, 0 );
+  //
+  
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
