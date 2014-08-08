@@ -268,9 +268,6 @@ void draw() {
   }
 
   //ROTATION
-//  rotateX(rotation.x);
-//  rotateY(rotation.y);
-
   arcBall.update( );
 
   if ( displayOrigin && !exportDXF  && !exportPDF) {
@@ -364,12 +361,8 @@ void update() {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
     if ( rotatingNow ) {
-        arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );
-        //arcBall.dragging( mouseX, mouseY );
-//      rotationEnded.set(secondaryHand);
-//      stroke(255, 0, 0);
-//      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-//      rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+      //arcBall.dragging( mouseX, mouseY );
+      arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );       
     }
     if ( moveDrawing && !drawingNow ) {
       moveNow.set( secondaryHand );
@@ -394,8 +387,6 @@ void mousePressed() {
     if (mouseButton==RIGHT) {
       //arcBall.dragStart(mouseX, mouseY);
       arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
-//      rotationStarted.set(secondaryHand);
-//      oldRotation.set( rotation );
       rotatingNow=true;
       keyStatus += " Right mouse.";
     }
@@ -520,15 +511,9 @@ void keyPressed() {
         break;
       case 'r': 
       case 'R':
-//        rotationStarted.set(secondaryHand);
-//        oldRotation.set( rotation );
-//        rotatingNow=true;      
+        arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
+        rotatingNow=true;     
         break;     
-      case 't': 
-      case 'T':
-        //Top view
-        rotation.set(-TAU / 4, 0, 0);
-        break;
       case 'q': 
       case 'Q':
         exit();
