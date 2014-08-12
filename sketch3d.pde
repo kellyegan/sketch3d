@@ -526,6 +526,25 @@ void keyPressed() {
       case 'Z':
         d.undoLastStroke();
         break; 
+      case '1':
+        arcBall.setView( ArcBall.FRONT );
+        break;
+      case '2':
+        break;
+      case '3':
+        arcBall.setView( ArcBall.RIGHT );
+        break;
+      case '4':
+        break;
+      case '5':
+        break;
+      case '6':
+        break;
+      case '7':
+        arcBall.setView( ArcBall.TOP );
+        break;
+      case '8': 
+        break;     
       case '-': 
       case '_':
         brushSize -= 5;
