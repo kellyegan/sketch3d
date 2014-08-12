@@ -10,9 +10,7 @@ import SimpleOpenNI.*;
 import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
-import draw3D.geo.*;
-import draw3D.drawing.*;
-import draw3D.controller.*;
+
 
 
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
@@ -527,12 +525,12 @@ void keyPressed() {
         d.undoLastStroke();
         break; 
       case '1':
-        arcBall.setView( ArcBall.FRONT );
+        arcBall.setView( arcBall.FRONT );
         break;
       case '2':
         break;
       case '3':
-        arcBall.setView( ArcBall.RIGHT );
+        arcBall.setView( arcBall.RIGHT );
         break;
       case '4':
         break;
@@ -541,7 +539,7 @@ void keyPressed() {
       case '6':
         break;
       case '7':
-        arcBall.setView( ArcBall.TOP );
+        arcBall.setView( arcBall.TOP );
         break;
       case '8': 
         break;     
