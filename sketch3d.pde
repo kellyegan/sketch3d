@@ -11,6 +11,8 @@ import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
 
+
+
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
@@ -21,6 +23,9 @@ boolean handPicked;
 Skeleton skeleton;
 String kinectStatus, keyStatus;
 int keyCount = 0;
+
+//Controller
+ArcBall arcBall;
 
 //Drawing
 Drawing d;
@@ -68,7 +73,7 @@ PMatrix3D inverseTransform;
 PVector offset, rotation;
 PVector moveStart, moveNow, moveDelta, moveModel, oldOffset;
 
-PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed;
+PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransformed, drawingHandScreen, secondaryHandScreen;
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PVector startPosition, currentPosition, positionDelta;
 PShader fogShader, shader;
@@ -122,6 +127,9 @@ void setup() {
   //Drawing
   d = new Drawing(this, "default.gml");
   brushSize = 30.0;
+  
+  //Controller
+  arcBall = new ArcBall(this, width/2, height/2, 300);
 
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
@@ -169,6 +177,8 @@ void setup() {
   shader.set("zPlaneIndicatorOn", true);
 
   drawingHand = new PVector();
+  drawingHandScreen = new PVector();
+  secondaryHandScreen = new PVector();
   drawingHandTransformed = new PVector();
   secondaryHand = new PVector();
   secondaryHandTransformed = new PVector();
@@ -230,9 +240,12 @@ void draw() {
   }
   camera( cameraPos.x, cameraPos.y, cameraPos.z, cameraFocus.x, cameraFocus.y, cameraFocus.z, 0, 1, 0);
 
+  drawingHandScreen.set( width - screenX( drawingHand.x, drawingHand.y, drawingHand.z), height - screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+  secondaryHandScreen.set( width - screenX( secondaryHand.x, secondaryHand.y, secondaryHand.z), height - screenY( secondaryHand.x, secondaryHand.y, secondaryHand.z) );
+
   //Set the cursor for the menus
   if( menuState != FILE_MENU ) {
-    cp5.getPointer().set( width-(int)screenX( drawingHand.x, drawingHand.y, drawingHand.z), height-(int)screenY( drawingHand.x, drawingHand.y, drawingHand.z) );
+    cp5.getPointer().set( (int)drawingHandScreen.x, (int)drawingHandScreen.y );
   } else {
     cp5.getPointer().set( mouseX, mouseY );    
   }
@@ -252,8 +265,8 @@ void draw() {
     scale( 0.001, -0.001, 0.001 ); 
   }
 
-  rotateX(rotation.x);
-  rotateY(rotation.y);
+  //ROTATION
+  arcBall.update( );
 
   if ( displayOrigin && !exportDXF  && !exportPDF) {
     strokeWeight(3);
@@ -318,18 +331,18 @@ void update() {
     d.clearStrokes();
   }
 
-  if ( up ) {
-    rotation.x += rotationStep;
-  }
-  if ( down ) {
-    rotation.x -= rotationStep;
-  }
-  if ( right ) {
-    rotation.y += rotationStep;
-  }
-  if ( left ) {
-    rotation.y -= rotationStep;
-  }
+//  if ( up ) {
+//    rotation.x += rotationStep;
+//  }
+//  if ( down ) {
+//    rotation.x -= rotationStep;
+//  }
+//  if ( right ) {
+//    rotation.y += rotationStep;
+//  }
+//  if ( left ) {
+//    rotation.y -= rotationStep;
+//  }
 
   if (deviceReady) {
     kinect.update();
@@ -346,10 +359,8 @@ void update() {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
     if ( rotatingNow ) {
-      rotationEnded.set(secondaryHand);
-      stroke(255, 0, 0);
-      rotation.x = oldRotation.x + map( rotationStarted.y - rotationEnded.y, -1000, 1000, -PI/2, PI/2 );
-      rotation.y = oldRotation.y + map( rotationStarted.x - rotationEnded.x, -1000, 1000, -PI/2, PI/2 );
+      //arcBall.dragging( mouseX, mouseY );
+      arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );       
     }
     if ( moveDrawing && !drawingNow ) {
       moveNow.set( secondaryHand );
@@ -372,8 +383,8 @@ void mousePressed() {
       keyStatus += " Left mouse.";
     }
     if (mouseButton==RIGHT) {
-      rotationStarted.set(secondaryHand);
-      oldRotation.set( rotation );
+      //arcBall.dragStart(mouseX, mouseY);
+      arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
       rotatingNow=true;
       keyStatus += " Right mouse.";
     }
@@ -386,6 +397,10 @@ void mousePressed() {
   }
 }
 
+void mouseDragged() {
+  arcBall.dragging(mouseX, mouseY);
+}
+
 void mouseReleased() {
   if ( menuState != MENUS_OFF ) {
     cp5.getPointer().released();
@@ -395,8 +410,10 @@ void mouseReleased() {
       drawingNow=false;
       d.endStroke();
     }
-    if (mouseButton==RIGHT)
+    if (mouseButton==RIGHT) {
       rotatingNow=false;
+      arcBall.dragEnd(); 
+    }
     if (mouseButton==CENTER)
       moveDrawing=false;
   }
@@ -492,15 +509,9 @@ void keyPressed() {
         break;
       case 'r': 
       case 'R':
-        rotationStarted.set(secondaryHand);
-        oldRotation.set( rotation );
-        rotatingNow=true;      
+        arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
+        rotatingNow=true;     
         break;     
-      case 't': 
-      case 'T':
-        //Top view
-        rotation.set(-TAU / 4, 0, 0);
-        break;
       case 'q': 
       case 'Q':
         exit();
@@ -513,6 +524,25 @@ void keyPressed() {
       case 'Z':
         d.undoLastStroke();
         break; 
+      case '1':
+        arcBall.setView( arcBall.FRONT );
+        break;
+      case '2':
+        break;
+      case '3':
+        arcBall.setView( arcBall.RIGHT );
+        break;
+      case '4':
+        break;
+      case '5':
+        break;
+      case '6':
+        break;
+      case '7':
+        arcBall.setView( arcBall.TOP );
+        break;
+      case '8': 
+        break;     
       case '-': 
       case '_':
         brushSize -= 5;
@@ -587,10 +617,10 @@ void keyReleased() {
     }
   }
 }
-
-boolean sketchFullScreen() {
-  return true;
-}
+//
+//boolean sketchFullScreen() {
+//  return true;
+//}
 
 void stop() {
 }
@@ -643,14 +673,25 @@ void loadBackground( File f ) {
 
 void updateDrawingHand() {
   //drawingHand.set( mouseX, mouseY, 0 );
+  //
+  
   drawingHandTransformed.set( drawingHand );
   secondaryHandTransformed.set( secondaryHand );
   inverseTransform.reset();
   if ( !moveDrawing ) {
     inverseTransform.translate( -offset.x, -offset.y, -offset.z );
   }
-  inverseTransform.rotateY( PI - rotation.y );
-  inverseTransform.rotateX( PI + rotation.x );
+
+  
+  float[] inverseRotation = arcBall.getInverseRotation();
+  inverseTransform.rotate( inverseRotation[0], inverseRotation[1], inverseRotation[2], inverseRotation[3] );
+  
+  inverseTransform.rotateY( PI );
+  inverseTransform.rotateX( PI );
+ 
+//  //Pre-arcball rotation 
+//  inverseTransform.rotateY( PI - rotation.y );
+//  inverseTransform.rotateX( PI + rotation.x );
 
   inverseTransform.mult( drawingHand, drawingHandTransformed );
   inverseTransform.mult( secondaryHand, secondaryHandTransformed );
