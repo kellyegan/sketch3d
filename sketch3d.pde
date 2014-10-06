@@ -495,9 +495,7 @@ void keyPressed() {
         break;
       case 'n': 
       case 'N':
-        skeleton.reset();
-        kinect.init();
-        setup();
+        //skeleton.nextUser();
         break;
       case 'p':
       case 'P': 
