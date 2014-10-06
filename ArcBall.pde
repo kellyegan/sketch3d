@@ -1,5 +1,3 @@
-
-import draw3D.geo.Quaternion;
 import processing.core.*;
 
 /**
