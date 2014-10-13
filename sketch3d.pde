@@ -12,7 +12,6 @@ import processing.dxf.*;
 import processing.pdf.*;
 
 
-
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
@@ -77,6 +76,9 @@ PVector drawingHand, drawingHandTransformed, secondaryHand, secondaryHandTransfo
 PVector rotationStarted, rotationEnded, oldRotation, rotationCenter;
 PVector startPosition, currentPosition, positionDelta;
 PShader fogShader, shader;
+
+float fogNearDistance, fogFarDistance;
+
 PImage brush;
 
 boolean displayOrigin;  //Display the origin
@@ -169,10 +171,13 @@ void setup() {
   oldOffset = new PVector();
 
   rotation = new PVector();
-
+  
+  fogNearDistance = 2000.0;
+  fogFarDistance = 0.0;
+  
   shader = loadShader("fogZLight_frag.glsl", "fogZLight_vert.glsl");
-  shader.set("fogNear", cameraPos.z - 2000.0 );
-  shader.set("fogFar", cameraPos.z + 0.0 );
+  shader.set("fogNear", cameraPos.z - fogNearDistance );
+  shader.set("fogFar", cameraPos.z + fogFarDistance );
   shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
   shader.set("zPlaneIndicatorOn", true);
 
@@ -208,7 +213,10 @@ void setup() {
 }
 
 void draw() {
+  shader.set("fogNear", cameraPos.z - fogNearDistance );
+  shader.set("fogFar", cameraPos.z + fogFarDistance );
   shader(shader);
+  
   update();
   /*************************************** DISPLAY **************************************/
 
@@ -736,7 +744,7 @@ void createControllers(ControlP5 cp5) {
   int margin = 10;
   int spacing = 5;
   int barHeight = 30;
-  int menuHeight = 2 * margin + (spacing + barHeight) * 4;
+  int menuHeight = 2 * margin + (spacing + barHeight) * 6;
   
   preferenceMenu = cp5.addGroup("preferences")
     .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
@@ -786,6 +794,29 @@ void createControllers(ControlP5 cp5) {
     .setSize(fontSize)
     ;
     
+    
+  cp5.addSlider("fogFarDistance")
+    .setLabel("Set fog distance")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (spacing + barHeight) * 4)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .setRange(0,4000)
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
+    
+  cp5.addSlider("fogNearDistance")
+    .setLabel("Set fog distance")
+    .setGroup("preferences")
+    .setPosition( margin, margin + (spacing + barHeight) * 5)
+    .setSize( menuWidth - margin * 2, barHeight )
+    .setRange(0,4000)
+    .setValue(2000)
+    .getCaptionLabel()
+    .setFont(font)
+    .setSize(fontSize)
+    ;
     
   //File menu
   menuHeight = 2 * margin + (spacing + barHeight) * 5;
