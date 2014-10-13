@@ -744,7 +744,7 @@ void createControllers(ControlP5 cp5) {
   int margin = 10;
   int spacing = 5;
   int barHeight = 30;
-  int menuHeight = 2 * margin + (spacing + barHeight) * 7;
+  int menuHeight = 2 * margin + (int)((spacing + barHeight) * 7.5);
   
   preferenceMenu = cp5.addGroup("preferences")
     .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
@@ -798,7 +798,7 @@ void createControllers(ControlP5 cp5) {
   cp5.addSlider("fogFarDistance")
     .setLabel("Fog far")
     .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 4.6)
+    .setPosition( margin, margin + (spacing + barHeight) * 4.75)
     .setSize( menuWidth - margin * 2, barHeight )
     .setRange(0,4000)
     .getCaptionLabel()
@@ -811,7 +811,7 @@ void createControllers(ControlP5 cp5) {
   cp5.addSlider("fogNearDistance")
     .setLabel("Fog near")
     .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 6.2)
+    .setPosition( margin, margin + (spacing + barHeight) * 6.5)
     .setSize( menuWidth - margin * 2, barHeight )
     .setRange(0,4000)
     .setValue(2000)
