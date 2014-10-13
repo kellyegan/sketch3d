@@ -744,7 +744,7 @@ void createControllers(ControlP5 cp5) {
   int margin = 10;
   int spacing = 5;
   int barHeight = 30;
-  int menuHeight = 2 * margin + (spacing + barHeight) * 6;
+  int menuHeight = 2 * margin + (spacing + barHeight) * 7;
   
   preferenceMenu = cp5.addGroup("preferences")
     .setPosition( (width - menuWidth) / 2, 50 + (height - menuHeight) / 2 )
@@ -796,24 +796,28 @@ void createControllers(ControlP5 cp5) {
     
     
   cp5.addSlider("fogFarDistance")
-    .setLabel("Set fog distance")
+    .setLabel("Fog far")
     .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 4)
+    .setPosition( margin, margin + (spacing + barHeight) * 4.6)
     .setSize( menuWidth - margin * 2, barHeight )
     .setRange(0,4000)
     .getCaptionLabel()
+    .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+    .setPaddingX(0)
     .setFont(font)
     .setSize(fontSize)
     ;
     
   cp5.addSlider("fogNearDistance")
-    .setLabel("Set fog distance")
+    .setLabel("Fog near")
     .setGroup("preferences")
-    .setPosition( margin, margin + (spacing + barHeight) * 5)
+    .setPosition( margin, margin + (spacing + barHeight) * 6.2)
     .setSize( menuWidth - margin * 2, barHeight )
     .setRange(0,4000)
     .setValue(2000)
     .getCaptionLabel()
+    .align(ControlP5.LEFT, ControlP5.TOP_OUTSIDE)
+    .setPaddingX(0)
     .setFont(font)
     .setSize(fontSize)
     ;
