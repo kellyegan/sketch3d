@@ -131,7 +131,7 @@ void setup() {
   brushSize = 30.0;
   
   //Controller
-  arcBall = new ArcBall(this, width/2, height/2, 300);
+  arcBall = new ArcBall(this, width/2, height/2, 400);
 
   brushColorHSB = new PVector(0.0, 0.0, 1.0);
   oldBrushColorHSB = new PVector();
