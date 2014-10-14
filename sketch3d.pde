@@ -368,7 +368,7 @@ void update() {
     }
     if ( rotatingNow ) {
       //arcBall.dragging( mouseX, mouseY );
-      arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );       
+      arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );     
     }
     if ( moveDrawing && !drawingNow ) {
       moveNow.set( secondaryHand );
