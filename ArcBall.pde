@@ -86,8 +86,6 @@ public class ArcBall implements PConstants{
   public void dragEnd() {
     dragging = false;
   }
-  
-
 
   /**
    * Update currentRotation with data from dragging
@@ -95,13 +93,17 @@ public class ArcBall implements PConstants{
   public void update(){
     if( dragging ) {
       currentRotation = quaternion.mult(deltaRotation, startRotation);
+      
+      if(frameCount % 3 == 0) {
+        startRotation.set(currentRotation);
+        deltaRotation.setToIdentity();
+        startPoint.set(endPoint);
+      }
     } else {
       currentRotation = quaternion.mult(deltaRotation, currentRotation);
-      deltaRotation = deltaRotation.power(0.9f);
+      deltaRotation = deltaRotation.power(0.999f);      
     }
-    
-    applyRotation(currentRotation);
-    
+    applyRotation(currentRotation); 
   }
   
   /**
