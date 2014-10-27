@@ -406,7 +406,7 @@ void mousePressed() {
 }
 
 void mouseDragged() {
-  arcBall.dragging(mouseX, mouseY);
+  //arcBall.dragging(mouseX, mouseY);
 }
 
 void mouseReleased() {
