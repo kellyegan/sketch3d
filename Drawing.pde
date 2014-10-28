@@ -9,6 +9,7 @@ import processing.core.PApplet;
  
 class Drawing {
   List<Stroke> strokes;
+  List<Stroke> undos;
   Stroke currentStroke;
   
   float minimumDistance;
@@ -35,6 +36,7 @@ class Drawing {
   Drawing(PApplet a, String filepath ) {
     app = a;
     strokes = new ArrayList<Stroke>();
+    undos = new ArrayList<Stroke>();
     minimumDistance = 10;
     load( filepath );
   }
@@ -186,6 +188,7 @@ class Drawing {
    * @param brushStyle Brush to apply to this new stroke
    */
   void startStroke(Brush brushStyle) {
+    undos.clear();
     if( currentStroke == null ) {
       currentStroke = new Stroke( app, brushStyle );
       strokes.add( currentStroke );
@@ -314,7 +317,7 @@ class Drawing {
    * Remove all Stroke data from the Drawing object
    */
   void clearStrokes() {
-    strokes = new ArrayList<Stroke>(); 
+    strokes.clear(); 
   }
   
   /**
@@ -322,7 +325,16 @@ class Drawing {
    */
   void undoLastStroke() {
     if( !strokes.isEmpty() ) {
-      strokes.remove(strokes.size() - 1);
+      undos.add( strokes.remove(strokes.size() - 1) );
+    }
+  }
+  
+  /**
+   * Add last stroke removed from Drawing object back.
+   */
+  void redoLastStroke() {
+    if( !undos.isEmpty() ) {
+      strokes.add( undos.remove(undos.size() - 1 ) );
     }
   }
   
