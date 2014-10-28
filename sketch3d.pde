@@ -527,9 +527,11 @@ void keyPressed() {
         d.clearStrokes();
         break;
       case 'z': 
-      case 'Z':
         d.undoLastStroke();
         break; 
+      case 'Z':
+        d.redoLastStroke();
+        break;
       case '1':
         arcBall.setView( arcBall.FRONT );
         break;
