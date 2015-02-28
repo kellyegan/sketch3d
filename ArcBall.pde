@@ -13,12 +13,12 @@ public class ArcBall implements PConstants{
   /**
    * Constants for calling specific views when using setViews
    */ 
-  public final Quaternion FRONT = new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
-  public final Quaternion TOP = new Quaternion(-PApplet.sqrt(2.0f)/2.0f, PApplet.sqrt(2.0f)/2.0f, 0, 0);
-  public final Quaternion LEFT = new Quaternion(PApplet.sqrt(2.0f)/2.0f, 0, PApplet.sqrt(2.0f)/2.0f, 0);
-  public final Quaternion RIGHT = new Quaternion(-PApplet.sqrt(2.0f) / 2.0f, 0f, PApplet.sqrt(2.0f) / 2.0f, 0f);
-  public final Quaternion BOTTOM = new Quaternion(PApplet.sqrt(2.0f)/2.0f, PApplet.sqrt(2.0f)/2.0f, 0, 0);
-  public final Quaternion BACK = new Quaternion(0.0f, 0.0f, 1.0f, 0.0f);
+  public final Quaternion FRONT_VIEW = new Quaternion(1.0f, 0.0f, 0.0f, 0.0f);
+  public final Quaternion TOP_VIEW = new Quaternion(-PApplet.sqrt(2.0f)/2.0f, PApplet.sqrt(2.0f)/2.0f, 0, 0);
+  public final Quaternion LEFT_VIEW = new Quaternion(PApplet.sqrt(2.0f)/2.0f, 0, PApplet.sqrt(2.0f)/2.0f, 0);
+  public final Quaternion RIGHT_VIEW = new Quaternion(-PApplet.sqrt(2.0f) / 2.0f, 0f, PApplet.sqrt(2.0f) / 2.0f, 0f);
+  public final Quaternion BOTTOM_VIEW = new Quaternion(PApplet.sqrt(2.0f)/2.0f, PApplet.sqrt(2.0f)/2.0f, 0, 0);
+  public final Quaternion BACK_VIEW = new Quaternion(0.0f, 0.0f, 1.0f, 0.0f);
 
   private PApplet p;
   
@@ -43,9 +43,9 @@ public class ArcBall implements PConstants{
    * @param radius   radius of the ArcBall
    */
   public ArcBall(PApplet p, float center_x, float center_y, float radius){
-  this.p = p;
+    this.p = p;
   
-  center = new PVector(center_x, center_y);
+    center = new PVector(center_x, center_y);
   
     this.radius = radius;
 
@@ -138,6 +138,7 @@ public class ArcBall implements PConstants{
   public void setView( Quaternion view ) {
     startRotation.set(view);
     deltaRotation.setToIdentity();
+    currentRotation.set(view);
   }
 
   public void applyRotation(Quaternion q){

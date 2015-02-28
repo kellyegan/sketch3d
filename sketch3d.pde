@@ -11,7 +11,6 @@ import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
 
-
 boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
 boolean up, down, left, right;
 
@@ -533,21 +532,23 @@ void keyPressed() {
         d.redoLastStroke();
         break;
       case '1':
-        arcBall.setView( arcBall.FRONT );
+        arcBall.setView( arcBall.FRONT_VIEW );
         break;
       case '2':
         break;
       case '3':
-        arcBall.setView( arcBall.RIGHT );
+        arcBall.setView( arcBall.RIGHT_VIEW );
+        println("View: RIGHT");
         break;
       case '4':
+        
         break;
       case '5':
         break;
       case '6':
         break;
       case '7':
-        arcBall.setView( arcBall.TOP );
+        arcBall.setView( arcBall.TOP_VIEW );
         break;
       case '8': 
         break;     
