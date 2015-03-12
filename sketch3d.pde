@@ -11,7 +11,7 @@ import java.awt.Color;
 import processing.dxf.*;
 import processing.pdf.*;
 
-boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground;    //Current button states 
+boolean drawingNow, moveDrawing, rotatingNow, pickingColor, changingPreferences, pickingBackground, previewMode;    //Current button states 
 boolean up, down, left, right;
 
 //Kinect
@@ -101,6 +101,7 @@ void setup() {
   pickingBackground = false;
   exportDXF = false;
   exportPDF = false;
+  previewMode = false;
 
   deviceReady = false;
   handPicked = false;
@@ -316,9 +317,7 @@ void draw() {
       shader.set("fogColor", red(bgColor) / 255.0, green(bgColor) / 255.0, blue(bgColor) / 255.0, 1.0 );
       fgbgToggle.setColorBackground(bgColor);
     }
-
   }
-  
   
   if( menuState != MENUS_OFF && menuState != FILE_MENU ) {
     //Draw cursor
@@ -329,7 +328,6 @@ void draw() {
     line( x - 10, y, x + 10, y );    
   }
 }
-
 
 /*************************************** UPDATE ***************************************/
 void update() {
@@ -344,17 +342,18 @@ void update() {
     skeleton.getSecondaryHand( secondaryHand );
     updateDrawingHand();
 
-
     //kinectStatus = "zPlane: " + (cameraPos.z - drawingHand.z);
     shader.set("zPlane", cameraPos.z - drawingHand.z );
-
 
     if ( drawingNow ) {
       d.addPoint( (float)millis() / 1000.0, drawingHandTransformed.x, drawingHandTransformed.y, drawingHandTransformed.z);
     }
     if ( rotatingNow ) {
-      //arcBall.dragging( mouseX, mouseY );
-      arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );     
+      if( previewMode ) {
+        arcBall.dragging( mouseX, mouseY );
+      } else {
+        arcBall.dragging(secondaryHandScreen.x, secondaryHandScreen.y );
+      }     
     }
     if ( moveDrawing && !drawingNow ) {
       moveNow.set( secondaryHand );
@@ -369,6 +368,8 @@ void update() {
 void mousePressed() {    
   if ( menuState != MENUS_OFF) {
       cp5.getPointer().pressed();
+  } else if (previewMode) {
+    arcBall.dragStart(mouseX, mouseY);
   } else {
     if (mouseButton==LEFT) {
       println( red(brushColor));
@@ -377,7 +378,6 @@ void mousePressed() {
       keyStatus += " Left mouse.";
     }
     if (mouseButton==RIGHT) {
-      //arcBall.dragStart(mouseX, mouseY);
       arcBall.dragStart(secondaryHandScreen.x, secondaryHandScreen.y);
       rotatingNow=true;
       keyStatus += " Right mouse.";
@@ -392,14 +392,18 @@ void mousePressed() {
 }
 
 void mouseDragged() {
-  //arcBall.dragging(mouseX, mouseY);
+  if(previewMode) {
+    arcBall.dragging(mouseX, mouseY);
+  }
 }
 
 void mouseReleased() {
   if ( menuState != MENUS_OFF ) {
     cp5.getPointer().released();
-  } 
-  else {
+  } else if ( previewMode ) {
+    rotatingNow = false;
+    arcBall.dragEnd();
+  } else {
     if (mouseButton==LEFT) {
       drawingNow=false;
       d.endStroke();
@@ -508,6 +512,10 @@ void keyPressed() {
       case 'Q':
         exit();
         break;
+      case 'v':
+      case 'V':
+        previewMode = !previewMode;
+        break;
       case 'x': 
       case 'X':
         d.clearStrokes();
@@ -518,10 +526,14 @@ void keyPressed() {
       case 'Z':
         d.redoLastStroke();
         break;
+      case '0':
+        arcBall.setPivot( 0, 0, 0 );
+        break;
       case '1':
         arcBall.setView( arcBall.FRONT_VIEW );
         break;
       case '2':
+        arcBall.setPivot( -500, 0, 0);
         break;
       case '3':
         arcBall.setView( arcBall.RIGHT_VIEW );
