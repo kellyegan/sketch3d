@@ -338,19 +338,6 @@ void update() {
     d.clearStrokes();
   }
 
-//  if ( up ) {
-//    rotation.x += rotationStep;
-//  }
-//  if ( down ) {
-//    rotation.x -= rotationStep;
-//  }
-//  if ( right ) {
-//    rotation.y += rotationStep;
-//  }
-//  if ( left ) {
-//    rotation.y -= rotationStep;
-//  }
-
   if (deviceReady) {
     kinect.update();
     skeleton.update( drawingHand );
@@ -541,7 +528,6 @@ void keyPressed() {
         println("View: RIGHT");
         break;
       case '4':
-        
         break;
       case '5':
         break;
