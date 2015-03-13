@@ -549,7 +549,15 @@ void keyPressed() {
         arcBall.setView( arcBall.TOP_VIEW );
         break;
       case '8': 
-        break;     
+        break;
+      case '_':
+      case '-':
+        
+        break;
+      case '+':
+      case '=':
+        
+        break; 
       case '{': 
       case '[':
         brushSize -= 5;
@@ -893,10 +901,11 @@ void createControllers(ControlP5 cp5) {
     "M    Move",
     "Z    Undo",
     "X    Clear strokes",
-    "+/-  Change stroke size",
+    "[ ]  Change stroke size",
     "H    Reset rotation",
     "C    Color picker",
     "P    Preference menu",
+    "V    Rotate drawing with mouse",
     "F    File save, open and export",
     "?    This help menu",
     "Q    Exit sketch3D"
