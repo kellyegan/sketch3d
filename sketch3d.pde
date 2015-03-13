@@ -552,11 +552,15 @@ void keyPressed() {
         break;
       case '_':
       case '-':
-        
+        if( cameraPos.z < 5000 ) {
+          cameraPos.add( 0, 0, 40 );
+        }
         break;
       case '+':
       case '=':
-        
+        if( cameraPos.z > 300 ) {
+          cameraPos.add( 0, 0, -40); 
+        }
         break; 
       case '{': 
       case '[':
