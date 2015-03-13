@@ -550,12 +550,12 @@ void keyPressed() {
         break;
       case '8': 
         break;     
-      case '-': 
-      case '_':
+      case '{': 
+      case '[':
         brushSize -= 5;
         break;
-      case '=': 
-      case '+':
+      case '}': 
+      case ']':
         brushSize += 5;
         break;
       case '?':
