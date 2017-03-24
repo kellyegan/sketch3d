@@ -7,7 +7,7 @@ Processing application for drawing in 3D space using a Kinect. Uses a wireless m
 
 Allows for drawing in 3D space, rotation, translation and saving in GML(Graffiti Markup Language)
 
-http://kellyegan.net
+http://kellyegan.net/portfolio/2013_Sketch3D.html
 
 Starting a drawing
 ------------------
